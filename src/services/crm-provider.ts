@@ -56,3 +56,30 @@ export interface CRMProvider {
   syncNotes(organizationId: string, since?: Date): AsyncIterable<RawCRMNote>;
   pushUpdates(organizationId: string, updates: CRMUpdate[]): Promise<PushResult>;
 }
+
+/**
+ * Writeback capabilities — see docs/CRM_WRITEBACK.md. Deliberately a
+ * *separate* interface from CRMProvider, not additional methods on it:
+ * not every provider implementation supports every write capability
+ * (a read-only integration is legitimate), and every write path
+ * requires the human-approval gate described in POST_CALL_WORKFLOW.md
+ * regardless of what the underlying vendor API technically allows.
+ * Callers must check `supports()` before attempting a write — calling
+ * an unsupported method should never be the way a provider signals
+ * "I don't do that."
+ */
+export type CRMWriteCapability = 'pushNote' | 'pushContact' | 'pushOutcome' | 'pushActivity';
+
+export interface CRMWriteCapabilities {
+  supports(capability: CRMWriteCapability): boolean;
+  pushNote(organizationId: string, input: { accountExternalId: string; content: string }): Promise<PushResult>;
+  pushContact(organizationId: string, input: RawCRMContact): Promise<PushResult>;
+  pushOutcome(
+    organizationId: string,
+    input: { accountExternalId: string; outcomeType: string; occurredAt: string }
+  ): Promise<PushResult>;
+  pushActivity(
+    organizationId: string,
+    input: { accountExternalId: string; summary: string; occurredAt: string }
+  ): Promise<PushResult>;
+}

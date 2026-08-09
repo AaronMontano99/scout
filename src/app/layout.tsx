@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google';
 import { PRODUCT_NAME } from '@/lib/branding';
 import './globals.css';
 
-// See docs/DESIGN_SYSTEM.md — Inter is the single sans family, JetBrains
+// See DESIGN.md — Inter is the single sans family, JetBrains
 // Mono carries every technical data surface. CSS variables consumed by
 // --font-sans / --font-mono in globals.css.
 const inter = Inter({

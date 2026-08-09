@@ -1,11 +1,16 @@
-# Design System — Subtle Gradient (marketing site)
+# DESIGN.md — Scout Visual Authority
 
-Source: `SCOUT_SUBTLE_GRADIENT_DESIGN_SYSTEM.md`, provided by the
-founder, version `alpha`. Reproduced in full below with an integration
-note. This is the marketing-site visual language; the in-app product
-UI (Daily Plan, Account Brain, Content Command Center-equivalent
-admin views) inherits its color/type/radius tokens but has not been
-separately designed yet — see "Status" below.
+This file is the visual authority for Scout, per `PRODUCT_CONSTITUTION.md`'s
+hierarchy (Product Constitution → Architecture → **DESIGN.md** → product
+specs). No second design system should be created. Two parts:
+
+1. **Marketing site** ("Subtle Gradient" system) — source:
+   `SCOUT_SUBTLE_GRADIENT_DESIGN_SYSTEM.md`, provided by the founder,
+   version `alpha`. Reproduced below with an integration note.
+2. **In-app application** (Target List workspace, Call-Ready Brief,
+   Account Brain, analytics, admin) — defined further down, in Phase 2.
+   Same token set as the marketing site; denser, working-tool patterns
+   instead of editorial pacing.
 
 ## Status
 
@@ -337,4 +342,159 @@ Compact developer-ergonomic radii — 8px CTAs, 12px cards. Pill geometry is res
 - Animation timings (field-dashboard parallax, hero entrance) out of scope.
 - In-app Scout workflow and research surfaces are only partially captured via marketing mockups — **and don't exist as real UI yet at all (Phase 0/1)**, see Status above.
 - Form validation states beyond focus not visible on captured surfaces.
-- In-app product design system (as opposed to marketing site) is not yet defined — Phase 1+ decision.
+
+---
+
+# In-App Application Design System (Phase 2)
+
+Defined now because Phase 2 builds real in-app screens (Target List
+workspace, Call-Ready Brief, Account Brain, post-call flow). Same
+token set as the marketing site above — same brand, different job. A
+working salesperson's tool during a calling block needs to be denser,
+faster to scan, and quieter than an editorial marketing page. No new
+colors are introduced beyond what's already defined above.
+
+## Principles specific to the app shell
+
+- **Density over whitespace.** Marketing spacing (96px section rhythm)
+  does not belong here. In-app default vertical rhythm is
+  `{spacing.base}`–`{spacing.lg}` (16–24px) between elements, not 96px
+  between sections.
+- **Scannable in 30 seconds.** The Call-Ready Brief's whole reason to
+  exist is "don't make the rep read a report" (`PRODUCT_UX.md`) — every
+  in-app pattern below defaults to compact and defers detail behind
+  progressive disclosure rather than showing everything at once.
+- **No fake precision.** Per the product spec, Scout never shows
+  invented numeric scores (`87/100`). Confidence/priority render as
+  short text labels (`Strong Context`, `Limited Data`) or a small
+  colored dot, never a percentage that implies false precision.
+- **Certainty is a first-class visual state**, not an afterthought —
+  KNOWN / INFERRED / SUGGESTED must be visually distinct at a glance
+  (see Certainty Badge below), because presenting an inference as fact
+  is a product-trust failure per `AI_ARCHITECTURE.md`.
+
+## App Shell
+
+**`app-nav-rail`** — Left-aligned vertical nav, background
+`{colors.canvas}`, 1px `{colors.hairline}` right border, ~72px collapsed
+/ ~220px expanded. Items: Home, My Lists, Accounts, People, Imports,
+Analytics, divider, Team, Settings. Active item: `{colors.surface-strong}`
+background pill behind the label, text `{colors.ink}`; inactive: text
+`{colors.body}`. No icon-only nav without labels — reps switching
+contexts fast need words, not glyphs to decode.
+
+**`app-topbar`** — Height 56px (shorter than marketing's 64px
+`top-nav` — screen real estate matters more in-app), background
+`{colors.canvas}`, bottom 1px `{colors.hairline}`. Holds: current
+context breadcrumb (e.g. "Construction — Bay Area"), global search,
+user menu.
+
+**`app-content`** — Max width unconstrained (unlike marketing's
+1200px cap) — working screens use available width; internal content
+groups still respect a readable measure for brief text (~680px) within
+wider layout containers.
+
+## List & Table Patterns
+
+**`list-row`** — Compact row for the Target List "All Accounts" view.
+Background `{colors.surface-card}`, 1px `{colors.hairline}` bottom
+border (not a full card border — rows in a list share edges), padding
+`{spacing.sm}` `{spacing.base}` (12px 16px), hover background
+`{colors.canvas-soft}`. Contents: company name (`{typography.title-sm}`),
+location, priority label, freshness chip, worked/pinned indicator,
+right-aligned outcome-if-any.
+
+**`priority-label`** — Text-only tier indicator, not a numeric score.
+Values: `Strong Context` / `Useful Context` / `Limited Data` / `Lower
+Confidence`. Rendered as `{typography.caption}` in `{colors.body}` with
+a small 6px dot in a mapped color (strong → `{colors.semantic-success}`,
+useful → `{colors.text-link}`, limited → `{colors.muted}`, lower →
+`{colors.accent-warning}`) — dot is a glance-level signal, label is the
+actual information; never dot-only.
+
+**`freshness-chip`** — `{typography.caption}`, `{colors.muted}`, no
+background (text-only, not a badge — freshness is ambient trust
+metadata, not a callout, per the product spec's "should remain visually
+subtle" rule). Format: "updated 8 days ago" / "checked today."
+
+## Certainty & Role Badges
+
+**`certainty-badge`** — `{typography.caption-uppercase}`, rounded
+`{rounded.pill}`, padding 2px 8px (smaller than marketing's
+`badge-pill`). Three fixed values, fixed colors — never remapped per
+theme, because consistent recognition matters more than per-page
+styling here:
+  - `KNOWN` — background `{colors.surface-strong}`, text `{colors.ink}`
+  - `INFERRED` — background transparent, text `{colors.body}`, 1px
+    `{colors.hairline-strong}` border
+  - `SUGGESTED` — background transparent, text `{colors.muted}`, 1px
+    dashed `{colors.hairline}` border (dashed = weakest confidence,
+    reserved for this one state)
+
+**`role-badge`** — Buying-role label (Decision Maker / Economic Buyer /
+Champion / Influencer / Technical Buyer / Blocker / Unknown). Same pill
+shape as `certainty-badge`, background `{colors.surface-strong}`, text
+`{colors.ink}`. Always paired with a `certainty-badge` — never shown
+alone (a role without certainty is exactly the "inference presented as
+fact" failure mode).
+
+**`outcome-badge`** — Call outcome label (Voicemail, Gatekeeper,
+Connected, Meeting Booked, etc.). Same pill shape; `Meeting Booked` and
+`Connected` use `{colors.semantic-success}` text on
+`{colors.surface-strong}`; `Not Interested`/`Wrong Contact` use
+`{colors.body}` (neutral, not red — a disqualified account isn't an
+error state); all others neutral `{colors.ink}` on
+`{colors.surface-strong}`.
+
+## Call-Ready Brief Layout
+
+**`brief-header`** — Company name (`{typography.display-sm}`), location
++ website + professional links as a single `{typography.body-sm}` line
+underneath. No card chrome — this is page-level, not a card.
+
+**`brief-section`** — Each of "What They Do," "What Matters," "Recent
+Developments," "What Your Team Knows," "People," "Sources," "Talking
+Points" is a `brief-section`: label in `{typography.caption-uppercase}`
+`{colors.muted}`, content in `{typography.body-md}`, `{spacing.md}`
+(20px) vertical gap from the next section, **no border, no card
+background** — the brief is one continuous scannable page, not a grid
+of boxed widgets. Boxing every section would recreate the "10 tabs"
+problem the product exists to eliminate.
+
+**`source-chip`** — Inline, next to a claim. `{typography.caption}`,
+text `{colors.text-link}`, no background, external-link affordance.
+Clicking opens the source. Every external claim must have one — see
+`RESEARCH_WORKSPACE.md`.
+
+**`disclosure-toggle`** — "Show deeper research" control gating
+Progressive Disclosure Level 2 (see `RESEARCH_WORKSPACE.md`). Text
+button, `{colors.text-link}`, collapsed by default always — deep
+research is never auto-expanded, per the "too much reading is a
+product failure" rule.
+
+## Stat Tiles (analytics — used sparingly)
+
+**`stat-tile`** — Background `{colors.surface-card}`, rounded
+`{rounded.lg}`, padding `{spacing.md}` (20px), 1px
+`{colors.hairline-strong}` border. Big number in
+`{typography.display-sm}` `{colors.ink}` (not `display-mega` — that's
+reserved for the marketing hero), label above in
+`{typography.caption-uppercase}` `{colors.muted}`. Every stat tile
+showing a rate must display its denominator directly beneath in
+`{typography.caption}` `{colors.muted}` (e.g. "6 / 63 calls") — a rate
+without a visible denominator is exactly the "fake Engagement Score"
+failure mode the product spec forbids.
+
+## Empty & Error States
+
+**`empty-state`** — Centered, `{spacing.xxl}` (48px) vertical padding,
+headline in `{typography.title-md}`, one line of `{typography.body-md}`
+`{colors.body}` explaining what to do, single `button-primary` CTA.
+Never the bare "Nothing here yet 🙂" pattern — every empty state names
+the specific next action.
+
+**`error-banner`** — Background `{colors.surface-strong}`, left 3px
+border `{colors.semantic-error}`, padding `{spacing.sm}`
+`{spacing.base}`, rounded `{rounded.md}`. Text explains what failed and
+what the user can do next (retry, contact support, wait) — never a bare
+stack trace or generic "Something went wrong."

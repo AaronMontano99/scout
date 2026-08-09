@@ -112,6 +112,58 @@ correct given the product's institutional-memory premise.
 
 ---
 
+## ADR-0006: TargetList/TargetListItem supersede DailyPlan/DailyPlanItem
+
+**Status:** Accepted
+
+**Context:** Phase 1 designed `DailyPlan` as a single-day ranked
+account list. The Phase 2 commercial product spec makes persistent,
+named, multi-day prospecting workspaces ("Construction," "Law Firms")
+the central object — a rep leaves a list Monday and returns Wednesday
+expecting exact progress preservation, which a "daily" plan doesn't
+model.
+
+**Decision:** `TargetList`/`TargetListItem` (see `DATA_MODEL.md`
+Phase 2 Additions) replace `DailyPlan`/`DailyPlanItem` as the primary
+workspace object. `AccountScore` and `Recommendation` are retained and
+now feed a Target List's "Suggested Calls" ordering. `daily_plan`/
+`daily_plan_item` are dropped from the schema in migration
+`0002_core_product.sql` — they were designed but never implemented
+against a live database, so this is a clean removal, not a data
+migration.
+
+**Consequences:** One fewer redundant workspace concept. Any future
+"what should I work today across all my lists" cross-list view (not
+built in Phase 2) can be a computed query over `TargetListItem`, not a
+new persisted entity.
+
+---
+
+## ADR-0007: Platform-admin is a flag on `app_users`, not a Membership role
+
+**Status:** Accepted
+
+**Context:** The Founder Operations Console (`FOUNDER_OPERATIONS.md`)
+needs cross-organization visibility for a solo founder operating every
+customer alone. The existing `Membership.role` enum
+(OWNER/ADMIN/MANAGER/REP) is org-scoped by design — adding a "super
+admin" value to that enum would make cross-tenant access look like an
+ordinary org role, which is exactly the kind of authorization
+confusion `SECURITY.md` warns against.
+
+**Decision:** Add `app_users.platform_admin` (boolean), checked
+separately from and in addition to normal org-scoped authorization.
+Every console read is audit-logged. No UI ever grants this flag to
+itself — it's set directly in the database by the founder, not through
+an app-level "make me admin" flow.
+
+**Consequences:** One more manual step to grant founder-level access
+(acceptable — this should never be self-service). Keeps the security
+model's core invariant intact: an org role can never imply access to
+another org's data.
+
+---
+
 ## Deferred (not yet decided — see ROADMAP.md)
 
 `AccountScore` weighting formula; pricing/plan tiers; data retention

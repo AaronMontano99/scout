@@ -312,3 +312,176 @@ Territory hierarchies beyond one level, SalesProfile versioning as a
 first-class history table (relying on `AuditLog` for now), a formal
 scoring-weight-tuning system, self-serve entity-resolution rule
 authoring. See `ROADMAP.md` and `DECISIONS.md`.
+
+---
+
+# Phase 2 Additions
+
+Adds the entities the commercial product spec (`TARGET_LISTS.md`,
+`SELLER_STYLE.md`, `POST_CALL_WORKFLOW.md`, `PROSPECTING_ANALYTICS.md`)
+depends on. Implemented in `supabase/migrations/0002_core_product.sql`
+— this is also the migration that finally creates `Account`, `Contact`,
+`KnowledgeItem`, etc. from the Phase 1 design above; nothing beyond
+tenancy tables existed in the database until now (see
+`supabase/README.md`).
+
+## ADR note: TargetList supersedes DailyPlan as the primary workspace object
+
+Phase 1 designed `DailyPlan`/`DailyPlanItem` as a single-day ranked
+list. The Phase 2 product spec makes **Target Lists** — persistent,
+multi-day, named prospecting workspaces — the central object instead
+("a rep works Construction Monday, Law Firms Tuesday, returns to
+Construction Wednesday exactly where they left off"). `DailyPlan`
+doesn't model that; a list a rep works over two weeks isn't "today's
+plan." Recorded as `ADR-0006` in `DECISIONS.md`: `TargetList` +
+`TargetListItem` replace `DailyPlan`/`DailyPlanItem` as the primary
+workspace; `AccountScore`/`Recommendation` (Phase 1) remain and now
+feed a Target List's "Suggested Calls" ordering instead of a daily
+plan. The `daily_plan`/`daily_plan_item` tables are dropped from the
+schema before ever being used in production — no migration/data
+concern, they were never populated.
+
+## New / changed entities
+
+### TargetList
+
+The persistent prospecting workspace. `id, organization_id, name,
+description, owner_membership_id, created_by_membership_id,
+research_focus (nullable text — e.g. "Cybersecurity"), vertical,
+geography, status (active/archived), created_at, last_worked_at`.
+**Never expires rep progress** — see `TargetListItem`.
+
+### TargetListItem
+
+One account's position within one list. `id, target_list_id,
+account_id, status (not_started/in_progress/worked/skipped), pinned
+(boolean), position (for manual ordering, nullable — default order is
+computed from AccountScore, not stored), worked_at, added_at`. A
+account can belong to multiple TargetLists (e.g. shows up in both
+"Existing Customers" and "Cybersecurity" lists) — this is a many-to-
+many via TargetListItem, not a foreign key on Account.
+
+### ContractInfo
+
+Historical contract/incumbent timing, split out from generic
+`KnowledgeItem` because it has a distinct, queryable shape used by
+scoring ("Timing" component) and the brief's "What Your Team Knows"
+section. `id, organization_id, account_id, incumbent_vendor,
+contract_start_date, contract_end_date, lease_end_date,
+certainty_type (KNOWN/INFERRED/SUGGESTED), source_knowledge_item_id,
+created_at, updated_at`. Multiple rows per account allowed (renewal
+history) — most recent `contract_end_date` is "current" by convention,
+not a special flag.
+
+### SellerStyleProfile
+
+Persistent per-rep communication style — explicitly **not** the same
+memory category as Account Brain (see `SELLER_STYLE.md`). `id,
+organization_id, membership_id, sample_scripts (jsonb array),
+sample_emails (jsonb array), sample_voicemails (jsonb array), tone_notes
+(text — free-form prefs like "direct, no buzzwords"), updated_at`. One
+row per Membership. Organization-level `SalesProfile` (Phase 1) can
+optionally constrain style with `approved_language`/`compliance_rules`
+— rep style is the default; org constraints are opt-in, not the norm
+(see product spec §29).
+
+### CallOutcome
+
+Supersedes Phase 1's generic `Outcome` table — same purpose, now
+explicitly tied to `TargetListItem` instead of the retired
+`DailyPlanItem`, and the outcome taxonomy matches the product spec.
+`id, organization_id, account_id, target_list_item_id (nullable — a
+call can happen outside any list), contact_id (nullable),
+membership_id, outcome_type (no_answer/voicemail/gatekeeper/
+general_staff/influencer/champion/decision_maker/other_executive/
+wrong_contact/not_interested/connected/meeting_booked/
+follow_up_required), contact_role_observed (free text — "Linda at
+reception"), occurred_at, created_at`. Logging must be fast — this
+table has no required fields beyond outcome_type + account_id.
+
+### SellingSituationDefinition
+
+Org-configurable qualification criteria — explicitly not a hardcoded
+MEDDPICC implementation (product spec §56). `id, organization_id,
+name, criteria (text — e.g. "Is it a deal? Is it a deal I can get? Is
+it a deal I can get this month?"), is_default, created_by_membership_id,
+created_at`. One org can have multiple definitions (different teams,
+different qualification bars).
+
+### SellingSituation
+
+The recorded instance of a qualified opportunity-in-formation. `id,
+organization_id, account_id, definition_id, created_from_call_outcome_id
+(nullable), created_by_membership_id, created_at, notes`. Deliberately
+lightweight — Scout does not replace the CRM's Opportunity object (see
+`CRM_WRITEBACK.md` system-of-record rule); this is the analytics-and-
+handoff marker, not a deal-management record.
+
+### PostCallNote
+
+The post-call assistant's working record. `id, organization_id,
+account_id, call_outcome_id, membership_id, raw_input (text — the
+rep's messy dictated/typed note), clean_note (text — Scout's cleaned
+version), proposed_account_updates (jsonb — candidate KnowledgeItem/
+AccountContactRelationship changes, certainty_type always INFERRED or
+SUGGESTED until approved), follow_up_email_draft (text), approved_at,
+approved_by_membership_id, crm_write_status (not_applicable/pending/
+written/failed), created_at`. Nothing in `proposed_account_updates`
+becomes a real `KnowledgeItem` until `approved_at` is set — see
+`POST_CALL_WORKFLOW.md`.
+
+### AnalyticsEvent
+
+Event-sourced record backing every funnel/rate calculation in
+`PROSPECTING_ANALYTICS.md` — chosen specifically so every displayed
+rate has a real, recomputable denominator instead of a maintained
+counter that can drift. `id, organization_id, event_type
+(call_attempted/conversation/target_conversation/meeting_booked/
+selling_situation_created/opportunity_created/email_drafted/
+email_sent/crm_note_created/contact_added/account_worked),
+account_id (nullable), target_list_id (nullable), contact_id
+(nullable), membership_id (nullable), metadata (jsonb), occurred_at,
+created_at`. Funnel rates are computed by counting events, never
+stored as a pre-aggregated percentage.
+
+### Platform admin flag (on `app_users`)
+
+Adds `platform_admin (boolean, default false)` to the Phase 1
+`app_users` table — a *platform-level* flag, deliberately separate
+from the org-scoped `Membership.role` enum, because the Founder
+Operations Console (`FOUNDER_OPERATIONS.md`) needs cross-organization
+access that no org-scoped role should ever grant. See `SECURITY.md`
+update: this flag requires the same dual-layer (app-check + RLS)
+discipline as everything else, and every read it authorizes is
+audit-logged.
+
+### Organization fields added
+
+`first_value_at (timestamptz, nullable)` — set once, never cleared,
+per `CUSTOMER_IMPLEMENTATION.md`'s First Value criteria.
+`relationship_status` is added to **Account**, not Organization:
+`prospect | current_customer | former_customer | partner | unknown`.
+
+## Competitor/incumbent memory — a query, not a table
+
+Product spec §33 describes surfacing patterns like "8 historical notes
+mention Competitor X had slow service communication." This is **not**
+a new persisted entity — it's an aggregation query over existing
+`KnowledgeItem` rows (`type = 'incumbent_vendor'` or `'objection'`,
+grouped by `structured_value->>'competitor_name'`), scoped by
+`organization_id` (never cross-tenant — see product spec §33's
+explicit leakage warning). Adding a dedicated table before there's
+evidence the aggregation needs to be pre-computed would be exactly the
+"table that might be useful someday" anti-pattern this doc otherwise
+rejects.
+
+## Customer health — computed, not stored
+
+Product spec §87 explicitly rejects "complex predictive churn
+algorithms." Health status (`Healthy`/`Needs Attention`/`At Risk`) is
+computed on read in the Founder Operations Console from existing
+signals (days since last login, days since last research, days since
+last `AnalyticsEvent`, integration connection status) — not written to
+a table on a schedule. If read-time computation ever becomes a real
+performance problem, a snapshot table is a cheap addition later;
+building it now would be premature.
