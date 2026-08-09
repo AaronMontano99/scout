@@ -1,0 +1,118 @@
+# Architecture Decision Records
+
+Format: `ADR-XXXX`, status, context, decision, consequences. Once
+accepted, an ADR is not silently edited — a changed decision gets a new
+ADR that supersedes the old one.
+
+---
+
+## ADR-0001: Modular monolith over microservices for V1
+
+**Status:** Accepted
+
+**Context:** Solo founder, pre-revenue, need to move fast without
+accumulating unmanageable operational surface. The source brief
+explicitly warns against premature microservice splits.
+
+**Decision:** Single Next.js deployable with enforced internal module
+boundaries (`domain`, `services`, `integrations`, `ai`, `jobs`) via
+directory structure and import discipline. No inter-service network
+calls, no service mesh, no per-module deployment pipeline.
+
+**Consequences:** Faster iteration, one thing to deploy/monitor/debug.
+Trade-off: if one module (most likely research/enrichment processing)
+needs independent scaling later, extracting it requires discipline
+maintained now (clean interfaces) to pay off — see `ARCHITECTURE.md`.
+
+---
+
+## ADR-0002: Supabase for Postgres + Auth + Storage
+
+**Status:** Accepted, with mitigation
+
+**Context:** Solo founder needs to avoid hand-rolling auth,
+infrastructure, and storage from scratch. Supabase bundles Postgres,
+Auth, Storage, and RLS support on one platform.
+
+**Decision:** Use Supabase for all three. Mitigate platform lock-in by
+(a) wrapping Supabase Auth behind an internal `src/auth` interface so
+call sites don't depend on the Supabase SDK shape directly, and (b)
+writing RLS policies in portable SQL rather than Supabase-proprietary
+constructs beyond standard claim access.
+
+**Consequences:** Fast to build, less infra to operate. Real
+dependency on Supabase as a platform (not just a library) — migrating
+away later means migrating auth and data together. Accepted as
+worthwhile given the velocity need at this stage; revisit if Supabase
+becomes a demonstrated constraint (pricing, reliability, feature gaps).
+
+---
+
+## ADR-0003: Background job runner selected via internal interface, not hardcoded to Trigger.dev
+
+**Status:** Accepted
+
+**Context:** Source brief names Trigger.dev specifically. Trigger.dev
+is a reasonable choice but not the only viable durable-job runner
+(Inngest, Graphile Worker on the same Postgres instance are
+alternatives), and domain code shouldn't care which one is running.
+
+**Decision:** Define an internal `JobQueue` interface (enqueue,
+schedule, idempotency key, retry policy) in `src/jobs`. Trigger.dev is
+the Phase 0 implementation behind that interface, chosen for its
+managed-service simplicity for a solo founder, but it's a config/
+adapter choice, not something domain code calls directly.
+
+**Consequences:** Slight extra abstraction cost now; avoids a rewrite
+if Trigger.dev's pricing or limits become a problem at scale.
+
+---
+
+## ADR-0004: Dual-layer authorization — app-level checks AND Postgres RLS, not one or the other
+
+**Status:** Accepted (council disagreement resolved)
+
+**Context:** CTO council role initially favored RLS-only for
+simplicity (fewer places to get authorization wrong). Founder/Product
+role pushed back: RLS alone means a raw debugging query or an admin
+tool bypasses the same protection app code gets, and is invisible in
+code review the way an app-level check is.
+
+**Decision:** Both layers, always. App-level checks scope every query
+explicitly by `organization_id` resolved from the authenticated
+Membership; RLS is the backstop that fails closed if app logic has a
+bug. See `SECURITY.md`.
+
+**Consequences:** More to implement and test up front. Judged worth it
+given the total severity of a cross-tenant data leak for a product
+whose entire value proposition is trustworthy handling of confidential
+sales data.
+
+---
+
+## ADR-0005: Entity resolution never auto-merges below full deterministic confidence
+
+**Status:** Accepted (council disagreement resolved)
+
+**Context:** CFO/Founder roles favored more aggressive auto-merging
+(including AI-assisted fuzzy matches) to reduce manual review burden
+during import, since review queues slow down time-to-value. CTO/CRO
+roles objected: a wrong auto-merge corrupts institutional memory
+(the product's core asset) in a way that's hard to detect and worse
+than a slower import.
+
+**Decision:** Only deterministic domain match, or normalized-name
+match corroborated by a second independent signal, auto-applies.
+Fuzzy and AI-assisted matches always create a human-reviewable
+`AccountMatchCandidate` (see `DATA_MODEL.md`).
+
+**Consequences:** Slower import for messy spreadsheets with real
+duplicates; explicit tradeoff of speed for data integrity, judged
+correct given the product's institutional-memory premise.
+
+---
+
+## Deferred (not yet decided — see ROADMAP.md)
+
+`AccountScore` weighting formula; pricing/plan tiers; data retention
+period specifics; first Phase-4 `ResearchProvider` vendor choice.

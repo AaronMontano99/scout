@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Env — never commit real secrets, see docs/SECURITY.md
+.env
+.env.*.local
+.env.local
+!.env.example
+
+# Supabase local dev
+supabase/.branches/
+supabase/.temp/
+
+# Testing
+coverage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Trigger.dev
+.trigger/

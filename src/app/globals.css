@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens generated from docs/DESIGN_SYSTEM.md
+ * (source: SCOUT_SUBTLE_GRADIENT_DESIGN_SYSTEM.md). Marketing-site
+ * tokens for now — see that doc's "Status" note on scope. Colors are
+ * exposed as Tailwind v4 @theme values, so e.g. `bg-primary`,
+ * `text-ink`, `bg-surface-dark` become real utility classes.
+ *
+ * Spacing intentionally reuses Tailwind's default 4px-based scale
+ * (already matches the design doc's 4/8/12/16/20/24/32/48px tokens) —
+ * only the 96px "section" rhythm value is added as a named token.
+ */
+@theme {
+  /* Brand & accent */
+  --color-primary: #000000;
+  --color-primary-active: #1a1a1a;
+  --color-text-link: #0d74ce;
+  --color-text-link-secondary: #476cff;
+  --color-accent-link-bright: #47c2ff;
+
+  /* Surface */
+  --color-canvas: #ffffff;
+  --color-canvas-soft: #fafafa;
+  --color-surface-card: #ffffff;
+  --color-surface-strong: #f0f0f3;
+  --color-surface-dark: #171717;
+  --color-surface-dark-elevated: #1a1a1a;
+
+  /* Atmospheric backdrop — hero only, see DESIGN_SYSTEM.md Don'ts */
+  --color-gradient-sky-light: #cfe7ff;
+  --color-gradient-sky-mid: #a8c8e8;
+
+  /* Hairlines */
+  --color-hairline: #f0f0f3;
+  --color-hairline-soft: #f5f5f7;
+  --color-hairline-strong: #dcdee0;
+
+  /* Text */
+  --color-ink: #171717;
+  --color-body: #60646c;
+  --color-body-strong: #171717;
+  --color-muted: #999999;
+  --color-muted-soft: #cccccc;
+  --color-on-primary: #ffffff;
+  --color-on-dark: #ffffff;
+  --color-on-dark-soft: #b0b4ba;
+
+  /* Semantic */
+  --color-accent-warning: #ab6400;
+  --color-accent-preview: #8145b5;
+  --color-semantic-error: #eb8e90;
+  --color-semantic-success: #16a34a;
+
+  /* Type — variables populated by next/font in layout.tsx */
+  --font-sans:
+    var(--font-inter), -apple-system, system-ui, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), 'Fira Code', monospace;
+
+  /* Radius scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+
+  /* Section rhythm — not part of Tailwind's default spacing scale */
+  --spacing-section: 96px;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
