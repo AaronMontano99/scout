@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getTargetListOverview, getListRows, getSuggestedCalls, getAmbiguousMatchWarning } from '@/demo';
+import { getTargetListOverview, getListRows, getSuggestedCalls, getIdentityWarning } from '@/demo';
 import { AccountListRow } from '@/components/list-row';
 import { PriorityLabelChip } from '@/components/priority';
 import Link from 'next/link';
@@ -22,7 +22,7 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const overview = getTargetListOverview(id);
   if (!overview) notFound();
-  const { list, progress } = overview;
+  const { list, progress, researchProgress } = overview;
 
   const rows = getListRows(id);
   const suggested = getSuggestedCalls(id, 50);
@@ -46,6 +46,14 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
           <span>Research focus: {list.researchFocus ?? 'General'}</span>
           {list.lastWorkedAt && <span>Last worked: {new Date(list.lastWorkedAt).toLocaleDateString()}</span>}
         </div>
+        {/* Product spec §5: "17 ready, 36 processing, 147 queued, 0 failed" */}
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          <span>{researchProgress.ready} ready</span>
+          <span>{researchProgress.processing} processing</span>
+          <span>{researchProgress.queued} queued</span>
+          {researchProgress.needsReview > 0 && <span>{researchProgress.needsReview} needs review</span>}
+          {researchProgress.failed > 0 && <span>{researchProgress.failed} failed</span>}
+        </div>
       </header>
 
       <section>
@@ -67,7 +75,7 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
         </h2>
         <div className="rounded-lg border border-hairline-strong bg-surface-card">
           {suggested.map((entry) => {
-            const warning = getAmbiguousMatchWarning(entry.account.id);
+            const warning = getIdentityWarning(entry.account.id);
             return (
               <Link
                 key={entry.item.id}
@@ -78,9 +86,11 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
                   {entry.pinned && <span title="Pinned">📌</span>}
                   <div>
                     <div className="text-sm font-medium text-ink">{entry.account.name}</div>
-                    {warning && (
-                      <div className="text-xs text-accent-warning">{warning.warning}</div>
+                    {/* Product spec §106: explainable reasons, never a fake score */}
+                    {entry.reasons.length > 0 && (
+                      <div className="text-xs text-muted">{entry.reasons.join(' · ')}</div>
                     )}
+                    {warning && <div className="text-xs text-accent-warning">{warning.warning}</div>}
                   </div>
                 </div>
                 <PriorityLabelChip priority={entry.priorityLabel} />

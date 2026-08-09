@@ -136,6 +136,9 @@ function acc(overrides: Partial<Account> & { id: string; name: string }): Accoun
     ownerMembershipId: DEMO_MEMBERSHIP_ID,
     relationshipStatus: 'prospect',
     status: 'active',
+    researchStatus: 'ready',
+    identityStatus: 'confirmed',
+    identityConfirmedAt: '2026-07-20T00:00:00Z',
     createdAt: '2026-07-20T00:00:00Z',
     updatedAt: '2026-08-07T00:00:00Z',
     ...overrides,
@@ -180,6 +183,8 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: 'summitstructural.com',
     industry: 'Commercial Construction',
     employeeCountRange: '20-50',
+    identityStatus: 'review_recommended', // ambiguous import match — see product spec §15
+    researchStatus: 'needs_review',
   }),
   acc({
     id: ACC_BAYVIEW,
@@ -187,6 +192,7 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: null,
     industry: 'Commercial Construction',
     employeeCountRange: null,
+    researchStatus: 'limited_data', // no website, no news — see product spec §18, §71
   }),
   acc({
     id: ACC_NORTHGATE,
@@ -215,6 +221,7 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: 'vantagepointbuilders.com',
     industry: 'Commercial Construction',
     employeeCountRange: '20-50',
+    researchStatus: 'processing', // being actively worked, conflicting CFO evidence not yet fully resolved
   }),
   acc({
     id: ACC_EVERGREEN,
@@ -222,6 +229,7 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: 'evergreengrounds.com',
     industry: 'Commercial Landscaping',
     employeeCountRange: '10-20',
+    researchStatus: 'queued', // not yet processed — see product spec §5-6
   }),
   acc({
     id: ACC_SUNRISE,
@@ -229,6 +237,7 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: null,
     industry: 'Commercial Landscaping',
     employeeCountRange: null,
+    researchStatus: 'limited_data',
   }),
   acc({
     id: ACC_GREENSCAPE,
@@ -236,6 +245,8 @@ export const DEMO_ACCOUNTS: Account[] = [
     primaryDomain: 'greenscapebayarea.com',
     industry: 'Commercial Landscaping',
     employeeCountRange: '20-50',
+    identityStatus: 'lower_confidence', // shortened import name, moderate-confidence match
+    researchStatus: 'needs_review',
   }),
   acc({
     id: ACC_TURF_MASTERS,
@@ -297,6 +308,7 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'active',
+    lastVerifiedAt: '2026-08-01T00:00:00Z', // recently confirmed via research pass
   },
   {
     id: 'demo-contact-david',
@@ -309,6 +321,7 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'active',
+    lastVerifiedAt: null, // never independently verified — inferred only
   },
   {
     id: 'demo-contact-priya',
@@ -321,6 +334,7 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'active',
+    lastVerifiedAt: null,
   },
   {
     id: 'demo-contact-tom',
@@ -333,6 +347,7 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'active',
+    lastVerifiedAt: '2026-06-15T00:00:00Z', // existing-customer relationship, verified at last renewal
   },
   {
     id: 'demo-contact-steve',
@@ -345,6 +360,7 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'departed', // stale contact — see call outcome note below
+    lastVerifiedAt: '2025-03-10T00:00:00Z', // last verified well over a year ago — clearly stale
   },
   {
     id: 'demo-contact-angela',
@@ -357,6 +373,37 @@ export const DEMO_CONTACTS: Contact[] = [
     phone: null,
     linkedinUrl: null,
     status: 'active',
+    lastVerifiedAt: '2026-08-07T00:00:00Z', // verified this week via direct call
+  },
+  // Conflicting-evidence example — product spec §36. Two rows for the
+  // same account/role: CRM says John Smith (2022, now superseded),
+  // official website says Sarah Lee (2026, current). Neither is
+  // deleted — see AccountContactRelationship rows below.
+  {
+    id: 'demo-contact-john-smith',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_VANTAGE,
+    firstName: 'John',
+    lastName: 'Smith',
+    title: 'CFO (per 2022 CRM note)',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'unknown',
+    lastVerifiedAt: '2022-09-01T00:00:00Z',
+  },
+  {
+    id: 'demo-contact-sarah-lee',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_VANTAGE,
+    firstName: 'Sarah',
+    lastName: 'Lee',
+    title: 'CFO',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-08-06T00:00:00Z',
   },
 ];
 
@@ -368,6 +415,8 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'decision_maker',
     certaintyType: 'KNOWN',
     isCurrent: true,
+    validFrom: '2021-11-04T00:00:00Z',
+    validUntil: null,
     sourceKnowledgeItemId: 'demo-ki-ridgeline-2021-note',
   },
   {
@@ -377,6 +426,8 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'technical_buyer',
     certaintyType: 'INFERRED',
     isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
     sourceKnowledgeItemId: null,
   },
   {
@@ -386,6 +437,8 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'champion',
     certaintyType: 'SUGGESTED',
     isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
     sourceKnowledgeItemId: null,
   },
   {
@@ -395,6 +448,8 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'decision_maker',
     certaintyType: 'KNOWN',
     isCurrent: true,
+    validFrom: '2022-06-01T00:00:00Z',
+    validUntil: null,
     sourceKnowledgeItemId: null,
   },
   {
@@ -404,6 +459,8 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'decision_maker',
     certaintyType: 'KNOWN',
     isCurrent: false, // superseded — see call outcome, Steve left the company
+    validFrom: '2023-01-01T00:00:00Z',
+    validUntil: '2026-08-06T00:00:00Z',
     sourceKnowledgeItemId: null,
   },
   {
@@ -413,6 +470,35 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     roleHypothesis: 'economic_buyer',
     certaintyType: 'KNOWN',
     isCurrent: true,
+    validFrom: '2026-07-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  // Conflicting-evidence example — product spec §36. Both rows persist;
+  // neither is deleted. See src/domain/source-quality.ts resolveConflict,
+  // which is what would decide this in a live pipeline (a 2026 official
+  // source outranks a 2022 CRM note for a time-varying fact like "who
+  // is CFO now").
+  {
+    id: 'demo-acr-7',
+    accountId: ACC_VANTAGE,
+    contactId: 'demo-contact-john-smith',
+    roleHypothesis: 'economic_buyer',
+    certaintyType: 'KNOWN',
+    isCurrent: false,
+    validFrom: '2022-09-01T00:00:00Z',
+    validUntil: '2026-07-01T00:00:00Z',
+    sourceKnowledgeItemId: 'demo-ki-vantage-cfo-2022',
+  },
+  {
+    id: 'demo-acr-8',
+    accountId: ACC_VANTAGE,
+    contactId: 'demo-contact-sarah-lee',
+    roleHypothesis: 'economic_buyer',
+    certaintyType: 'KNOWN',
+    isCurrent: true,
+    validFrom: '2026-07-01T00:00:00Z',
+    validUntil: null,
     sourceKnowledgeItemId: null,
   },
 ];
@@ -533,6 +619,27 @@ export const DEMO_KNOWLEDGE_ITEMS: KnowledgeItem[] = [
     verificationStatus: 'current',
     createdAt: '2022-06-01T00:00:00Z',
   },
+  // Conflicting-evidence example (product spec §36) — see the two
+  // demo-acr-7/8 relationships above and demo-rf-vantage-cfo-2026
+  // below. This item is superseded but never deleted.
+  {
+    id: 'demo-ki-vantage-cfo-2022',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_VANTAGE,
+    contactId: 'demo-contact-john-smith',
+    type: 'decision_maker',
+    content: 'CRM note (2022): John Smith listed as CFO, involved in vendor decisions above $10K.',
+    structuredValue: { role: 'economic_buyer', threshold_usd: 10000 },
+    origin: 'crm_synced',
+    sourceId: null,
+    sourceReference: 'CRM note, imported from legacy system',
+    sourceUrl: null,
+    observedAt: '2022-09-01T00:00:00Z',
+    confidence: 0.85,
+    certaintyType: 'KNOWN',
+    verificationStatus: 'superseded',
+    createdAt: '2022-09-01T00:00:00Z',
+  },
 ];
 
 // --- Research Findings (external evidence, always sourced) ---------------
@@ -592,6 +699,24 @@ export const DEMO_RESEARCH_FINDINGS: ResearchFinding[] = [
     retrievedAt: '2026-08-03T00:00:00Z',
     relevantDate: '2026-07-20',
     confidence: 0.8,
+    certaintyType: 'KNOWN',
+  },
+  // Conflicting-evidence example continued — see demo-ki-vantage-cfo-2022
+  // above and demo-acr-7/8. A tier-2 official source (2026) outranks a
+  // tier-1 CRM note (2022) for this time-varying fact — see
+  // src/domain/source-quality.ts resolveConflict.
+  {
+    id: 'demo-rf-vantage-cfo-2026',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_VANTAGE,
+    sourceId: null,
+    sourceName: 'Vantage Point Builders — leadership page',
+    findingType: 'leadership_change',
+    content: 'Official website (checked 2026-08-06) lists Sarah Lee as Chief Financial Officer.',
+    url: 'https://example.com/vantagepointbuilders/leadership',
+    retrievedAt: '2026-08-06T00:00:00Z',
+    relevantDate: '2026-07-01',
+    confidence: 0.9,
     certaintyType: 'KNOWN',
   },
 ];
@@ -866,8 +991,11 @@ export const DEMO_ACCOUNT_BRIEFS: Record<string, AccountBrief> = {
   },
   [ACC_VANTAGE]: {
     whatTheyDo: 'Commercial construction company, 20-50 employees.',
-    whatMatters: ['Currently being worked — no outcome logged yet.'],
-    talkingPoints: ['General commercial construction approach — no specific trigger identified yet.'],
+    whatMatters: [
+      'Possible leadership change: CRM (2022) listed John Smith as CFO; the official site (checked 2026-08-06) now lists Sarah Lee. Treating Sarah Lee as current — see full history below.',
+      'Currently being worked — no call outcome logged yet.',
+    ],
+    talkingPoints: ['Confirm Sarah Lee is still the right finance contact before assuming the 2022 note is current.'],
   },
   [ACC_EVERGREEN]: {
     whatTheyDo: 'Commercial landscaping company, 10-20 employees.',
@@ -892,12 +1020,21 @@ export const DEMO_ACCOUNT_BRIEFS: Record<string, AccountBrief> = {
   },
 };
 
-// --- Ambiguous match example (product spec §15) --------------------------
+// --- Ambiguous match detail text (product spec §15) -----------------------
+// The actual warning severity/label comes from Account.identityStatus
+// (see src/demo/index.ts's getIdentityWarning) — this map supplies only
+// the founder-legible flavor text (what was imported, what it matched
+// to) for accounts whose identityStatus isn't 'confirmed'.
 
-export const DEMO_AMBIGUOUS_MATCH = {
-  accountId: ACC_SUMMIT,
-  rawImportedName: 'Summit Construction',
-  matchedTo: 'Summit Structural',
-  matchConfidence: 0.55,
-  warning: 'Company match may be inaccurate. Review recommended.',
+export const DEMO_IDENTITY_MATCH_DETAILS: Record<string, { rawImportedName: string; matchedTo: string; matchConfidence: number }> = {
+  [ACC_SUMMIT]: {
+    rawImportedName: 'Summit Construction',
+    matchedTo: 'Summit Structural',
+    matchConfidence: 0.55,
+  },
+  [ACC_GREENSCAPE]: {
+    rawImportedName: 'GreenScape',
+    matchedTo: 'GreenScape Bay Area',
+    matchConfidence: 0.68,
+  },
 };

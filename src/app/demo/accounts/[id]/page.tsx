@@ -9,11 +9,22 @@ import {
   getCallOutcomesForAccount,
   getSellingSituationsForAccount,
   getCompetitorMemory,
-  getAmbiguousMatchWarning,
+  getIdentityWarning,
+  describeCompanyFreshness,
+  describeNewsFreshness,
 } from '@/demo';
 import { CertaintyBadge, RoleBadge, OutcomeBadge } from '@/components/badges';
 import { SourceChip } from '@/components/states';
 import { Disclosure } from '@/components/disclosure';
+import { FreshnessChip } from '@/components/priority';
+
+const RESEARCH_STATUS_BANNER: Partial<Record<string, string>> = {
+  processing: 'Research in progress — showing available information now.',
+  refreshing: 'Refreshing research — showing the most recent information available.',
+  limited_data: 'Limited public information found. Accuracy beats manufactured content — see below for what is confirmed.',
+  needs_review: 'Company identity needs review before treating research below as reliable.',
+  queued: 'Research not yet started for this account.',
+};
 
 // Signature experiences #2 (Call-Ready Brief) and #3 (Account Memory) —
 // deliberately one continuous page, not a grid of boxed widgets or
@@ -39,7 +50,8 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
   const findings = getResearchFindingsForAccount(id);
   const outcomes = getCallOutcomesForAccount(id);
   const sellingSituations = getSellingSituationsForAccount(id);
-  const matchWarning = getAmbiguousMatchWarning(id);
+  const identityWarning = getIdentityWarning(id);
+  const statusBanner = RESEARCH_STATUS_BANNER[account.researchStatus];
 
   const incumbentItem = knowledgeItems.find((k) => k.type === 'incumbent_vendor');
   const incumbentName = incumbentItem?.structuredValue?.competitor_name as string | undefined;
@@ -49,13 +61,21 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex flex-col gap-8">
-      {matchWarning && (
+      {identityWarning && (
         <div className="rounded-md border-l-[3px] border-l-accent-warning bg-surface-strong px-4 py-3 text-sm text-ink">
-          <strong>{matchWarning.warning}</strong>
-          <div className="mt-1 text-xs text-body">
-            Imported as &ldquo;{matchWarning.rawImportedName}&rdquo;, matched to this account at{' '}
-            {Math.round(matchWarning.matchConfidence * 100)}% confidence.
-          </div>
+          <strong>{identityWarning.warning}</strong>
+          {identityWarning.rawImportedName && identityWarning.matchConfidence !== undefined && (
+            <div className="mt-1 text-xs text-body">
+              Imported as &ldquo;{identityWarning.rawImportedName}&rdquo;, matched to this account at{' '}
+              {Math.round(identityWarning.matchConfidence * 100)}% confidence.
+            </div>
+          )}
+        </div>
+      )}
+
+      {!identityWarning && statusBanner && (
+        <div className="rounded-md border-l-[3px] border-l-hairline-strong bg-surface-strong px-4 py-3 text-sm text-body">
+          {statusBanner}
         </div>
       )}
 
@@ -77,7 +97,10 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
       {brief && (
         <>
           <section>
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">What They Do</div>
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted">What They Do</div>
+              <FreshnessChip label={describeCompanyFreshness(id)} />
+            </div>
             <p className="mt-1 text-sm text-body">{brief.whatTheyDo}</p>
           </section>
 
@@ -94,8 +117,11 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
 
           {findings.length > 0 && (
             <section>
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Recent News / Developments
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  Recent News / Developments
+                </div>
+                <FreshnessChip label={describeNewsFreshness(id)} />
               </div>
               <ul className="mt-1 flex flex-col gap-2 text-sm text-body">
                 {findings.map((f) => (
@@ -126,15 +152,21 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             <section>
               <div className="text-xs font-semibold uppercase tracking-wide text-muted">People</div>
               <ul className="mt-1 flex flex-col gap-2">
-                {contacts.map(({ contact, relationship }) => (
-                  <li key={contact.id} className="flex items-center gap-2 text-sm">
-                    <span className="font-medium text-ink">
+                {contacts.map(({ contact, relationship, freshnessLabel }) => (
+                  <li key={contact.id} className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className={`font-medium ${relationship.isCurrent ? 'text-ink' : 'text-muted line-through'}`}>
                       {contact.firstName} {contact.lastName}
                     </span>
                     <span className="text-body">{contact.title}</span>
                     <RoleBadge role={relationship.roleHypothesis} />
                     <CertaintyBadge certainty={relationship.certaintyType} />
-                    {contact.status === 'departed' && (
+                    <FreshnessChip label={freshnessLabel} />
+                    {!relationship.isCurrent && (
+                      <span className="text-xs text-accent-warning">
+                        superseded{relationship.validUntil ? ` ${new Date(relationship.validUntil).toLocaleDateString()}` : ''} — see history
+                      </span>
+                    )}
+                    {relationship.isCurrent && contact.status === 'departed' && (
                       <span className="text-xs text-accent-warning">departed — needs re-verification</span>
                     )}
                   </li>

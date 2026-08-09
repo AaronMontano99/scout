@@ -9,8 +9,10 @@
  */
 import { calculateListProgress, rankSuggestedCalls, toPriorityLabel } from '@/domain/target-lists';
 import { computeFunnel, computeRoleReach } from '@/domain/analytics';
+import { summarizeResearchProgress } from '@/domain/research-status';
+import { describeFreshness } from '@/domain/freshness';
 import * as fx from './fixtures';
-import type { PriorityLabel } from '@/types/product';
+import type { AccountIdentityStatus, PriorityLabel } from '@/types/product';
 
 export function getTargetLists() {
   return fx.DEMO_TARGET_LISTS;
@@ -33,7 +35,12 @@ export function getTargetListOverview(listId: string) {
   if (!list) return null;
   const items = itemsForList(listId);
   const progress = calculateListProgress(items);
-  return { list, progress };
+  const accountsById = new Map(fx.DEMO_ACCOUNTS.map((a) => [a.id, a]));
+  const researchStatuses = items
+    .map((i) => accountsById.get(i.accountId)?.researchStatus)
+    .filter((s): s is NonNullable<typeof s> => Boolean(s));
+  const researchProgress = summarizeResearchProgress(researchStatuses);
+  return { list, progress, researchProgress };
 }
 
 export interface ListRow {
@@ -84,10 +91,16 @@ export function getAccountBrief(accountId: string) {
 
 export function getContactsForAccount(accountId: string) {
   const relationships = fx.DEMO_ACCOUNT_CONTACT_RELATIONSHIPS.filter((r) => r.accountId === accountId);
-  return relationships.map((rel) => {
-    const contact = fx.DEMO_CONTACTS.find((c) => c.id === rel.contactId)!;
-    return { contact, relationship: rel };
-  });
+  return relationships
+    .map((rel) => {
+      const contact = fx.DEMO_CONTACTS.find((c) => c.id === rel.contactId)!;
+      return {
+        contact,
+        relationship: rel,
+        freshnessLabel: describeFreshness('contact_employment', contact.lastVerifiedAt),
+      };
+    })
+    .sort((a, b) => Number(b.relationship.isCurrent) - Number(a.relationship.isCurrent)); // current relationships first, historical after
 }
 
 export function getKnowledgeItemsForAccount(accountId: string) {
@@ -147,8 +160,36 @@ export function getRoleReach() {
   return computeRoleReach(fx.DEMO_CALL_OUTCOMES);
 }
 
-export function getAmbiguousMatchWarning(accountId: string) {
-  return fx.DEMO_AMBIGUOUS_MATCH.accountId === accountId ? fx.DEMO_AMBIGUOUS_MATCH : null;
+const IDENTITY_WARNING_LABEL: Partial<Record<AccountIdentityStatus, string>> = {
+  review_recommended: 'Company match may be inaccurate. Review recommended.',
+  lower_confidence: 'Company match confidence is moderate — quick verification recommended.',
+};
+
+/**
+ * Identity-match warning driven directly by Account.identityStatus
+ * (see DATA_MODEL.md Phase 3 Additions) — replaces the Phase 2
+ * single-account DEMO_AMBIGUOUS_MATCH special case with something that
+ * actually reads the schema field, so any account can carry this
+ * warning, not just one hardcoded example.
+ */
+export function getIdentityWarning(accountId: string) {
+  const account = getAccount(accountId);
+  if (!account) return null;
+  const label = IDENTITY_WARNING_LABEL[account.identityStatus];
+  if (!label) return null;
+  const details = fx.DEMO_IDENTITY_MATCH_DETAILS[accountId];
+  return { warning: label, ...details };
+}
+
+export function describeCompanyFreshness(accountId: string) {
+  const account = getAccount(accountId);
+  return describeFreshness('company_description', account?.updatedAt ?? null);
+}
+
+export function describeNewsFreshness(accountId: string) {
+  const findings = getResearchFindingsForAccount(accountId);
+  const mostRecent = findings.sort((a, b) => b.retrievedAt.localeCompare(a.retrievedAt))[0];
+  return describeFreshness('news', mostRecent?.retrievedAt ?? null);
 }
 
 export { DEMO_ORGANIZATION, DEMO_REP } from './fixtures';

@@ -14,6 +14,29 @@ export type AccountRelationshipStatus =
   | 'partner'
   | 'unknown';
 
+// See docs/RESEARCH_ENGINE.md and src/domain/research-status.ts — the
+// coarse, user-facing state. Deliberately distinct from any internal
+// ResearchRun job status (DATA_MODEL.md Phase 3 Additions, ADR-0008).
+export type AccountResearchStatus =
+  | 'queued'
+  | 'identifying'
+  | 'researching'
+  | 'processing'
+  | 'ready'
+  | 'limited_data'
+  | 'needs_review'
+  | 'failed'
+  | 'refreshing';
+
+// See docs/ENTITY_RESOLUTION.md — user-facing identity confidence,
+// distinct from the internal MatchResult verdict in entity-resolution.ts.
+export type AccountIdentityStatus =
+  | 'unconfirmed'
+  | 'confirmed'
+  | 'likely_match'
+  | 'lower_confidence'
+  | 'review_recommended';
+
 export interface Account {
   id: string;
   organizationId: string;
@@ -27,6 +50,9 @@ export interface Account {
   ownerMembershipId: string | null;
   relationshipStatus: AccountRelationshipStatus;
   status: 'active' | 'inactive' | 'merged';
+  researchStatus: AccountResearchStatus;
+  identityStatus: AccountIdentityStatus;
+  identityConfirmedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +77,26 @@ export interface Contact {
   phone: string | null;
   linkedinUrl: string | null;
   status: 'active' | 'departed' | 'unknown';
+  // People change jobs — decays independently of any specific fact
+  // about them. See docs/RESEARCH_FRESHNESS.md.
+  lastVerifiedAt: string | null;
+}
+
+// See docs/SOURCE_MODEL.md's 5-tier hierarchy and
+// src/domain/source-quality.ts.
+export type SourceTier = 1 | 2 | 3 | 4 | 5;
+
+export interface Source {
+  id: string;
+  organizationId: string;
+  type: 'user' | 'import' | 'crm' | 'enrichment' | 'web' | 'ai_inference';
+  name: string;
+  url: string | null;
+  publisherDomain: string | null;
+  title: string | null;
+  sourceTier: SourceTier | null;
+  extractionStatus: 'pending' | 'extracted' | 'failed' | 'skipped';
+  contentHash: string | null;
 }
 
 export interface AccountContactRelationship {
@@ -60,6 +106,11 @@ export interface AccountContactRelationship {
   roleHypothesis: BuyingRole;
   certaintyType: CertaintyType;
   isCurrent: boolean;
+  // See docs/EVIDENCE_MODEL.md's conflict-resolution model (product
+  // spec §36) — a superseded relationship keeps validUntil set rather
+  // than being deleted.
+  validFrom: string;
+  validUntil: string | null;
   sourceKnowledgeItemId: string | null;
 }
 

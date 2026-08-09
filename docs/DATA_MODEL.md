@@ -485,3 +485,75 @@ last `AnalyticsEvent`, integration connection status) — not written to
 a table on a schedule. If read-time computation ever becomes a real
 performance problem, a snapshot table is a cheap addition later;
 building it now would be premature.
+
+---
+
+# Phase 3 Additions — Research Engine
+
+Per ADR-0008, Phase 3 deliberately extends existing tables rather than
+introducing parallel entities for concepts (Claim, EntityIdentity,
+SourceQuality, ResearchState) that the Phase 1/2 schema already covers
+adequately. Implemented in
+`supabase/migrations/0003_research_engine.sql`.
+
+## Account: identity + research status
+
+Two new enums on `accounts`:
+
+- `research_status` (`queued | identifying | researching | processing |
+  ready | limited_data | needs_review | failed | refreshing`) — the
+  coarse, **user-facing** state a Target List row or Account Brain
+  reads to decide what to show. Deliberately separate from
+  `research_runs.status` (`queued | running | completed | failed`),
+  which stays a simple internal job-log state — see
+  `RESEARCH_ENGINE.md` and `src/domain/research-status.ts` for the
+  transition rules and why the two are kept distinct rather than
+  merged.
+- `identity_status` (`unconfirmed | confirmed | likely_match |
+  lower_confidence | review_recommended`) — plus
+  `identity_confirmed_at` / `identity_confirmed_by_membership_id`.
+  Once a match is confirmed (by a user or a high-confidence
+  deterministic signal), it's remembered — Scout should never re-solve
+  the same entity-matching problem on every refresh. See
+  `ENTITY_RESOLUTION.md`.
+
+## Source: tier, publisher, dedup
+
+`sources` gains `source_tier` (1-5, see `SOURCE_MODEL.md`'s tier
+hierarchy), `publisher_domain`, `title`, `extraction_status`, and
+`content_hash` (for deduplicating the same news event reported by
+multiple outlets — see `SOURCE_MODEL.md` §Deduplication). All are
+properties *of* a source; none justified a new table.
+
+## ResearchRun: Target List context + richer trigger taxonomy
+
+`research_runs` gains `target_list_id` (a research run can be
+attributed to the campaign that requested it — relevant for cost
+attribution, `RESEARCH_COSTS.md`), `requested_focus` (the campaign
+focus at request time, so later analysis doesn't have to reconstruct
+it from the Target List's possibly-since-changed `research_focus`),
+and `cache_used` (was this a real provider call or a cache hit — see
+`RESEARCH_FRESHNESS.md`). `trigger_type` widens from Phase 2's narrow
+`manual | scheduled | import_triggered` to the Phase 3 taxonomy
+(`initial_import | user_request | target_list_refresh | stale_data |
+crm_update | person_correction | admin_retry`) — see product spec §92.
+
+## Contact: employment freshness
+
+`contacts` gains `last_verified_at` — distinct from any
+`KnowledgeItem`/`ResearchFinding` freshness field, because a person's
+employment status decays on its own schedule (people change jobs) not
+tied to any specific fact about them. See `RESEARCH_FRESHNESS.md` and
+`PEOPLE_DISCOVERY.md`.
+
+## What did NOT change, on purpose
+
+`ResearchFinding.relevant_date` already distinguishes "when the
+underlying event happened" from `retrieved_at` ("when Scout found
+it") — the Phase 3 brief's date-extraction requirements (§102) were
+already satisfied by the Phase 1 design. `KnowledgeItem` and
+`ResearchFinding` together already satisfy the Phase 3 brief's
+proposed "Claim" model (subject/predicate/value/source/certainty/
+temporal validity) — seeing exactly that mapped out is what justified
+*not* building a third, parallel table. See ADR-0008 for the full
+per-entity reasoning.

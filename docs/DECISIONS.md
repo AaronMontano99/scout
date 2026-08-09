@@ -164,6 +164,72 @@ another org's data.
 
 ---
 
+## ADR-0008: Phase 3 research engine extends existing entities — no parallel Claim/Identity/SourceQuality/ResearchState tables
+
+**Status:** Accepted
+
+**Context:** The Phase 3 brief explicitly warns against rebuilding
+architecture that already works, and separately floats several new
+entity concepts (a normalized "Claim" model, per-person "employment
+confidence" tracking, a source-quality entity, a rich account research
+state machine) while itself cautioning "do not over-engineer if
+[X] already solves this cleanly." Before writing migration
+`0003_research_engine.sql`, each proposed new entity was checked
+against what Phase 1/2 already built.
+
+**Decision, entity by entity:**
+
+- **No new "Claim" table.** `KnowledgeItem` (subject=`account_id`/
+  `contact_id`, predicate=`type`, value=`content`/`structured_value`,
+  provenance=`source_id`/`source_reference`, temporal=`valid_from`/
+  `valid_until`/`observed_at`, trust=`certainty_type`/
+  `verification_status`/`supersedes`) and `ResearchFinding`
+  (`retrieved_at`/`relevant_date`/`confidence`/`certainty_type`) already
+  cover every field the spec's proposed Claim model asks for. Adding a
+  third table that represents the same thing differently would create
+  exactly the "parallel system solving the same problem" the Phase 3
+  brief prohibits.
+- **No new "EntityIdentity" table.** Extends `accounts` with
+  `identity_status` and `identity_confirmed_at`/
+  `identity_confirmed_by_membership_id` instead. The review queue for
+  uncertain matches already exists (`account_match_candidates`,
+  ADR-0005) — Phase 3 only needed a place to record *confirmed*
+  identity, which is a small column addition, not a new entity.
+- **No new "PersonProfile" table.** `contacts` +
+  `account_contact_relationships` already model role/certainty/
+  `valid_from`/`valid_until` — which already handles the "CFO changed
+  from John Smith to Sarah Lee" conflict pattern the brief describes
+  (two relationship rows, old one closed via `valid_until`, per Phase 2
+  design). Extended `contacts` with `last_verified_at` only.
+- **No new "AccountResearchState" table.** Adds `accounts
+  .research_status` — a coarser, user-facing enum (`queued | identifying
+  | researching | processing | ready | limited_data | needs_review |
+  failed | refreshing`) derived from and distinct from
+  `research_runs.status` (which stays as the simple internal job state:
+  `queued | running | completed | failed`). One column, not a new
+  table, and it deliberately does not duplicate `research_runs`.
+- **No new "SourceQuality" table.** Extends `sources` with
+  `source_tier` (1-5, per the brief's tier hierarchy), `publisher_domain`,
+  `title`, `extraction_status`, and `content_hash` (for
+  deduplication) — all properties *of* a source, added as columns on
+  the table that already represents a source.
+- **`research_runs` extended, not replaced**: adds `target_list_id`,
+  `requested_focus`, `cache_used` columns and widens the `trigger_type`
+  check constraint (`initial_import | user_request | target_list_refresh
+  | stale_data | crm_update | person_correction | admin_retry`,
+  replacing the narrower Phase 2 set) — same table, richer job
+  metadata.
+
+**Consequences:** Every Phase 3 concept maps onto an extension of an
+existing table rather than a new one. The tradeoff is that
+`accounts.research_status` and `research_runs.status` are two related
+but distinct state fields living on different tables — worth the small
+duplication-of-concept cost to avoid overloading `research_runs` (an
+internal job log) with what needs to be a simple, stable, user-facing
+enum.
+
+---
+
 ## Deferred (not yet decided — see ROADMAP.md)
 
 `AccountScore` weighting formula; pricing/plan tiers; data retention

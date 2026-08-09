@@ -1,10 +1,19 @@
 # Runbook: Research Failure
 
 Symptom: an account isn't getting a Call-Ready Brief, or research
-seems stuck.
+seems stuck. See also the more specific runbooks: `WRONG_COMPANY_MATCH.md`,
+`PROVIDER_OUTAGE.md`, `RESEARCH_COST_SPIKE.md`, `STALE_DATA.md`,
+`BAD_AI_OUTPUT.md`, `PEOPLE_DATA_FAILURE.md` — this one is the general
+entry point.
 
 ## Diagnose
 
+0. Check `accounts.research_status` first (Phase 3 addition — see
+   `RESEARCH_ENGINE.md`) — it's the coarse, user-facing state
+   (`queued/identifying/researching/processing/ready/limited_data/
+   needs_review/failed/refreshing`). Only `failed` is an actual
+   problem; `limited_data`/`needs_review` are legitimate, non-broken
+   outcomes (`src/domain/research-status.ts`'s `isUsable()`).
 1. Check `research_runs.status` for the account — `queued`/`running`/
    `completed`/`failed`. Check `provider_calls` (jsonb log) for which
    external call actually failed.

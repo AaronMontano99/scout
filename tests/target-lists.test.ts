@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateListProgress, toPriorityLabel, rankSuggestedCalls } from '@/domain/target-lists';
+import { calculateListProgress, toPriorityLabel, rankSuggestedCalls, explainSuggestion } from '@/domain/target-lists';
 import type { Account, AccountScore, TargetListItem } from '@/types/product';
 
 function item(overrides: Partial<TargetListItem>): TargetListItem {
@@ -83,6 +83,9 @@ function account(id: string): Account {
     ownerMembershipId: null,
     relationshipStatus: 'prospect',
     status: 'active',
+    researchStatus: 'ready',
+    identityStatus: 'confirmed',
+    identityConfirmedAt: '2026-08-01T00:00:00Z',
     createdAt: '2026-08-01T00:00:00Z',
     updatedAt: '2026-08-01T00:00:00Z',
   };
@@ -120,5 +123,73 @@ describe('rankSuggestedCalls', () => {
     const items = accounts.map((a, i) => item({ id: `item-${i}`, accountId: a.id }));
     const ranked = rankSuggestedCalls(accounts, items, new Map(), 3);
     expect(ranked).toHaveLength(3);
+  });
+
+  it('every entry carries explainable reasons, never a bare score', () => {
+    const accounts = [account('a')];
+    const items = [item({ id: '1', accountId: 'a' })];
+    const richScore: AccountScore = {
+      id: 's1',
+      accountId: 'a',
+      totalScore: 84,
+      computedAt: '2026-08-01T00:00:00Z',
+      components: [
+        { componentType: 'historical_context', points: 14, maxPoints: 15, evidenceRefs: [] },
+        { componentType: 'signal_strength', points: 18, maxPoints: 20, evidenceRefs: [] },
+      ],
+    };
+    const ranked = rankSuggestedCalls(accounts, items, new Map([['a', richScore]]));
+    expect(ranked[0]?.reasons).toContain('Strong internal history');
+    expect(ranked[0]?.reasons).toContain('Recent meaningful signal');
+  });
+});
+
+describe('explainSuggestion — product spec §106, no fake scores', () => {
+  it('pinned accounts always get a reason even with no score data at all', () => {
+    expect(explainSuggestion(undefined, true)).toEqual(['Pinned by you']);
+  });
+
+  it('unpinned accounts with no score data get no reasons rather than a fabricated one', () => {
+    expect(explainSuggestion(undefined, false)).toEqual([]);
+  });
+
+  it('only strong-contributing components (>=60% of max) become reasons — weak ones are omitted', () => {
+    const weakScore: AccountScore = {
+      id: 's1',
+      accountId: 'a',
+      totalScore: 20,
+      computedAt: '2026-08-01T00:00:00Z',
+      components: [{ componentType: 'timing', points: 2, maxPoints: 20, evidenceRefs: [] }],
+    };
+    expect(explainSuggestion(weakScore, false)).toEqual([]);
+  });
+
+  it('data_confidence never becomes a "why suggested" reason — it explains trust, not relevance', () => {
+    const score: AccountScore = {
+      id: 's1',
+      accountId: 'a',
+      totalScore: 50,
+      computedAt: '2026-08-01T00:00:00Z',
+      components: [{ componentType: 'data_confidence', points: 5, maxPoints: 5, evidenceRefs: [] }],
+    };
+    expect(explainSuggestion(score, false)).toEqual([]);
+  });
+
+  it('never returns more than 3 reasons', () => {
+    const score: AccountScore = {
+      id: 's1',
+      accountId: 'a',
+      totalScore: 90,
+      computedAt: '2026-08-01T00:00:00Z',
+      components: [
+        { componentType: 'icp_fit', points: 18, maxPoints: 20, evidenceRefs: [] },
+        { componentType: 'timing', points: 18, maxPoints: 20, evidenceRefs: [] },
+        { componentType: 'relationship', points: 18, maxPoints: 20, evidenceRefs: [] },
+        { componentType: 'signal_strength', points: 18, maxPoints: 20, evidenceRefs: [] },
+        { componentType: 'historical_context', points: 14, maxPoints: 15, evidenceRefs: [] },
+        { componentType: 'strategic_priority', points: 5, maxPoints: 5, evidenceRefs: [] },
+      ],
+    };
+    expect(explainSuggestion(score, false).length).toBeLessThanOrEqual(3);
   });
 });

@@ -53,6 +53,45 @@ export interface SuggestedCallEntry {
   item: TargetListItem;
   priorityLabel: PriorityLabel;
   pinned: boolean;
+  reasons: string[];
+}
+
+const COMPONENT_REASON_LABEL: Record<AccountScore['components'][number]['componentType'], string> = {
+  icp_fit: 'Strong ICP fit',
+  timing: 'Good timing',
+  relationship: 'Known relationship',
+  signal_strength: 'Recent meaningful signal',
+  historical_context: 'Strong internal history',
+  data_confidence: 'High data confidence',
+  strategic_priority: 'Strategic priority account',
+};
+
+/**
+ * Human-readable reasons a suggestion was ranked where it was — product
+ * spec §106: "Suggested early because: strong internal history, current
+ * executive identified, recent expansion" instead of a fake "AI Score:
+ * 93." Returns at most 3 reasons, ordered by which score components
+ * actually contributed most (highest points/maxPoints ratio), never all
+ * components at once — the point is a short, real explanation, not an
+ * exhaustive dump.
+ */
+export function explainSuggestion(score: AccountScore | undefined, pinned: boolean): string[] {
+  const reasons: string[] = [];
+  if (pinned) reasons.push('Pinned by you');
+
+  if (score) {
+    const ranked = [...score.components]
+      .filter((c) => c.componentType !== 'data_confidence') // confidence explains trust, not why it's a good target
+      .filter((c) => c.maxPoints > 0 && c.points / c.maxPoints >= 0.6) // only genuinely strong contributors
+      .sort((a, b) => b.points / b.maxPoints - a.points / a.maxPoints);
+
+    for (const component of ranked) {
+      if (reasons.length >= 3) break;
+      reasons.push(COMPONENT_REASON_LABEL[component.componentType]);
+    }
+  }
+
+  return reasons;
 }
 
 /**
@@ -76,11 +115,13 @@ export function rankSuggestedCalls(
     .map((item) => {
       const account = accountsById.get(item.accountId);
       if (!account) return null;
+      const score = scores.get(item.accountId);
       return {
         account,
         item,
-        priorityLabel: toPriorityLabel(scores.get(item.accountId)),
+        priorityLabel: toPriorityLabel(score),
         pinned: item.pinned,
+        reasons: explainSuggestion(score, item.pinned),
       };
     })
     .filter((e): e is SuggestedCallEntry => e !== null);
