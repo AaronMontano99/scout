@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getTargetLists, getTargetListOverview } from '@/demo';
 import { EmptyState } from '@/components/states';
+import { Card } from '@/components/ui/card';
 
 export default function ListsIndexPage() {
   const lists = getTargetLists();
@@ -21,17 +22,24 @@ export default function ListsIndexPage() {
       {lists.map((list) => {
         const overview = getTargetListOverview(list.id)!;
         return (
-          <Link
-            key={list.id}
-            href={`/demo/lists/${list.id}`}
-            className="rounded-lg border border-hairline-strong bg-surface-card p-4 hover:bg-canvas-soft"
-          >
-            <div className="text-base font-semibold text-ink">{list.name}</div>
-            {list.description && <div className="mt-0.5 text-sm text-body">{list.description}</div>}
-            <div className="mt-2 text-xs text-muted">
-              {overview.progress.total} accounts · {overview.progress.worked} worked ·{' '}
-              {overview.progress.remaining} remaining · {overview.progress.pinnedCount} pinned
-            </div>
+          <Link key={list.id} href={`/demo/lists/${list.id}`} className="block">
+            <Card className="hover:bg-canvas-soft">
+              <div className="text-base font-semibold text-ink">{list.name}</div>
+              {list.description && <div className="mt-0.5 text-sm text-body">{list.description}</div>}
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+                <span>{overview.progress.total} accounts</span>
+                <span>{overview.progress.worked} worked</span>
+                <span>{overview.progress.remaining} remaining</span>
+                <span>{overview.progress.pinnedCount} pinned</span>
+                <span>{overview.researchProgress.ready} ready</span>
+                {overview.researchProgress.processing > 0 && (
+                  <span>{overview.researchProgress.processing} processing</span>
+                )}
+                {overview.researchProgress.needsReview > 0 && (
+                  <span>{overview.researchProgress.needsReview} needs review</span>
+                )}
+              </div>
+            </Card>
           </Link>
         );
       })}

@@ -28,6 +28,25 @@ function countByType(events: AnalyticsEvent[], type: AnalyticsEventType): number
   return events.filter((e) => e.eventType === type).length;
 }
 
+/**
+ * Generic per-type tally — powers the rep-facing "what did I do"
+ * activity summary (product spec §28) without needing a bespoke
+ * function per metric. Every count here traces to real events, same
+ * as the funnel above.
+ */
+export function computeActivityCounts(events: AnalyticsEvent[]): Record<AnalyticsEventType, number> {
+  const counts: Partial<Record<AnalyticsEventType, number>> = {};
+  for (const e of events) {
+    counts[e.eventType] = (counts[e.eventType] ?? 0) + 1;
+  }
+  const ALL_TYPES: AnalyticsEventType[] = [
+    'call_attempted', 'conversation', 'target_conversation', 'meeting_booked',
+    'selling_situation_created', 'opportunity_created', 'email_drafted',
+    'email_sent', 'crm_note_created', 'contact_added', 'account_worked',
+  ];
+  return Object.fromEntries(ALL_TYPES.map((t) => [t, counts[t] ?? 0])) as Record<AnalyticsEventType, number>;
+}
+
 export interface ProspectingFunnel {
   callsAttempted: number;
   conversations: number;

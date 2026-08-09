@@ -6,22 +6,27 @@ prioritized, explainable prospecting workspace. See
 [`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) for
 the full mission, customer, and philosophy.
 
-**Status: Phase 3 — research engine, READY WITH RISKS.** All four
-signature experiences (Target List workspace, Call-Ready Brief +
-Account Brain, Post-Call workflow, Prospecting Analytics) are real,
-tested, and working against Demo Mode's fictional dataset, now backed
-by real research-engine logic: entity resolution with persistent
-identity, source-tier conflict resolution, freshness windows, a
-research-status state machine, SSRF/prompt-injection defenses, and an
-automated brief-quality regression test. No live research provider,
-AI provider, CRM, billing, or database is connected yet. See
-[`docs/PHASE_3_COMPLETION_REPORT.md`](./docs/PHASE_3_COMPLETION_REPORT.md)
-for the full honest breakdown of what's built vs. mocked vs. requires a
-real API, and
-[`docs/COUNCIL_REVIEW_PHASE3.md`](./docs/COUNCIL_REVIEW_PHASE3.md) for
-the Five-Person Council's critical review of the actual product.
-(Phase 2's report/review: [`PHASE_2_COMPLETION_REPORT.md`](./docs/PHASE_2_COMPLETION_REPORT.md),
-[`COUNCIL_REVIEW_PHASE2.md`](./docs/COUNCIL_REVIEW_PHASE2.md).)
+**Status: Phase 4 — UI/UX, website, integration, READY WITH RISKS
+(explicitly not READY — see below).** All five signature experiences
+(Target List workspace, Call-Ready Brief + Account Brain, Post-Call
+workflow, Prospecting Analytics, and now a real marketing homepage) are
+polished, tested, and working against Demo Mode's fictional dataset —
+plus a real component library, a CSS-3D hero product composite, and
+fixture data deliberately stress-tested for messy edge cases (10
+sources, 6 stakeholders, null fields, zero data, a failed research
+run). **Phase 3.5 (live-intelligence validation against real
+providers) was never done — see
+[`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md).** Every
+Call-Ready Brief in this product is still hand-written demo content,
+not live research — this is why Phase 4's own completion report
+declines to call the product "READY" outright, per that report's own
+rule. See
+[`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
+for the full honest breakdown, and
+[`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) for
+the Five-Person Council's critical review of the actual built UI.
+(Earlier phases: [`PHASE_3_COMPLETION_REPORT.md`](./docs/PHASE_3_COMPLETION_REPORT.md) ·
+[`PHASE_2_COMPLETION_REPORT.md`](./docs/PHASE_2_COMPLETION_REPORT.md).)
 
 ## Try it
 
@@ -29,7 +34,8 @@ the Five-Person Council's critical review of the actual product.
 npm install && npm run dev
 ```
 
-Then open `/demo` — no auth, no setup, entirely fictional data. See
+Open `/` for the marketing homepage, or `/demo` directly for the
+product — no auth, no setup, entirely fictional data. See
 [`docs/DEMO.md`](./docs/DEMO.md).
 
 ## Start here
@@ -38,9 +44,13 @@ Then open `/demo` — no auth, no setup, entirely fictional data. See
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — system layers and stack decisions
 - [`docs/DATA_MODEL.md`](./docs/DATA_MODEL.md) — entities, relationships, Mermaid ERD (Phase 1 + 2 + 3 Additions)
 - [`DESIGN.md`](./DESIGN.md) — visual authority: marketing-site + in-app design system
-- [`docs/PHASE_3_COMPLETION_REPORT.md`](./docs/PHASE_3_COMPLETION_REPORT.md) — what's actually built, right now
+- [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md) — what's actually built, right now
+- [`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) — why the product isn't "READY" outright
 - [`docs/ROADMAP.md`](./docs/ROADMAP.md) — phases + explicit non-goals
 - [`docs/runbooks/`](./docs/runbooks/) — founder operations, written for a first-time SaaS operator
+
+**UI/UX docs (Phase 4)**: [`ONBOARDING_UX.md`](./docs/ONBOARDING_UX.md) ·
+[`CUSTOMER_ADMIN.md`](./docs/CUSTOMER_ADMIN.md)
 
 **Research engine docs (Phase 3)**: [`RESEARCH_ENGINE.md`](./docs/RESEARCH_ENGINE.md) ·
 [`ENTITY_RESOLUTION.md`](./docs/ENTITY_RESOLUTION.md) ·
@@ -82,10 +92,14 @@ Then open `/demo` — no auth, no setup, entirely fictional data. See
 ```
 src/
   app/            Next.js App Router — presentation layer
-                    demo/     Demo Mode: Target Lists, Call-Ready Brief, Post-Call
+                    page.tsx  Marketing homepage (hero, story flow, CTA)
+                    demo/     Demo Mode: Target Lists, Call-Ready Brief, Post-Call, Analytics
                     admin/    Founder Operations Console (unauthenticated stub — see FOUNDER_OPERATIONS.md)
-  components/     Shared UI primitives (badges, priority labels, stat tiles, states)
-  demo/           Demo Mode fixture data + accessor layer (see DEMO.md)
+  components/     Shared UI primitives
+                    ui/       Button, Card, Input, Tabs, Skeleton, Drawer — DESIGN.md tokens as code
+                    marketing/  Nav, hero product composite (CSS-3D, no engine dependency)
+                    (badges, priority labels, stat tiles, states, funnel, filters — Scout-specific)
+  demo/           Demo Mode fixture data + accessor layer, incl. stress-test fixtures (see DEMO.md)
   features/       Feature-level UI composition
   domain/         Business logic — target lists, analytics, entity resolution,
                     freshness, source quality, research security/status,
@@ -100,7 +114,7 @@ src/
   types/          Shared types (tenancy, evidence, product)
 trigger/          JobQueue implementation stub (Trigger.dev)
 supabase/         Migrations (0001 tenancy, 0002 core product, 0003 research engine)
-tests/            Vitest — highest-risk logic first (see ARCHITECTURE.md) — 99 tests, 10 files
+tests/            Vitest — highest-risk logic first (see ARCHITECTURE.md) — 108 tests, 10 files
 ```
 
 ## Environment
@@ -115,8 +129,8 @@ never commit `.env.local`. See `docs/SECURITY.md`.
 
 **No live Supabase project, research provider, AI provider, CRM, or
 Stripe account is connected yet** — see
-`docs/PHASE_3_COMPLETION_REPORT.md`. `/demo` works with zero external
-dependencies.
+`docs/PHASE_4_COMPLETION_REPORT.md`. `/` and `/demo` both work with
+zero external dependencies.
 
 ## Commands
 
@@ -132,6 +146,7 @@ npm run format         # prettier --write
 ## What's NOT here yet
 
 Real authentication, live research/AI provider connection, CRM
-integrations, billing, the import UI, and a provisioned database — see
-`docs/PHASE_3_COMPLETION_REPORT.md`'s Top 10 Next Tasks for the actual
-next-step order. Do not skip ahead of `docs/ROADMAP.md`'s phase order.
+integrations, billing, the CSV/XLSX import UI, and a provisioned
+database — see `docs/PHASE_4_COMPLETION_REPORT.md`'s Top 10 Next Tasks
+for the actual next-step order. Do not skip ahead of
+`docs/ROADMAP.md`'s phase order.

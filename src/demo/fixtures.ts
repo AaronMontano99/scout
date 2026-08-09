@@ -103,6 +103,26 @@ export const DEMO_TARGET_LISTS: TargetList[] = [
     createdAt: '2026-08-04T00:00:00Z',
     lastWorkedAt: '2026-08-05T00:00:00Z',
   },
+  {
+    id: 'demo-list-stress-test',
+    organizationId: DEMO_ORG_ID,
+    name: 'Data Stress Test — Internal QA',
+    // Explicitly labeled, not a real prospecting list — see
+    // docs/PHASE_3_5_STATUS.md. No live research provider has ever run
+    // (Phase 3.5 never happened), so real messy output doesn't exist to
+    // test against. This list substitutes deliberately extreme fixture
+    // data (10 sources, 6 stakeholders, zero data, a failed research
+    // run, long names/titles) to verify the UI holds up under edge
+    // cases the polished narrative demo lists don't exercise.
+    description: 'Deliberately messy fixture data for UI robustness testing — not a real prospecting list.',
+    ownerMembershipId: DEMO_MEMBERSHIP_ID,
+    researchFocus: null,
+    vertical: 'Mixed',
+    geography: 'N/A',
+    status: 'active',
+    createdAt: '2026-08-08T00:00:00Z',
+    lastWorkedAt: null,
+  },
 ];
 
 // --- Accounts ------------------------------------------------------------
@@ -123,6 +143,11 @@ export const ACC_EVERGREEN = 'demo-acc-evergreen';
 export const ACC_SUNRISE = 'demo-acc-sunrise';
 export const ACC_GREENSCAPE = 'demo-acc-greenscape';
 export const ACC_TURF_MASTERS = 'demo-acc-turfmasters';
+// Stress-test accounts — see "Data Stress Test — Internal QA" list above.
+export const ACC_STRESS_LONG_NAME = 'demo-acc-stress-long-name';
+export const ACC_STRESS_MANY_PEOPLE = 'demo-acc-stress-many-people';
+export const ACC_STRESS_ZERO_DATA = 'demo-acc-stress-zero-data';
+export const ACC_STRESS_FAILED = 'demo-acc-stress-failed';
 
 function acc(overrides: Partial<Account> & { id: string; name: string }): Account {
   return {
@@ -255,6 +280,37 @@ export const DEMO_ACCOUNTS: Account[] = [
     industry: 'Commercial Landscaping',
     employeeCountRange: '10-20',
   }),
+  // --- Stress-test accounts (demo-list-stress-test) — see DEMO.md ---
+  acc({
+    id: ACC_STRESS_LONG_NAME,
+    name: 'Silicon Valley Advanced Manufacturing, Integration & Logistics Solutions Group LLC',
+    primaryDomain: 'svamils-group.example.com',
+    industry: 'Advanced Manufacturing',
+    employeeCountRange: '250-500',
+  }),
+  acc({
+    id: ACC_STRESS_MANY_PEOPLE,
+    name: 'Meridian Industrial Partners',
+    primaryDomain: 'meridianindustrial.example.com',
+    industry: 'Industrial Services',
+    employeeCountRange: '100-250',
+  }),
+  acc({
+    id: ACC_STRESS_ZERO_DATA,
+    name: 'Unresearched Holdings Inc',
+    primaryDomain: null,
+    industry: null,
+    employeeCountRange: null,
+    researchStatus: 'queued',
+  }),
+  acc({
+    id: ACC_STRESS_FAILED,
+    name: 'Provider Failure Test Co',
+    primaryDomain: 'providerfailuretest.example.com',
+    industry: 'Unknown',
+    employeeCountRange: null,
+    researchStatus: 'failed',
+  }),
 ];
 
 // --- Target List Items ----------------------------------------------------
@@ -292,6 +348,10 @@ export const DEMO_TARGET_LIST_ITEMS: TargetListItem[] = [
   tli('tli-12', 'demo-list-landscaping', ACC_SUNRISE, 'not_started'),
   tli('tli-13', 'demo-list-landscaping', ACC_GREENSCAPE, 'not_started'),
   tli('tli-14', 'demo-list-landscaping', ACC_TURF_MASTERS, 'worked'),
+  tli('tli-15', 'demo-list-stress-test', ACC_STRESS_LONG_NAME, 'not_started'),
+  tli('tli-16', 'demo-list-stress-test', ACC_STRESS_MANY_PEOPLE, 'not_started'),
+  tli('tli-17', 'demo-list-stress-test', ACC_STRESS_ZERO_DATA, 'not_started'),
+  tli('tli-18', 'demo-list-stress-test', ACC_STRESS_FAILED, 'not_started'),
 ];
 
 // --- Contacts + buying-role relationships --------------------------------
@@ -405,6 +465,103 @@ export const DEMO_CONTACTS: Contact[] = [
     status: 'active',
     lastVerifiedAt: '2026-08-06T00:00:00Z',
   },
+  // --- Stress-test contacts ---
+  // Long title, unknown-ish role — tests title wrapping/overflow.
+  {
+    id: 'demo-contact-stress-long-title',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_LONG_NAME,
+    firstName: 'Alexandra',
+    lastName: 'Whitfield-Nakamura',
+    title: 'Senior Vice President of Global Strategic Operations and Business Development',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-08-01T00:00:00Z',
+  },
+  // Six stakeholders on one account — tests a long People section.
+  {
+    id: 'demo-contact-stress-1',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Marcus',
+    lastName: 'Chen',
+    title: 'CEO',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-08-01T00:00:00Z',
+  },
+  {
+    id: 'demo-contact-stress-2',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Denise',
+    lastName: 'Okonkwo',
+    title: 'CFO',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-08-01T00:00:00Z',
+  },
+  {
+    id: 'demo-contact-stress-3',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Ravi',
+    lastName: 'Patel',
+    title: 'VP Operations',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-07-15T00:00:00Z',
+  },
+  {
+    id: 'demo-contact-stress-4',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Lisa',
+    lastName: 'Tran',
+    title: 'IT Director',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: null,
+  },
+  {
+    id: 'demo-contact-stress-5',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Unknown',
+    lastName: 'Title',
+    title: null, // unknown/missing title — tests null rendering
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'unknown',
+    lastVerifiedAt: null,
+  },
+  {
+    id: 'demo-contact-stress-6',
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    firstName: 'Priya',
+    lastName: 'Sharma',
+    title: 'Facilities Manager',
+    email: null,
+    phone: null,
+    linkedinUrl: null,
+    status: 'active',
+    lastVerifiedAt: '2026-06-01T00:00:00Z',
+  },
+  // ACC_STRESS_ZERO_DATA and ACC_STRESS_FAILED intentionally have zero
+  // contacts — the "no people confidently identified" and "research
+  // failed" cases.
 ];
 
 export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = [
@@ -498,6 +655,84 @@ export const DEMO_ACCOUNT_CONTACT_RELATIONSHIPS: AccountContactRelationship[] = 
     certaintyType: 'KNOWN',
     isCurrent: true,
     validFrom: '2026-07-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  // --- Stress-test relationships ---
+  {
+    id: 'demo-acr-stress-long-title',
+    accountId: ACC_STRESS_LONG_NAME,
+    contactId: 'demo-contact-stress-long-title',
+    roleHypothesis: 'decision_maker',
+    certaintyType: 'INFERRED',
+    isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-1',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-1',
+    roleHypothesis: 'decision_maker',
+    certaintyType: 'INFERRED',
+    isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-2',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-2',
+    roleHypothesis: 'economic_buyer',
+    certaintyType: 'KNOWN',
+    isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-3',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-3',
+    roleHypothesis: 'influencer',
+    certaintyType: 'INFERRED',
+    isCurrent: true,
+    validFrom: '2026-07-15T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-4',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-4',
+    roleHypothesis: 'technical_buyer',
+    certaintyType: 'SUGGESTED',
+    isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-5',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-5',
+    roleHypothesis: 'unknown',
+    certaintyType: 'SUGGESTED',
+    isCurrent: true,
+    validFrom: '2026-08-01T00:00:00Z',
+    validUntil: null,
+    sourceKnowledgeItemId: null,
+  },
+  {
+    id: 'demo-acr-stress-6',
+    accountId: ACC_STRESS_MANY_PEOPLE,
+    contactId: 'demo-contact-stress-6',
+    roleHypothesis: 'champion',
+    certaintyType: 'SUGGESTED',
+    isCurrent: true,
+    validFrom: '2026-06-01T00:00:00Z',
     validUntil: null,
     sourceKnowledgeItemId: null,
   },
@@ -719,6 +954,26 @@ export const DEMO_RESEARCH_FINDINGS: ResearchFinding[] = [
     confidence: 0.9,
     certaintyType: 'KNOWN',
   },
+  // --- Stress test: 10 sources on one account (product spec §12) ---
+  ...Array.from({ length: 10 }, (_, i) => ({
+    id: `demo-rf-stress-${i + 1}`,
+    organizationId: DEMO_ORG_ID,
+    accountId: ACC_STRESS_LONG_NAME,
+    sourceId: null,
+    sourceName: `Trade publication ${i + 1}`,
+    findingType: i === 0 ? 'expansion' : 'other',
+    content:
+      i === 0
+        ? 'Announced a new integration facility as part of a multi-year capacity expansion.'
+        : `Secondary coverage of the same expansion announcement, outlet ${i + 1} of 10 — see deduplication note in SOURCE_MODEL.md.`,
+    url: `https://example.com/stress-test/source-${i + 1}`,
+    retrievedAt: '2026-08-06T00:00:00Z',
+    relevantDate: '2026-07-15',
+    confidence: i === 0 ? 0.9 : 0.6,
+    certaintyType: i === 0 ? ('KNOWN' as const) : ('INFERRED' as const),
+  })),
+  // ACC_STRESS_ZERO_DATA and ACC_STRESS_FAILED intentionally have zero
+  // findings.
 ];
 
 // --- Account Scores --------------------------------------------------------
@@ -1017,6 +1272,28 @@ export const DEMO_ACCOUNT_BRIEFS: Record<string, AccountBrief> = {
     whatTheyDo: 'Commercial landscaping company, 10-20 employees, owner-operated.',
     whatMatters: ['Spoke with owner briefly — asked to follow up next month.'],
     talkingPoints: ['Respect the requested follow-up timing rather than calling again immediately.'],
+  },
+  // --- Stress-test briefs ---
+  // ACC_STRESS_ZERO_DATA and ACC_STRESS_FAILED intentionally have no
+  // entry here — getAccountBrief() returns null, exercising the
+  // account page's `{brief && (...)}` guard with real zero-data and
+  // failed-research states rather than a synthesized "brief."
+  [ACC_STRESS_LONG_NAME]: {
+    whatTheyDo:
+      'Diversified industrial group spanning manufacturing, systems integration, and third-party logistics across multiple facilities.',
+    whatMatters: [
+      'Announced a new integration facility as part of a multi-year capacity expansion (10 sources reporting the same event — see Sources).',
+      'Long legal name and title fields present — this account exists specifically to verify the UI does not break on realistic worst-case text length.',
+    ],
+    talkingPoints: ['Confirm which facility/division the expansion news actually affects before referencing it.'],
+  },
+  [ACC_STRESS_MANY_PEOPLE]: {
+    whatTheyDo: 'Industrial services company, 100-250 employees, multiple identified stakeholders.',
+    whatMatters: [
+      'Six stakeholders identified across decision-maker, economic-buyer, influencer, technical-buyer, champion, and unknown roles — tests a long People section rather than the usual 2-4.',
+      'One contact has no confirmed title — tests graceful handling of missing data.',
+    ],
+    talkingPoints: ['Start with Marcus Chen (CEO) or Denise Okonkwo (CFO) — both are the strongest-certainty contacts.'],
   },
 };
 

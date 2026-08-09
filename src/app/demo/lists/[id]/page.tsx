@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTargetListOverview, getListRows, getSuggestedCalls, getIdentityWarning } from '@/demo';
-import { AccountListRow } from '@/components/list-row';
+import { AccountFilterList } from '@/components/account-filter-list';
 import { PriorityLabelChip } from '@/components/priority';
 import Link from 'next/link';
 
@@ -104,11 +104,7 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           All Accounts ({rows.length})
         </h2>
-        <div className="rounded-lg border border-hairline-strong bg-surface-card">
-          {rows.map((row) => (
-            <AccountListRow key={row.itemId} row={row} />
-          ))}
-        </div>
+        <AccountFilterList rows={rows} />
       </section>
     </div>
   );

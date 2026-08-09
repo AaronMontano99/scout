@@ -91,3 +91,56 @@ describe('demo accessor layer produces sane view models', () => {
     expect(secureGuard!.items.length).toBeGreaterThanOrEqual(3);
   });
 });
+
+// Substitute for the missing Phase 3.5 live-data validation (see
+// docs/PHASE_3_5_STATUS.md) — deliberately extreme fixture data
+// standing in for messy real research output, locked in as a
+// regression test so a future refactor can't quietly regress the UI's
+// tolerance for edge cases back to only handling polished demo data.
+describe('data stress-test fixtures (product spec §12, §76)', () => {
+  it('one account carries 10 sources — tests a long Sources list', () => {
+    const findings = fx.DEMO_RESEARCH_FINDINGS.filter((f) => f.accountId === fx.ACC_STRESS_LONG_NAME);
+    expect(findings).toHaveLength(10);
+  });
+
+  it('one account carries 6 stakeholders across every certainty tier', () => {
+    const relationships = fx.DEMO_ACCOUNT_CONTACT_RELATIONSHIPS.filter(
+      (r) => r.accountId === fx.ACC_STRESS_MANY_PEOPLE
+    );
+    expect(relationships).toHaveLength(6);
+    const certainties = new Set(relationships.map((r) => r.certaintyType));
+    expect(certainties.has('KNOWN')).toBe(true);
+    expect(certainties.has('INFERRED')).toBe(true);
+    expect(certainties.has('SUGGESTED')).toBe(true);
+  });
+
+  it('one contact has a null title — tests missing-data rendering, not just missing rows', () => {
+    const contact = fx.DEMO_CONTACTS.find((c) => c.id === 'demo-contact-stress-5');
+    expect(contact?.title).toBeNull();
+  });
+
+  it('the zero-data account has genuinely zero contacts, findings, and knowledge items', () => {
+    expect(fx.DEMO_CONTACTS.filter((c) => c.accountId === fx.ACC_STRESS_ZERO_DATA)).toHaveLength(0);
+    expect(fx.DEMO_RESEARCH_FINDINGS.filter((f) => f.accountId === fx.ACC_STRESS_ZERO_DATA)).toHaveLength(0);
+    expect(fx.DEMO_KNOWLEDGE_ITEMS.filter((k) => k.accountId === fx.ACC_STRESS_ZERO_DATA)).toHaveLength(0);
+    expect(fx.DEMO_ACCOUNT_BRIEFS[fx.ACC_STRESS_ZERO_DATA]).toBeUndefined();
+  });
+
+  it('the failed-research account has researchStatus=failed and no brief', () => {
+    const account = fx.DEMO_ACCOUNTS.find((a) => a.id === fx.ACC_STRESS_FAILED);
+    expect(account?.researchStatus).toBe('failed');
+    expect(fx.DEMO_ACCOUNT_BRIEFS[fx.ACC_STRESS_FAILED]).toBeUndefined();
+  });
+
+  it('the long-name account genuinely stresses name/title length', () => {
+    const account = fx.DEMO_ACCOUNTS.find((a) => a.id === fx.ACC_STRESS_LONG_NAME);
+    expect(account?.name.length).toBeGreaterThan(60);
+    const contact = fx.DEMO_CONTACTS.find((c) => c.id === 'demo-contact-stress-long-title');
+    expect(contact?.title?.length).toBeGreaterThan(50);
+  });
+
+  it('the stress-test list is clearly labeled as fixture QA, not a real prospecting list', () => {
+    const list = fx.DEMO_TARGET_LISTS.find((l) => l.id === 'demo-list-stress-test');
+    expect(list?.description).toMatch(/not a real prospecting list/i);
+  });
+});

@@ -17,6 +17,7 @@ import { CertaintyBadge, RoleBadge, OutcomeBadge } from '@/components/badges';
 import { SourceChip } from '@/components/states';
 import { Disclosure } from '@/components/disclosure';
 import { FreshnessChip } from '@/components/priority';
+import { SourcesDrawerTrigger } from '@/components/sources-drawer';
 
 const RESEARCH_STATUS_BANNER: Partial<Record<string, string>> = {
   processing: 'Research in progress — showing available information now.',
@@ -24,6 +25,7 @@ const RESEARCH_STATUS_BANNER: Partial<Record<string, string>> = {
   limited_data: 'Limited public information found. Accuracy beats manufactured content — see below for what is confirmed.',
   needs_review: 'Company identity needs review before treating research below as reliable.',
   queued: 'Research not yet started for this account.',
+  failed: 'Research failed for this account. Existing information below (if any) is still accurate — see RESEARCH_OPERATIONS.md for founder diagnostics, or retry from the Target List.',
 };
 
 // Signature experiences #2 (Call-Ready Brief) and #3 (Account Memory) —
@@ -91,6 +93,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
           <span>{RELATIONSHIP_LABEL[account.relationshipStatus]}</span>
           {account.primaryDomain && <span>{account.primaryDomain}</span>}
           {account.employeeCountRange && <span>{account.employeeCountRange} employees</span>}
+          <SourcesDrawerTrigger findings={findings} />
         </div>
       </header>
 
@@ -115,25 +118,6 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             </ul>
           </section>
 
-          {findings.length > 0 && (
-            <section>
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Recent News / Developments
-                </div>
-                <FreshnessChip label={describeNewsFreshness(id)} />
-              </div>
-              <ul className="mt-1 flex flex-col gap-2 text-sm text-body">
-                {findings.map((f) => (
-                  <li key={f.id}>
-                    {f.content}{' '}
-                    {f.url && <SourceChip url={f.url} label={f.sourceName} />}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
           {knowledgeItems.length > 0 && (
             <section>
               <div className="text-xs font-semibold uppercase tracking-wide text-muted">What Your Team Knows</div>
@@ -148,9 +132,11 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
             </section>
           )}
 
-          {contacts.length > 0 && (
-            <section>
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted">People</div>
+          <section>
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted">People</div>
+            {contacts.length === 0 ? (
+              <p className="mt-1 text-sm text-muted">No relevant people were confidently identified.</p>
+            ) : (
               <ul className="mt-1 flex flex-col gap-2">
                 {contacts.map(({ contact, relationship, freshnessLabel }) => (
                   <li key={contact.id} className="flex flex-wrap items-center gap-2 text-sm">
@@ -172,8 +158,29 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
                   </li>
                 ))}
               </ul>
-            </section>
-          )}
+            )}
+          </section>
+
+          <section>
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted">
+                Recent News / Developments
+              </div>
+              <FreshnessChip label={describeNewsFreshness(id)} />
+            </div>
+            {findings.length === 0 ? (
+              <p className="mt-1 text-sm text-muted">No meaningful recent news found.</p>
+            ) : (
+              <ul className="mt-1 flex flex-col gap-2 text-sm text-body">
+                {findings.map((f) => (
+                  <li key={f.id}>
+                    {f.content}{' '}
+                    {f.url && <SourceChip url={f.url} label={f.sourceName} />}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
           <section>
             <div className="text-xs font-semibold uppercase tracking-wide text-muted">Talking Points</div>

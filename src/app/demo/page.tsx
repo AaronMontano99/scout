@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getTargetLists, getTargetListOverview, getFunnel } from '@/demo';
 import { StatTile, formatRate } from '@/components/stat-tile';
+import { Card } from '@/components/ui/card';
 
 // "Pick up where you left off" home experience — product spec §104.
 // Not a dashboard full of charts; the job is getting the rep back into
@@ -21,20 +22,22 @@ export default function DemoHomePage() {
           <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Pick Up Where You Left Off
           </h2>
-          <Link
-            href={`/demo/lists/${mostRecentlyWorked.list.id}`}
-            className="block rounded-lg border border-hairline-strong bg-surface-card p-5 hover:bg-canvas-soft"
-          >
-            <div className="text-lg font-semibold text-ink">{mostRecentlyWorked.list.name}</div>
-            <div className="mt-1 text-sm text-body">
-              {mostRecentlyWorked.progress.worked} / {mostRecentlyWorked.progress.total} worked
-              {mostRecentlyWorked.list.lastWorkedAt && (
-                <> · last worked {new Date(mostRecentlyWorked.list.lastWorkedAt).toLocaleDateString()}</>
-              )}
-            </div>
-            <div className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">
-              Continue
-            </div>
+          <Link href={`/demo/lists/${mostRecentlyWorked.list.id}`} className="block">
+            <Card padding="lg" className="hover:bg-canvas-soft">
+              <div className="text-lg font-semibold text-ink">{mostRecentlyWorked.list.name}</div>
+              <div className="mt-1 text-sm text-body">
+                {mostRecentlyWorked.progress.worked} / {mostRecentlyWorked.progress.total} worked
+                {mostRecentlyWorked.list.lastWorkedAt && (
+                  <> · last worked {new Date(mostRecentlyWorked.list.lastWorkedAt).toLocaleDateString()}</>
+                )}
+              </div>
+              {/* Styled like button-primary but rendered as a span — the
+                  whole card is already the click target (Link), so a real
+                  nested <button> would be invalid interactive-in-interactive HTML. */}
+              <span className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-[18px] py-[10px] text-sm font-medium text-on-primary">
+                Continue
+              </span>
+            </Card>
           </Link>
         </section>
       )}
@@ -61,7 +64,12 @@ export default function DemoHomePage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Recent Results</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Recent Results</h2>
+          <Link href="/demo/analytics" className="text-xs text-text-link hover:underline">
+            View full analytics →
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatTile label="Calls Attempted" value={String(funnel.callsAttempted)} />
           <StatTile label="Meetings Booked" value={String(funnel.meetingsBooked)} />

@@ -8,8 +8,8 @@
  * component. See docs/DEMO.md.
  */
 import { calculateListProgress, rankSuggestedCalls, toPriorityLabel } from '@/domain/target-lists';
-import { computeFunnel, computeRoleReach } from '@/domain/analytics';
-import { summarizeResearchProgress } from '@/domain/research-status';
+import { computeFunnel, computeRoleReach, computeActivityCounts } from '@/domain/analytics';
+import { summarizeResearchProgress, isUsable } from '@/domain/research-status';
 import { describeFreshness } from '@/domain/freshness';
 import * as fx from './fixtures';
 import type { AccountIdentityStatus, PriorityLabel } from '@/types/product';
@@ -158,6 +158,47 @@ export function getFunnel() {
 
 export function getRoleReach() {
   return computeRoleReach(fx.DEMO_CALL_OUTCOMES);
+}
+
+export function getActivityCounts() {
+  return computeActivityCounts(fx.DEMO_ANALYTICS_EVENTS);
+}
+
+/**
+ * Per-Target-List rollup — product spec §32. Combines list progress
+ * (never-expiring rep memory) with call/meeting/selling-situation
+ * counts scoped to that list's accounts, so each list reads as its own
+ * operational workspace rather than a filtered view of one global feed.
+ */
+export function getListPerformance(listId: string) {
+  const overview = getTargetListOverview(listId);
+  if (!overview) return null;
+  const accountIds = new Set(itemsForList(listId).map((i) => i.accountId));
+  const outcomes = fx.DEMO_CALL_OUTCOMES.filter((o) => accountIds.has(o.accountId));
+  const meetings = outcomes.filter((o) => o.outcomeType === 'meeting_booked').length;
+  const sellingSituations = fx.DEMO_SELLING_SITUATIONS.filter((s) => accountIds.has(s.accountId)).length;
+  return {
+    list: overview.list,
+    progress: overview.progress,
+    calls: outcomes.length,
+    meetings,
+    sellingSituations,
+  };
+}
+
+/**
+ * Founder Operations Console research diagnostics — RESEARCH_OPERATIONS.md's
+ * requirement that the founder can see queue/failure state without a
+ * manual database query. Real computation over every demo account
+ * (across all lists, since research state lives on the account, not
+ * the list) — not illustrative numbers.
+ */
+export function getResearchDiagnostics() {
+  const statuses = fx.DEMO_ACCOUNTS.map((a) => a.researchStatus);
+  const summary = summarizeResearchProgress(statuses);
+  const needsAttention = fx.DEMO_ACCOUNTS.filter((a) => !isUsable(a.researchStatus) || a.researchStatus === 'needs_review')
+    .map((a) => ({ id: a.id, name: a.name, researchStatus: a.researchStatus }));
+  return { summary, totalAccounts: fx.DEMO_ACCOUNTS.length, needsAttention };
 }
 
 const IDENTITY_WARNING_LABEL: Partial<Record<AccountIdentityStatus, string>> = {

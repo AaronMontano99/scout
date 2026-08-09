@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeFunnel, computeRoleReach } from '@/domain/analytics';
+import { computeFunnel, computeRoleReach, computeActivityCounts } from '@/domain/analytics';
 import type { AnalyticsEvent, AnalyticsEventType, CallOutcome, CallOutcomeType } from '@/types/product';
 
 function ev(eventType: AnalyticsEventType): AnalyticsEvent {
@@ -80,5 +80,22 @@ describe('computeRoleReach', () => {
   it('handles zero calls without dividing by zero', () => {
     const reach = computeRoleReach([]);
     expect(reach.gatekeeperRate.rate).toBeNull();
+  });
+});
+
+describe('computeActivityCounts', () => {
+  it('tallies every event type, including types with zero occurrences', () => {
+    const events = [ev('email_drafted'), ev('email_drafted'), ev('email_sent')];
+    const counts = computeActivityCounts(events);
+    expect(counts.email_drafted).toBe(2);
+    expect(counts.email_sent).toBe(1);
+    expect(counts.crm_note_created).toBe(0); // present as 0, not missing
+    expect(counts.meeting_booked).toBe(0);
+  });
+
+  it('handles an empty event list', () => {
+    const counts = computeActivityCounts([]);
+    expect(counts.call_attempted).toBe(0);
+    expect(Object.keys(counts)).toHaveLength(11);
   });
 });
