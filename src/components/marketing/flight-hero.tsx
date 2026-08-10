@@ -107,7 +107,7 @@ export function FlightHero() {
       if (cur === null) cur = target;
       const delta = target - cur;
       cur = Math.abs(delta) < 0.0008 ? target : cur + delta * 0.16;
-      if (cur === target && p === lastP && vw === lastW) return;
+      if (cur === target && p === lastP && vw === lastW && cur >= 1) return;
       lastP = p;
       lastW = vw;
 
@@ -132,7 +132,14 @@ export function FlightHero() {
       const fit = Math.min(1, vh / 800, vw / 1150);
       // Beat 0 sits low in frame so the hero copy owns the top of the screen;
       // the world rises into place as the camera leaves for beat 1.
-      const bias = (1 - clamp(v, 0, 1)) * Math.min(vh * 0.34, 290);
+      // Keep beat 0 clear of the hero copy: measure the copy block and drop the
+      // world below it, so the CTAs never print over the spreadsheet card.
+      let need = Math.min(vh * 0.34, 290);
+      if (v < 1 && copies[0] && scenes[0]) {
+        const cb = copies[0].getBoundingClientRect().bottom;
+        need = Math.max(need, cb + 32 + (scenes[0].offsetHeight / 2) * fit - vh / 2);
+      }
+      const bias = (1 - clamp(v, 0, 1)) * need;
       const seg = clamp(Math.floor(v), 0, SCENE_COUNT - 2);
       const fe = clamp(v - seg, 0, 1);
       const camX = HOME_X[seg]! + (HOME_X[seg + 1]! - HOME_X[seg]!) * fe;
@@ -183,9 +190,15 @@ export function FlightHero() {
         hintRef.current.style.opacity = clamp(1 - v * 4, 0, 1).toFixed(3);
     }
 
+    // Schedule first, then update: a throw inside update() must degrade to a
+    // dropped frame, never kill the loop and freeze the hero.
     const loop = () => {
-      update();
       raf = requestAnimationFrame(loop);
+      try {
+        update();
+      } catch (err) {
+        console.error('flight update failed', err);
+      }
     };
     raf = requestAnimationFrame(loop);
     return () => {
@@ -257,7 +270,7 @@ export function FlightHero() {
           className="absolute inset-x-0 flex flex-col items-center px-6 text-center will-change-transform"
           style={{ top: 'calc(64px + 5vh)' }}
         >
-          <div className="text-muted font-mono text-[11px] font-medium tracking-[0.88px] uppercase">
+          <div className="inline-flex items-center rounded-full bg-[#2f6fed]/[0.08] px-3.5 py-1.5 font-mono text-[11px] font-medium tracking-[0.88px] text-[#2f6fed] uppercase">
             Field intelligence for sales teams
           </div>
           <h1
@@ -271,18 +284,24 @@ export function FlightHero() {
             and context that matter, organizes what your team already knows, and gives
             reps what they need to start calling.
           </p>
-          <div className="mt-7 flex items-center gap-5">
+          <div className="mt-7 flex items-center gap-3.5">
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="bg-primary text-on-primary hover:bg-primary-active inline-flex h-10 items-center rounded-md px-[18px] text-sm font-medium"
+              className="text-on-primary inline-flex h-11 items-center gap-2.5 rounded-full bg-[#2f6fed] py-0 pr-4 pl-5 text-sm font-medium shadow-[0_8px_20px_-10px_rgba(47,111,237,0.9)] hover:bg-[#2761d8]"
             >
               Request a Demo
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
+                →
+              </span>
             </a>
             <a
               href="#how-it-works"
-              className="text-text-link text-sm font-medium hover:underline"
+              className="border-hairline-strong bg-surface-card text-ink inline-flex h-11 items-center gap-2.5 rounded-full border py-0 pr-4 pl-5 text-sm font-medium shadow-[0_6px_18px_-12px_rgba(23,23,23,0.35)]"
             >
               See how Scout works
+              <span className="border-hairline-strong text-body inline-flex h-5 w-5 items-center justify-center rounded-full border text-[10px]">
+                ▸
+              </span>
             </a>
           </div>
           <div
@@ -337,15 +356,18 @@ export function FlightHero() {
           <div className="mt-6 flex items-center gap-5">
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="bg-primary text-on-primary hover:bg-primary-active inline-flex h-10 items-center rounded-md px-[18px] text-sm font-medium"
+              className="text-on-primary inline-flex h-11 items-center gap-2.5 rounded-full bg-[#2f6fed] py-0 pr-4 pl-5 text-sm font-medium shadow-[0_8px_20px_-10px_rgba(47,111,237,0.9)] hover:bg-[#2761d8]"
             >
               Request a Demo
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
+                →
+              </span>
             </a>
             <a
               href="/demo"
-              className="text-text-link text-sm font-medium hover:underline"
+              className="border-hairline-strong bg-surface-card text-ink inline-flex h-11 items-center rounded-full border px-5 text-sm font-medium"
             >
-              Explore the demo workspace →
+              Explore the demo workspace
             </a>
           </div>
         </div>

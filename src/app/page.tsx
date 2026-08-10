@@ -21,26 +21,27 @@ export default function MarketingHomePage() {
 
       <FlightHero />
 
-      {/* Value strip */}
-      <section className="border-hairline border-t px-10 py-24">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-1 sm:grid-cols-3">
-          <ValueItem
-            n="01"
-            title="30 seconds to call-ready"
-            body="Orientation, not a research report — the brief a rep actually reads before dialing."
-          />
-          <ValueItem
-            n="02"
-            title="Memory that survives turnover"
-            body="What your team already knows about an account, remembered — not lost when a rep leaves."
-            divided
-          />
-          <ValueItem
-            n="03"
-            title="Real denominators, always"
-            body="No fake AI scores. Every rate you see traces back to a real, countable event."
-            divided
-          />
+      {/* Feature grid */}
+      <section className="px-10 py-24">
+        <div className="mx-auto grid max-w-[1200px] gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((f) => (
+            <div
+              key={f.title}
+              className="border-hairline bg-surface-card rounded-[14px] border p-[26px] shadow-[0_10px_30px_-24px_rgba(23,23,23,0.4)]"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#2f6fed]/[0.08]">
+                <span className="text-[#2f6fed]">{f.icon}</span>
+              </div>
+              <div className="text-ink mt-[18px] text-base font-semibold">{f.title}</div>
+              <p className="text-body mt-2 text-sm leading-relaxed">{f.body}</p>
+              <a
+                href={f.href}
+                className="mt-4 inline-block text-sm font-medium text-[#2f6fed] hover:underline"
+              >
+                Learn more →
+              </a>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -136,23 +137,41 @@ export default function MarketingHomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="border-hairline border-t px-10 py-32 text-center">
-        <h2 className="text-ink text-5xl leading-[1.1] font-semibold tracking-[-1.44px]">
-          See it working on your own accounts.
-        </h2>
-        <div className="mt-8 flex items-center justify-center gap-5">
-          <a
-            href={`mailto:${SUPPORT_EMAIL}`}
-            className="bg-primary text-on-primary hover:bg-primary-active inline-flex h-10 items-center rounded-md px-[18px] text-sm font-medium"
+      <section className="px-10 py-24">
+        <div className="relative mx-auto grid max-w-[1200px] items-center gap-12 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#eaf1fe_0%,#dbe8fd_55%,#cfe0fb_100%)] px-16 py-[72px] lg:grid-cols-[1fr_auto]">
+          <svg
+            width="300"
+            height="300"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+            className="absolute -right-[30px] -bottom-[70px] opacity-35"
           >
-            Request a Demo
-          </a>
-          <Link
-            href="/demo"
-            className="text-text-link text-sm font-medium hover:underline"
-          >
-            Explore the demo workspace →
-          </Link>
+            <path
+              d="M12 1.5 14 9.9 22.5 12 14 14.1 12 22.5 10 14.1 1.5 12 10 9.9Z"
+              fill="#ffffff"
+            />
+          </svg>
+          <h2 className="text-ink relative m-0 max-w-[520px] text-[clamp(28px,3.4vw,44px)] leading-[1.12] font-semibold tracking-[-0.03em]">
+            See it working on your own accounts.
+          </h2>
+          <div className="relative flex items-center gap-3.5">
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="text-on-primary inline-flex h-11 shrink-0 items-center gap-2.5 rounded-full bg-[#2f6fed] py-0 pr-4 pl-5 text-sm font-medium whitespace-nowrap shadow-[0_10px_24px_-12px_rgba(47,111,237,0.9)] hover:bg-[#2761d8]"
+            >
+              Request a Demo
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
+                →
+              </span>
+            </a>
+            <Link
+              href="/demo"
+              className="border-hairline-strong bg-surface-card text-ink inline-flex h-11 shrink-0 items-center rounded-full border px-5 text-sm font-medium whitespace-nowrap"
+            >
+              Explore the demo workspace
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -208,29 +227,64 @@ const STEPS = [
   },
 ];
 
-function ValueItem({
-  n,
-  title,
-  body,
-  divided,
-}: {
-  n: string;
-  title: string;
-  body: string;
-  divided?: boolean;
-}) {
-  return (
-    <div className={divided ? 'border-hairline px-12 sm:border-l' : 'pr-12'}>
-      <div className="text-muted-soft font-mono text-[11px] tracking-[0.88px] uppercase">
-        {n}
-      </div>
-      <div className="text-ink mt-4 text-[22px] font-semibold tracking-[-0.5px]">
-        {title}
-      </div>
-      <p className="text-body mt-2.5 text-base leading-relaxed">{body}</p>
-    </div>
-  );
-}
+const FEATURES = [
+  {
+    title: '30 seconds to call-ready',
+    body: 'Orientation, not a research report — the brief a rep actually reads before dialing.',
+    href: '#how-it-works',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M12 4 13.4 10.6 20 12 13.4 13.4 12 20 10.6 13.4 4 12 10.6 10.6Z"
+          fill="currentColor"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: 'Memory that survives turnover',
+    body: 'What your team already knows about an account, remembered — not lost when a rep leaves.',
+    href: '#how-it-works',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="3" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Real denominators, always',
+    body: 'No fake AI scores. Every rate you see traces back to a real, countable event.',
+    href: '#certainty',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 18V9M10 18V5M16 18v-6M22 18h-20"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    title: 'Keep your existing stack',
+    body: 'Works alongside your CRM, ZoomInfo and Sales Navigator — nothing to rip out.',
+    href: '#stack',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 19v-1.5a3.5 3.5 0 0 1 3.5-3.5h1M19 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-1"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+        <circle cx="9" cy="8.5" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="15.5" cy="8.5" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+];
 
 function CertaintyCard({
   badge,
