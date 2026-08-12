@@ -19,6 +19,14 @@
   --color-text-link-secondary: #476cff;
   --color-accent-link-bright: #47c2ff;
 
+  /* Scout Purple — see DESIGN.md AMENDMENT 2026-08-12. Restricted-use
+     accent (links, icons, small highlights), same "signal not
+     wallpaper" rule that used to apply to Scout Blue. */
+  --color-brand-purple: #6d3fd1;
+  --color-brand-purple-deep: #4c1d95;
+  --color-brand-purple-soft: #ede7fb;
+  --color-brand-lavender: #f6f3fe;
+
   /* Surface */
   --color-canvas: #ffffff;
   --color-canvas-soft: #fafafa;
@@ -42,6 +50,7 @@
   --color-body-strong: #171717;
   --color-muted: #999999;
   --color-muted-soft: #cccccc;
+  --color-faint: #b8bdc4;
   --color-on-primary: #ffffff;
   --color-on-dark: #ffffff;
   --color-on-dark-soft: #b0b4ba;
@@ -57,6 +66,8 @@
     var(--font-inter), -apple-system, system-ui, sans-serif;
   --font-mono:
     var(--font-jetbrains-mono), 'Fira Code', monospace;
+  /* Hero headline only — see DESIGN.md AMENDMENT 2026-08-12 */
+  --font-display: var(--font-fraunces), Georgia, serif;
 
   /* Radius scale */
   --radius-xs: 4px;

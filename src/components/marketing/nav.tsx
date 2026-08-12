@@ -2,16 +2,26 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { PRODUCT_NAME, SUPPORT_EMAIL } from '@/lib/branding';
+import { SUPPORT_EMAIL } from '@/lib/branding';
+import { ScoutLogo } from '@/components/marketing/logo';
 
-// See DESIGN.md "top-nav" — canvas background, ink text, height 64px.
-// Adaptive: transparent over the hero, gains a solid background + soft
-// shadow once the page has scrolled past it — a real, functional cue
-// (not decorative motion) that tracks scroll position via
-// IntersectionObserver rather than a continuous scroll listener.
-// Trimmed to routes that actually exist (no Pricing/Resources pages
-// built yet) rather than linking nowhere — same discipline as the
-// in-app nav (src/app/demo/layout.tsx).
+// See DESIGN.md "top-nav" + AMENDMENT 2026-08-12 — canvas background,
+// ink text, height 64px. Adaptive: transparent over the hero, gains a
+// solid background + soft shadow once the page has scrolled past it —
+// a real, functional cue (not decorative motion) that tracks scroll
+// position via IntersectionObserver rather than a continuous scroll
+// listener. Center links point at real in-page sections that actually
+// exist (no Pricing/Resources/Customers pages built yet, so those
+// mockup nav items aren't included) — same discipline as the in-app
+// nav (src/app/demo/layout.tsx). No "Log in" link either: there's no
+// authenticated product to log into yet (see README "What's NOT here
+// yet").
+
+const NAV_LINKS = [
+  { href: '#product', label: 'Product' },
+  { href: '#how-it-works', label: 'How it works' },
+  { href: '#certainty', label: 'Why Scout' },
+];
 
 export function MarketingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -40,35 +50,37 @@ export function MarketingNav() {
             : 'border-b border-transparent bg-transparent'
         }`}
       >
-        <span className="flex items-center gap-2">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="10.25" stroke="#171717" strokeWidth="1.5" />
-            <path
-              d="M12 4.6 13.55 10.45 19.4 12 13.55 13.55 12 19.4 10.45 13.55 4.6 12 10.45 10.45Z"
-              fill="#2f6fed"
-            />
-          </svg>
-          <span className="text-ink text-[17px] font-semibold tracking-tight">
-            {PRODUCT_NAME}
-          </span>
-        </span>
-        <nav className="flex items-center gap-6">
+        <ScoutLogo />
+
+        <nav className="hidden items-center gap-8 md:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="text-body hover:text-ink text-sm font-medium"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-6">
           <Link
             href="/demo"
-            className="text-body hover:text-ink hidden text-sm sm:inline"
+            className="text-body hover:text-ink hidden text-sm font-medium sm:inline"
           >
             Explore the demo
           </Link>
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
-            className="text-on-primary inline-flex h-11 items-center gap-2.5 rounded-full bg-[#2f6fed] py-0 pr-4 pl-5 text-sm font-medium shadow-[0_8px_20px_-10px_rgba(47,111,237,0.9)] hover:bg-[#2761d8]"
+            className="bg-primary text-on-primary hover:bg-primary-active inline-flex h-11 items-center gap-2.5 rounded-full py-0 pr-4 pl-5 text-sm font-medium"
           >
-            Request a Demo
+            Book a Demo
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
               →
             </span>
           </a>
-        </nav>
+        </div>
       </header>
     </>
   );

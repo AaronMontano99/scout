@@ -1,66 +1,49 @@
 import Link from 'next/link';
 import { PRODUCT_NAME, SUPPORT_EMAIL } from '@/lib/branding';
 import { MarketingNav } from '@/components/marketing/nav';
-import { FlightHero } from '@/components/marketing/flight-hero';
+import { Hero } from '@/components/marketing/hero';
+import { DailyRhythm } from '@/components/marketing/daily-rhythm';
+import { ScoutLogo } from '@/components/marketing/logo';
+import { Reveal } from '@/components/marketing/reveal';
 
-// Marketing homepage — DESIGN.md's marketing system: white canvas, restrained
-// sky-blue hero wash (hero only, never elsewhere — see DESIGN.md Don'ts), black
-// CTAs, 96px section rhythm. Structure per product spec §53, trimmed to what's
-// honestly buildable pre-launch — no fabricated metrics anywhere (§52). Product
-// surfaces use the real Bay Sentinel / Coastal Framing demo fixture data already
+// Marketing homepage — DESIGN.md's marketing system + AMENDMENT
+// 2026-08-12: white canvas, restrained purple accent (hero + product
+// section, never as wallpaper), black CTAs, 96px section rhythm.
+// Structure per product spec §53, trimmed to what's honestly buildable
+// pre-launch — no fabricated metrics anywhere (§52). Product surfaces
+// use the real Bay Sentinel / Coastal Framing demo fixture data already
 // established in /demo — not invented numbers.
 //
-// The hero is now FlightHero: a scroll-scrubbed seven-beat camera move through the
-// real product surfaces, replacing the static ProductComposite. ProductComposite
-// remains in the tree unused — delete it once the flight has shipped and settled.
+// Hero + DailyRhythm ("Scout every day") come from the product owner's
+// new reference mockup and replace FlightHero + the old four-card
+// feature grid. Everything below Certainty keeps its original DESIGN.md
+// copy, restyled to the new palette only.
 
 export default function MarketingHomePage() {
   return (
     <div className="bg-canvas">
       <MarketingNav />
 
-      <FlightHero />
+      <Hero />
 
-      {/* Feature grid */}
-      <section className="px-10 py-24">
-        <div className="mx-auto grid max-w-[1200px] gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="border-hairline bg-surface-card rounded-[14px] border p-[26px] shadow-[0_10px_30px_-24px_rgba(23,23,23,0.4)]"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#2f6fed]/[0.08]">
-                <span className="text-[#2f6fed]">{f.icon}</span>
-              </div>
-              <div className="text-ink mt-[18px] text-base font-semibold">{f.title}</div>
-              <p className="text-body mt-2 text-sm leading-relaxed">{f.body}</p>
-              <a
-                href={f.href}
-                className="mt-4 inline-block text-sm font-medium text-[#2f6fed] hover:underline"
-              >
-                Learn more →
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
+      <DailyRhythm />
 
       {/* How Scout works */}
       <section
         id="how-it-works"
         className="border-hairline bg-canvas-soft border-t px-10 py-24"
       >
-        <div className="mx-auto grid max-w-[1200px] gap-20 lg:grid-cols-[360px_1fr]">
+        <Reveal className="mx-auto grid max-w-[1200px] gap-20 lg:grid-cols-[360px_1fr]">
           <div>
             <div className="text-muted font-mono text-[11px] tracking-[0.88px] uppercase">
-              How {PRODUCT_NAME} works
+              _How {PRODUCT_NAME} works
             </div>
-            <h2 className="text-ink mt-[18px] text-4xl leading-[1.15] font-semibold tracking-[-1.08px]">
+            <h2 className="font-display text-ink mt-[18px] text-4xl leading-[1.15] font-medium tracking-[-0.02em]">
               Six steps, one workflow.
             </h2>
             <p className="text-body mt-4 text-base leading-relaxed">
-              The same path the flight above traces — from a spreadsheet nobody wants to
-              open to a call your rep is ready for.
+              The same path Scout traces — from a spreadsheet nobody wants to open
+              to a call your rep is ready for.
             </p>
           </div>
           <div className="flex flex-col">
@@ -81,16 +64,16 @@ export default function MarketingHomePage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Certainty */}
       <section id="certainty" className="border-hairline border-t px-10 py-24">
-        <div className="mx-auto max-w-[1200px]">
+        <Reveal className="mx-auto max-w-[1200px]">
           <div className="text-muted font-mono text-[11px] tracking-[0.88px] uppercase">
-            Certainty is a first-class state
+            _Certainty is a first-class state
           </div>
-          <h2 className="text-ink mt-[18px] max-w-[680px] text-4xl leading-[1.15] font-semibold tracking-[-1.08px]">
+          <h2 className="font-display text-ink mt-[18px] max-w-[680px] text-4xl leading-[1.15] font-medium tracking-[-0.02em]">
             A rep should never have to guess how confident the page is.
           </h2>
           <div className="mt-14 grid gap-6 sm:grid-cols-3">
@@ -110,35 +93,39 @@ export default function MarketingHomePage() {
               body="A lead worth checking, nothing more. The weakest state, and it looks like it."
             />
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* Built for work around the call */}
       <section className="bg-surface-dark text-on-dark px-10 py-32 text-center">
-        <div className="text-on-dark-soft font-mono text-[11px] tracking-[0.88px] uppercase">
-          Built for work around the call
-        </div>
-        <p className="mx-auto mt-7 max-w-[760px] font-mono text-[28px] leading-[1.7]">
-          Scout does the research, organizes the account, and handles the follow-up work
-          so reps can keep selling.
-        </p>
+        <Reveal>
+          <div className="text-on-dark-soft font-mono text-[11px] tracking-[0.88px] uppercase">
+            _Built for work around the call
+          </div>
+          <p className="mx-auto mt-7 max-w-[760px] font-mono text-[28px] leading-[1.7]">
+            Scout does the research, organizes the account, and handles the follow-up
+            work so reps can keep selling.
+          </p>
+        </Reveal>
       </section>
 
       {/* Works with your stack */}
       <section id="stack" className="px-10 py-24 text-center">
-        <h2 className="text-ink mx-auto max-w-[900px] text-4xl leading-[1.15] font-semibold tracking-[-1.08px]">
-          Keep your CRM. Keep ZoomInfo. Keep Sales Navigator.
-        </h2>
-        <p className="text-body mx-auto mt-[18px] max-w-[640px] text-base leading-relaxed">
-          {PRODUCT_NAME} sits between scattered sales information and the
-          salesperson&rsquo;s next call. It doesn&rsquo;t replace your stack, and it
-          doesn&rsquo;t replace your reps &mdash; it does the homework around them.
-        </p>
+        <Reveal>
+          <h2 className="font-display text-ink mx-auto max-w-[900px] text-4xl leading-[1.15] font-medium tracking-[-0.02em]">
+            Keep your CRM. Keep ZoomInfo. Keep Sales Navigator.
+          </h2>
+          <p className="text-body mx-auto mt-[18px] max-w-[640px] text-base leading-relaxed">
+            {PRODUCT_NAME} sits between scattered sales information and the
+            salesperson&rsquo;s next call. It doesn&rsquo;t replace your stack, and it
+            doesn&rsquo;t replace your reps &mdash; it does the homework around them.
+          </p>
+        </Reveal>
       </section>
 
       {/* Final CTA */}
       <section className="px-10 py-24">
-        <div className="relative mx-auto grid max-w-[1200px] items-center gap-12 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#eaf1fe_0%,#dbe8fd_55%,#cfe0fb_100%)] px-16 py-[72px] lg:grid-cols-[1fr_auto]">
+        <Reveal className="from-brand-lavender relative mx-auto grid max-w-[1200px] items-center gap-12 overflow-hidden rounded-[20px] bg-gradient-to-br via-[#ede7fb] to-[#e4d9f8] px-16 py-[72px] lg:grid-cols-[1fr_auto]">
           <svg
             width="300"
             height="300"
@@ -152,13 +139,13 @@ export default function MarketingHomePage() {
               fill="#ffffff"
             />
           </svg>
-          <h2 className="text-ink relative m-0 max-w-[520px] text-[clamp(28px,3.4vw,44px)] leading-[1.12] font-semibold tracking-[-0.03em]">
+          <h2 className="font-display text-ink relative m-0 max-w-[520px] text-[clamp(28px,3.4vw,44px)] leading-[1.12] font-medium tracking-[-0.02em]">
             See it working on your own accounts.
           </h2>
           <div className="relative flex items-center gap-3.5">
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
-              className="text-on-primary inline-flex h-11 shrink-0 items-center gap-2.5 rounded-full bg-[#2f6fed] py-0 pr-4 pl-5 text-sm font-medium whitespace-nowrap shadow-[0_10px_24px_-12px_rgba(47,111,237,0.9)] hover:bg-[#2761d8]"
+              className="bg-primary text-on-primary hover:bg-primary-active inline-flex h-11 shrink-0 items-center gap-2.5 rounded-full py-0 pr-4 pl-5 text-sm font-medium whitespace-nowrap"
             >
               Request a Demo
               <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[11px]">
@@ -172,15 +159,13 @@ export default function MarketingHomePage() {
               Explore the demo workspace
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <footer className="border-hairline border-t px-10 py-16">
         <div className="mx-auto flex max-w-[1200px] items-start justify-between gap-10">
           <div>
-            <div className="text-ink text-[15px] font-semibold tracking-[-0.2px]">
-              {PRODUCT_NAME}
-            </div>
+            <ScoutLogo wordmarkClassName="text-[15px]" />
             <p className="text-muted mt-2.5 text-sm">
               Working name — see docs/PRODUCT_CONSTITUTION.md. Pre-launch, no customers
               yet.
