@@ -4,6 +4,55 @@
 
 ---
 
+# AMENDMENT — 2026-08-12 — Purple rebrand, new mark, new homepage reference
+
+The product owner supplied a new reference mockup (Scout marketing
+homepage: nav, hero, "Scout every day" section) and asked for a full
+rebuild to match it. This supersedes the sections below wherever they
+conflict:
+
+- **Brand accent moves from Scout Blue (`#2F80FF`) to Scout Purple**
+  (`#6D3FD1` primary / `#4C1D95` deep-hover / `#EDE7FB` soft wash /
+  `#F6F3FE` atmospheric page wash). Purple plays the same restricted
+  "signal, not wallpaper" role blue used to play in §7 — links, icons,
+  small highlighted words, secondary accents. Primary CTAs stay
+  black/near-black per §8's existing product-vs-marketing logic; that
+  part of §8 is unchanged.
+- **Logo mark moves from the compass-ring + diamond mark to a
+  four-point sparkle/north-star mark** paired with a serif "Scout"
+  wordmark. See `src/components/marketing/logo.tsx`. §3's "do not
+  animate/glow/gradient the logo" rules still apply to the new mark.
+- **Hero and the "Scout every day" feature section adopt the new
+  mockup's copy verbatim** (kicker "_INTELLIGENT TERRITORY™", headline
+  "Find your next best account.", the three Daily Briefs / Account
+  Signals / Territory Map cards, etc.) — §0's copy lock does not apply
+  to these two sections; the mockup is now their copy authority. §0's
+  copy lock still applies to every section the mockup doesn't cover
+  (How Scout Works, Certainty, the dark section, Works With Your
+  Stack, the final CTA, the footer) — those keep their existing
+  wording, restyled only.
+  - Exception inside the exception: the mockup's "Trusted by top
+    revenue teams" row names real companies (Ramp, Vanta, Amplitude,
+    dbt Labs, Chargebee) as if they were Scout customers. Scout has no
+    customers yet (see README "Status"), and §0 separately bans fake
+    customer proof — that rule *is* honored. The logo row ships as
+    neutral, unnamed placeholder marks instead of those real logos.
+- **A serif display font (Fraunces) is added for the hero headline
+  only**, layered on top of §9's Inter-only rule — see
+  `--font-display` in `globals.css`. Inter remains the family for
+  everything else (nav, body, buttons, section titles, product
+  surfaces), unchanged from §9.
+- Kickers adopt the mockup's underscore-prefixed treatment
+  (`_LABEL LIKE THIS`) site-wide for visual consistency — a
+  typographic prefix, not a copy change.
+
+Everything else in this file — the compass/direction *concept* behind
+the brand, the "quietly confident, product-led" character in §4, the
+white-dominant 80/15/5 balance in §7 (now read as white/black/**purple**),
+spacing and section rhythm — stands as originally written.
+
+---
+
 # 0. CRITICAL COPY LOCK
 
 This file controls **visual design only**.
