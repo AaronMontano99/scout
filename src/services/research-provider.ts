@@ -11,6 +11,9 @@ import type {
  * docs/PRODUCT_CONSTITUTION.md and docs/INTEGRATIONS.md. LinkedIn is
  * only ever a future *approved-API* integration, if one becomes
  * available for this use case.
+ *
+ * Unused in local-first mode (docs/LOCAL_MODE.md) — kept as an adapter
+ * contract for anyone who wants to wire in a research provider later.
  */
 export interface ResearchProvider {
   searchCompany(input: CompanyIdentifier): Promise<RawEvidence[]>;

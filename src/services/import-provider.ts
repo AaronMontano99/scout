@@ -2,6 +2,12 @@
  * CSV/XLSX — the V1 universal integration, treated as a first-class
  * adapter (same pattern as every other provider) rather than a special
  * case. See docs/INTEGRATIONS.md and docs/DATA_MODEL.md §Import/ImportRow.
+ *
+ * Unused in local-first mode (docs/LOCAL_MODE.md) — CSV import is
+ * manual-entry-only for now (no AI-assisted column mapping). This
+ * interface doesn't actually require `inferColumnMapping`'s suggestion
+ * to be AI-generated, so it's kept as the contract a future manual
+ * (checkbox/dropdown) column-mapper UI could satisfy.
  */
 
 export interface ParsedTable {

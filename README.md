@@ -6,25 +6,26 @@ prioritized, explainable prospecting workspace. See
 [`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) for
 the full mission, customer, and philosophy.
 
-**Status: Phase 4 — UI/UX, website, integration, READY WITH RISKS
-(explicitly not READY — see below).** All five signature experiences
-(Target List workspace, Call-Ready Brief + Account Brain, Post-Call
-workflow, Prospecting Analytics, and now a real marketing homepage) are
-polished, tested, and working against Demo Mode's fictional dataset —
-plus a real component library, a CSS-3D hero product composite, and
-fixture data deliberately stress-tested for messy edge cases (10
-sources, 6 stakeholders, null fields, zero data, a failed research
-run). **Phase 3.5 (live-intelligence validation against real
-providers) was never done — see
-[`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md).** Every
-Call-Ready Brief in this product is still hand-written demo content,
-not live research — this is why Phase 4's own completion report
-declines to call the product "READY" outright, per that report's own
-rule. See
+**Status: Local Mode — runs entirely on your own machine, real usage
+via manual data entry.** No cloud accounts, no signup, no services to
+run in the background. Your data lives in a local SQLite file
+(`data/scout.db`), not a hosted database — see
+[`docs/LOCAL_MODE.md`](./docs/LOCAL_MODE.md) for the full architecture
+and why. All five signature experiences (Target List workspace,
+Call-Ready Brief + Account Brain, Post-Call workflow, Prospecting
+Analytics, and a real marketing homepage) are polished and tested
+against Demo Mode's fictional dataset at `/demo`; `/app` is the same
+product wired to your own real accounts, contacts, and notes instead.
+There's no live AI research provider connected — Call-Ready Briefs for
+your real accounts are honest, non-fabricated summaries of what you've
+actually entered, not AI-generated content (see
+[`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) for why that
+was deliberately out of scope rather than unfinished).
 [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
-for the full honest breakdown, and
-[`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) for
-the Five-Person Council's critical review of the actual built UI.
+and
+[`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) are
+historical — the UI/UX work they describe is unchanged, but their
+Supabase/multi-tenancy framing predates Local Mode.
 (Earlier phases: [`PHASE_3_COMPLETION_REPORT.md`](./docs/PHASE_3_COMPLETION_REPORT.md) ·
 [`PHASE_2_COMPLETION_REPORT.md`](./docs/PHASE_2_COMPLETION_REPORT.md).)
 
@@ -34,9 +35,11 @@ the Five-Person Council's critical review of the actual built UI.
 npm install && npm run dev
 ```
 
-Open `/` for the marketing homepage, or `/demo` directly for the
-product — no auth, no setup, entirely fictional data. See
-[`docs/DEMO.md`](./docs/DEMO.md).
+No `.env.local` required. Open `/` for the marketing homepage, `/demo`
+for a product tour with fictional data (see
+[`docs/DEMO.md`](./docs/DEMO.md)), or `/app` to start entering your own
+accounts — everything you add stays in a local SQLite file on your own
+machine. See [`docs/LOCAL_MODE.md`](./docs/LOCAL_MODE.md).
 
 ## Start here
 
@@ -93,44 +96,45 @@ product — no auth, no setup, entirely fictional data. See
 src/
   app/            Next.js App Router — presentation layer
                     page.tsx  Marketing homepage (hero, story flow, CTA)
-                    demo/     Demo Mode: Target Lists, Call-Ready Brief, Post-Call, Analytics
+                    demo/     Demo Mode: fictional data, product tour (see DEMO.md)
+                    app/      Local Mode: your real data — mirrors demo/ route-for-route (see LOCAL_MODE.md)
                     admin/    Founder Operations Console (unauthenticated stub — see FOUNDER_OPERATIONS.md)
   components/     Shared UI primitives
                     ui/       Button, Card, Input, Tabs, Skeleton, Drawer — DESIGN.md tokens as code
                     marketing/  Nav, hero product composite (CSS-3D, no engine dependency)
                     (badges, priority labels, stat tiles, states, funnel, filters — Scout-specific)
   demo/           Demo Mode fixture data + accessor layer, incl. stress-test fixtures (see DEMO.md)
+  data/           Local Mode accessor layer + manual-entry mutations, backed by SQLite (see LOCAL_MODE.md)
   features/       Feature-level UI composition
   domain/         Business logic — target lists, analytics, entity resolution,
                     freshness, source quality, research security/status,
                     brief quality lint (all tested)
-  services/       Provider interfaces (CRM incl. writeback, enrichment, research, import, billing)
-  integrations/   Concrete vendor adapters implementing services/ interfaces
-  ai/             AIProvider abstraction, workload-keyed model config
-  db/             Supabase client construction (centralized — nowhere else)
-  auth/           Auth context resolution, centralized permissions matrix
-  jobs/           JobQueue interface
+  services/       Provider interfaces (CRM incl. writeback, enrichment, research, import) —
+                    unused in Local Mode, kept as future adapter contracts
+  integrations/   Concrete vendor adapters implementing services/ interfaces (empty)
+  ai/             AIProvider abstraction, workload-keyed model config — optional, unused in Local Mode
+  db/             SQLite connection construction (centralized — nowhere else, see LOCAL_MODE.md)
+  auth/           Local single-user auth context, centralized permissions matrix
   lib/            Env validation, branding config
   types/          Shared types (tenancy, evidence, product)
-trigger/          JobQueue implementation stub (Trigger.dev)
-supabase/         Migrations (0001 tenancy, 0002 core product, 0003 research engine)
-tests/            Vitest — highest-risk logic first (see ARCHITECTURE.md) — 108 tests, 10 files
+db/               db/schema.sql — the schema actually applied to data/scout.db
+supabase/         Historical reference only — see supabase/README.md
+tests/            Vitest — highest-risk logic first (see ARCHITECTURE.md)
 ```
 
 ## Environment
 
-Requires **Node ≥22** (Supabase's client and several dev dependencies
-require it). Full toolchain (typecheck, lint, build, test) is verified
-green on Node 22.23.2. If your `node -v` shows 21.x or lower, `npm
-install` will still mostly work but `npm test` will fail outright
+Requires **Node ≥22**. Full toolchain (typecheck, lint, build, test) is
+verified green on Node 22.23.2. If your `node -v` shows 21.x or lower,
+`npm install` will still mostly work but `npm test` will fail outright
 (Vitest's bundler needs a Node-22-only `node:util` export) — upgrade
-first. Copy `.env.example` to `.env.local` and fill in real values —
-never commit `.env.local`. See `docs/SECURITY.md`.
+first. `npm run dev`/`npm run build` are more forgiving: local storage
+uses `sql.js` (WASM SQLite, no native addon), so those keep working
+even on Node 21.
 
-**No live Supabase project, research provider, AI provider, CRM, or
-Stripe account is connected yet** — see
-`docs/PHASE_4_COMPLETION_REPORT.md`. `/` and `/demo` both work with
-zero external dependencies.
+No `.env.local` is required to run Scout. `ANTHROPIC_API_KEY` (see
+`.env.example`) is entirely optional and unused by anything in Local
+Mode today — see `docs/LOCAL_MODE.md`.
 
 ## Commands
 
@@ -145,8 +149,8 @@ npm run format         # prettier --write
 
 ## What's NOT here yet
 
-Real authentication, live research/AI provider connection, CRM
-integrations, billing, the CSV/XLSX import UI, and a provisioned
-database — see `docs/PHASE_4_COMPLETION_REPORT.md`'s Top 10 Next Tasks
-for the actual next-step order. Do not skip ahead of
-`docs/ROADMAP.md`'s phase order.
+Live research/AI provider connection, CRM integrations, and CSV/XLSX
+import (manual entry only for now) — see `docs/LOCAL_MODE.md`. Multi-
+user auth and billing are explicitly out of scope for a local
+single-user tool; see the historical `docs/PHASE_4_COMPLETION_REPORT.md`
+for the earlier hosted-SaaS framing these superseded.

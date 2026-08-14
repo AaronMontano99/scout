@@ -1,5 +1,16 @@
 # Phase 4 Completion Report
 
+> **Historical.** Written when Scout's architecture assumed a hosted
+> Supabase project, multi-tenant auth, and a future CRM/billing
+> integration. Local Mode (`docs/LOCAL_MODE.md`) superseded that: local
+> storage now exists (SQLite), auth is a hardcoded single local user by
+> design (not "not yet implemented"), and Stripe/Trigger.dev were
+> removed rather than deferred. The UI/UX work this report describes
+> (Target List workspace, Call-Ready Brief, Post-Call workflow,
+> Analytics) is unchanged — only the backing infrastructure it assumed
+> is out of date. Read `docs/LOCAL_MODE.md` for the current
+> architecture.
+
 Date: 2026-08-08
 
 ## PHASE 4 STATUS

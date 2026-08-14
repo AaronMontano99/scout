@@ -169,7 +169,13 @@ export default function MarketingHomePage() {
               href="/demo"
               className="border-hairline-strong bg-surface-card text-ink inline-flex h-11 shrink-0 items-center rounded-full border px-5 text-sm font-medium whitespace-nowrap"
             >
-              Explore the demo workspace
+              View Product Tour
+            </Link>
+            <Link
+              href="/app"
+              className="border-hairline-strong bg-surface-card text-ink inline-flex h-11 shrink-0 items-center rounded-full border px-5 text-sm font-medium whitespace-nowrap"
+            >
+              Open My Workspace
             </Link>
           </div>
         </div>
@@ -194,7 +200,10 @@ export default function MarketingHomePage() {
               Certainty
             </a>
             <Link href="/demo" className="text-body hover:text-ink text-sm">
-              Demo workspace
+              Product tour
+            </Link>
+            <Link href="/app" className="text-body hover:text-ink text-sm">
+              My Workspace
             </Link>
           </div>
         </div>

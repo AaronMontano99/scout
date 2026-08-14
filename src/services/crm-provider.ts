@@ -4,6 +4,9 @@
  * Phase 0 — this interface exists so Phase 7 integrations are "write
  * an adapter," not "redesign the domain layer." Not built in V1 — see
  * docs/ROADMAP.md, Phase 7.
+ *
+ * Unused in local-first mode (docs/LOCAL_MODE.md) — kept as an adapter
+ * contract for anyone who wants to wire in a personal CRM export later.
  */
 
 export interface RawCRMAccount {

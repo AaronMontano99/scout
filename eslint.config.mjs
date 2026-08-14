@@ -1,18 +1,17 @@
 import nextConfig from 'eslint-config-next';
 
-const restrictedSupabaseImport = {
+const restrictedDbImport = {
   rules: {
-    // Domain layer must never import a vendor SDK directly — see
-    // docs/ARCHITECTURE.md and docs/AI_ARCHITECTURE.md. src/db/client.ts
+    // Domain layer must never import a DB driver directly — see
+    // docs/ARCHITECTURE.md and docs/LOCAL_MODE.md. src/db/client.ts
     // is the one designated place allowed to do this (see below).
     'no-restricted-imports': [
       'error',
       {
         patterns: [
           {
-            group: ['@supabase/supabase-js', '@supabase/ssr'],
-            message:
-              'Import the Supabase client via src/db or src/auth, not directly — see docs/SECURITY.md and ADR-0002.',
+            group: ['sql.js'],
+            message: 'Import the SQLite connection via src/db (getDb()), not directly — see docs/LOCAL_MODE.md.',
           },
         ],
       },
@@ -25,8 +24,11 @@ const eslintConfig = [
   ...nextConfig,
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['src/db/client.ts'],
-    ...restrictedSupabaseImport,
+    // tests/db-schema.test.ts deliberately opens its own throwaway
+    // connection (not via getDb()) so it never touches the real dev
+    // database — see that file's header comment.
+    ignores: ['src/db/client.ts', 'tests/db-schema.test.ts'],
+    ...restrictedDbImport,
   },
 ];
 

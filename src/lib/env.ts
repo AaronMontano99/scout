@@ -6,12 +6,9 @@ import { z } from 'zod';
  * discipline) and docs/ARCHITECTURE.md.
  */
 const envSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-
-  // AI provider — see docs/AI_ARCHITECTURE.md. Model names are config,
-  // never hardcoded in business logic.
+  // AI provider — entirely optional in local-first mode (see
+  // docs/LOCAL_MODE.md). Model names are config, never hardcoded in
+  // business logic — see docs/AI_ARCHITECTURE.md.
   AI_MODEL_EXTRACTION: z.string().min(1).default('placeholder-extraction-model'),
   AI_MODEL_CLASSIFICATION: z
     .string()
@@ -21,13 +18,6 @@ const envSchema = z.object({
   AI_MODEL_SUMMARY: z.string().min(1).default('placeholder-summary-model'),
   AI_MODEL_EMBEDDING: z.string().min(1).default('placeholder-embedding-model'),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
-
-  // Background jobs — see docs/JOBS_ARCHITECTURE.md
-  TRIGGER_API_KEY: z.string().min(1).optional(),
-
-  // Billing — see docs/COST_MODEL.md, architected for, not wired in Phase 0
-  STRIPE_SECRET_KEY: z.string().min(1).optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

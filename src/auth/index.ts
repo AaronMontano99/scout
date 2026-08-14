@@ -1,4 +1,3 @@
-import { createServerSupabaseClient } from '@/db/client';
 import type { AuthContext } from '@/types/tenancy';
 import type { Action } from './permissions';
 import { requirePermission } from './permissions';
@@ -7,37 +6,43 @@ export { can, requirePermission, PermissionDeniedError, ACTIONS } from './permis
 export type { Action } from './permissions';
 
 /**
- * Resolves the current request's Membership + Organization from the
- * authenticated Supabase session. Every server action / route handler
- * should call this rather than touching the Supabase client directly
- * — see docs/SECURITY.md §Authentication and eslint.config.mjs's
- * no-restricted-imports rule.
- *
- * NOT IMPLEMENTED YET — Phase 0 scaffold only. Real implementation
- * lands in Phase 1 once the memberships/organizations tables exist and
- * are migrated (supabase/migrations/0001_init_tenancy.sql).
+ * Local-first mode has exactly one user, running Scout on their own
+ * machine against their own SQLite file — there's no session to
+ * resolve, no sign-in flow, no other tenant to keep data separate
+ * from. OWNER is correct here, not a default-to-permissive shortcut:
+ * per permissions.ts's ROLE_ACTIONS, OWNER is "full access," which is
+ * exactly what someone running their own local instance should have.
+ * See docs/LOCAL_MODE.md.
  */
-export async function getCurrentAuthContext(): Promise<AuthContext | null> {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+const LOCAL_AUTH_CONTEXT: AuthContext = {
+  userId: 'local-user',
+  membership: {
+    id: 'local-membership',
+    organizationId: 'local',
+    userId: 'local-user',
+    role: 'OWNER',
+    status: 'active',
+    territoryIds: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  organization: {
+    id: 'local',
+    name: 'My Workspace',
+    slug: 'local',
+    industry: null,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  },
+};
 
-  if (!user) return null;
-
-  throw new Error(
-    'getCurrentAuthContext: membership/organization resolution not yet implemented — Phase 1. See docs/ROADMAP.md.'
-  );
+export function getCurrentAuthContext(): AuthContext {
+  return LOCAL_AUTH_CONTEXT;
 }
 
-/** Throws if there's no authenticated context, or the role can't perform `action`. */
-export async function requireAuth(action?: Action): Promise<AuthContext> {
-  const ctx = await getCurrentAuthContext();
-  if (!ctx) {
-    throw new Error('Unauthenticated');
-  }
+/** Throws if the local user's role can't perform `action`. */
+export function requireAuth(action?: Action): AuthContext {
   if (action) {
-    requirePermission(ctx.membership.role, action);
+    requirePermission(LOCAL_AUTH_CONTEXT.membership.role, action);
   }
-  return ctx;
+  return LOCAL_AUTH_CONTEXT;
 }

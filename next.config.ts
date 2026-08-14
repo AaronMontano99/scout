@@ -1,9 +1,10 @@
 import type { NextConfig } from 'next';
 
-// Kept intentionally minimal for Phase 0. No product-specific config yet —
-// see docs/ROADMAP.md for what's actually being built next.
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // sql.js loads its .wasm binary via fs at runtime — don't let Next's
+  // bundler try to process it. See src/db/client.ts, docs/LOCAL_MODE.md.
+  serverExternalPackages: ['sql.js'],
 };
 
 export default nextConfig;

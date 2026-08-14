@@ -1,5 +1,12 @@
 # Demo Mode
 
+> **Demo Mode (`/demo`, this doc) vs. Local Mode (`/app`,
+> `docs/LOCAL_MODE.md`)**: Demo Mode is entirely fictional, kept
+> exactly as described below, and never touches real data. Local Mode
+> is the same product wired to your own real accounts, contacts, and
+> notes, stored in a local SQLite file. The two are deliberately kept
+> separate and clearly labeled, never mixed — see `docs/LOCAL_MODE.md`.
+
 ## Purpose
 
 Instant demonstration without waiting for live research or a

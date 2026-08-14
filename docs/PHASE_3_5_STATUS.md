@@ -1,5 +1,13 @@
 # Phase 3.5 Status — Live Intelligence Validation
 
+> **Superseded by Local Mode** (see `docs/LOCAL_MODE.md`). Phase 3.5 is
+> no longer a blocked next step on the roadmap — connecting a live
+> research/AI provider is now a permanently-optional future
+> enhancement, not something local-first usage is waiting on. Real
+> usage today means manually entering your own accounts/contacts/notes;
+> everything below is accurate history of why that live-provider
+> validation never happened, not a current blocker.
+
 **Status: NOT DONE. No live research or AI provider has ever been
 connected to Scout.**
 

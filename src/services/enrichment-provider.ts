@@ -5,6 +5,9 @@ import type { CompanyIdentifier, PersonIdentifier, CostEstimate } from '@/types/
  * enrichment vendor (ZoomInfo, Apollo, ...) is implemented in Phase 0.
  * No single enrichment vendor may become load-bearing — this interface
  * is what makes that a real constraint rather than a hope.
+ *
+ * Unused in local-first mode (docs/LOCAL_MODE.md) — kept as an adapter
+ * contract for anyone who wants to wire in their own API key later.
  */
 
 export interface EnrichmentResult<T> {
