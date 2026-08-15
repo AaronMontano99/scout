@@ -27,6 +27,7 @@ export function CommunicationGenerator({
   const [isPending, startTransition] = useTransition();
   const [text, setText] = useState(initialText);
   const [lintIssues, setLintIssues] = useState<{ rule: string; detail: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
   const [instruction, setInstruction] = useState('');
   const [remember, setRemember] = useState(false);
@@ -43,6 +44,11 @@ export function CommunicationGenerator({
         rememberInstruction: remember,
         meetingTimes: SUPPORTS_MEETING_TIMES.includes(communicationType) ? [time1, time2].filter(Boolean) : undefined,
       });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setError(null);
       setText(result.text);
       setLintIssues(result.lintIssues);
       setCopied(false);
@@ -96,9 +102,18 @@ export function CommunicationGenerator({
         </div>
       )}
 
-      {isPending && <p className="mt-3 text-[12.5px] text-muted">Writing in your saved voice — this can take up to 30 seconds on local hardware…</p>}
+      {isPending && <p className="mt-3 text-[12.5px] text-muted">Writing in your saved voice — this runs on your local model and can take a couple of minutes…</p>}
 
-      {!isPending && text && (
+      {!isPending && error && (
+        <div className="mt-3 rounded-md border border-semantic-error/40 bg-semantic-error/10 p-3">
+          <p className="text-[12.5px] text-semantic-error">{error}</p>
+          <button type="button" onClick={generate} className="mt-1.5 text-[12.5px] text-text-link hover:underline">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!isPending && !error && text && (
         <div className="mt-3">
           <pre className="max-h-[400px] overflow-auto rounded-md border border-hairline-strong bg-canvas-soft p-3 text-[13px] leading-[1.55] whitespace-pre-wrap text-ink">{text}</pre>
           <div className="mt-2 flex items-center gap-3">
@@ -114,7 +129,7 @@ export function CommunicationGenerator({
         </div>
       )}
 
-      {!isPending && !text && <p className="mt-3 text-[12.5px] text-muted">Not generated yet.</p>}
+      {!isPending && !error && !text && <p className="mt-3 text-[12.5px] text-muted">Not generated yet.</p>}
     </div>
   );
 }

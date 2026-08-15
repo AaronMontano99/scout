@@ -28,11 +28,14 @@ import type {
 
 // Seller-voice generation prompts (full style profile + samples + org
 // context) are much longer than the classify/summarize/reason prompts
-// this was originally tuned for, and local llama3.2 needs well over 30s
-// to process them on modest hardware. Every call site using this
-// provider is already best-effort/non-blocking (fire-and-forget from
-// server actions), so a generous ceiling here costs nothing.
-const REQUEST_TIMEOUT_MS = 120_000;
+// this was originally tuned for, and local llama3.2 can take well over
+// two minutes to process them depending on machine load — observed as
+// low as ~14s for a one-sentence prompt and 120s+ for a full seller-
+// voice prompt on the same machine. Every call site using this
+// provider is either fire-and-forget or handles a timeout as a normal,
+// user-visible outcome (never an uncaught crash), so a generous
+// ceiling here costs nothing.
+const REQUEST_TIMEOUT_MS = 180_000;
 
 function ollamaHost(): string {
   return getEnv().OLLAMA_HOST;
