@@ -35,8 +35,7 @@ running entirely on your own machine (no API key, nothing leaves your
 computer). If `ollama serve` is running with a model pulled (defaults
 to `llama3.2`; see
 [`src/ai/providers/ollama-provider.ts`](./src/ai/providers/ollama-provider.ts)),
-Scout uses it for two things, both best-effort and both still honest
-about certainty:
+Scout uses it for:
 
 - **Call-Ready Brief summaries** — after Research fetches a company's
   website/news, Ollama turns that into a "What They Do" description
@@ -45,14 +44,36 @@ about certainty:
 - **Clean call notes** — after you log a call, Ollama rewrites your
   rough dictated note into a clean CRM-style note, keeping every fact
   and adding nothing.
+- **Call scripts, voicemails, prospecting emails, and post-call
+  follow-ups, written in your own voice** — teach Scout your tone,
+  explicit rules, phrases to avoid, and real sample messages once at
+  `/app/settings/seller-style`, and it's remembered for every message
+  Scout writes after that, no re-teaching per account. Hard rules are
+  enforced in code, not just requested in the prompt: never
+  acknowledges a cold call, never uses a permission-based opener
+  ("do you have 30 seconds?"), never invents a fact, a meeting time,
+  a customer name, or a contact's name/title it doesn't actually have,
+  and never leaves an unfilled placeholder like `[Company Name]` — a
+  generated message that trips one of these gets one automatic rewrite
+  before being shown to you, and any issue that survives that is
+  flagged, never hidden. See
+  [`docs/SELLER_STYLE.md`](./docs/SELLER_STYLE.md).
 
-Neither ever blocks the action that triggered it — both run in the
-background and the UI just picks up the result once it's ready, since
-local inference can take 10-30+ seconds. If Ollama isn't running,
-these steps quietly do nothing and Scout works exactly as it does
-without them; nothing else in Scout requires it. Settings shows
-exactly which providers are Available, Not Configured, or Unavailable
-— never a fake connection.
+The brief summary and clean-note steps never block the action that
+triggered them — both run in the background and the UI just picks up
+the result once it's ready. Generating a call script/voicemail/email
+is different: you click Generate and it waits for the real result
+before showing it, with a loading state while it works and a plain
+error with a retry button if Ollama didn't respond in time — nothing
+is ever silently swallowed or shown as fake success. **Local inference
+speed depends entirely on your own hardware** — an older CPU-only
+machine (no discrete GPU) can take 30 seconds to a couple of minutes
+per message, especially for the longer seller-voice prompts; a machine
+with GPU acceleration will be much faster. If Ollama isn't running,
+all of this quietly does nothing and Scout works exactly as it does
+without it; nothing else in Scout requires it. Settings shows exactly
+which providers are Available, Not Configured, or Unavailable — never
+a fake connection.
 [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
 and
 [`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) are
@@ -85,12 +106,12 @@ your real workspace).
 | --- | --- |
 | **Today** | Accounts worth working today, ranked across every active Target List — pins always outrank automatic ordering. |
 | **Lists** | Target Lists: progress, suggested calls, all-accounts filters. Progress never resets. |
-| **Accounts** | Browse/search every real account; opens into the Call-Ready Brief / Account Brain. |
+| **Accounts** | Browse/search every real account; opens into the Call-Ready Brief / Account Brain, including buttons to generate a call script, voicemail, or email in your own taught voice (Recent Developments shows only real news, as short bullet points — never a raw scrape dump). |
 | **People** | Every real contact, always shown with both a buying-role guess *and* its certainty (`KNOWN` / `INFERRED` / `SUGGESTED`) — never one without the other. |
 | **Research** | Resolves a company/domain against your existing accounts, shows everything stored locally, and can pull fresh public web/news evidence on demand (plus an AI summary of it, if Ollama's running). Never LinkedIn. |
 | **Imports** | Real CSV/XLSX pipeline: upload → map columns → validate → resolve possible duplicates → import. Creates Accounts, Contacts, and Knowledge Items; can drop everything into a new Target List. |
 | **Analytics** | Event-sourced funnel and role-reach numbers, always shown as numerator + denominator (a rate with no attempts renders `—`, never `0%`). |
-| **Settings** | Workspace/sales-profile fields (persisted), honest provider status, and real data controls: export a full JSON snapshot, download the raw `data/scout.db` file, or permanently delete everything. |
+| **Settings** | Workspace/sales-profile fields (persisted, with a visible confirmation on save), honest provider status, [Seller Style](./docs/SELLER_STYLE.md) editor (tone, rules, phrases to avoid, real sample scripts/emails/voicemails), and real data controls: export a full JSON snapshot, download the raw `data/scout.db` file, or permanently delete everything. |
 
 Logging a call (from any account's **Log Call** button) writes a real
 `CallOutcome`, marks that list item worked, and — after you explicitly
@@ -231,9 +252,11 @@ a connection. The Research Provider and AI Provider are both real now
 keyless sources — a company's own website and public news search —
 and will never expand to LinkedIn or other login-walled platforms;
 that's a permanent product boundary, not a roadmap item. The AI
-Provider (Ollama) only rewrites/summarizes text you already have —
-Scout doesn't ask it to make prospecting decisions or invent facts.
-There's also no in-app
+Provider (Ollama) rewrites/summarizes text you already have and writes
+new call scripts/voicemails/emails in your own taught voice, but it
+never makes prospecting decisions for you and is instructed, and
+checked in code, never to invent a fact, a meeting time, or a customer
+name it wasn't actually given. There's also no in-app
 Selling-Situation creation flow yet, and entity resolution during
 import only checks against accounts already in the database (not
 against other rows in the same file). Multi-user auth and billing are

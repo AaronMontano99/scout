@@ -32,18 +32,33 @@ export function getAccountAngle(accountId: string): AccountAngle {
   const account = getAccount(accountId);
   if (!account) return { relevantFacts: [], customerProofNames: [], campaignFocus: null };
 
-  const knowledgeItems = getKnowledgeItemsForAccount(accountId).filter((k) => k.verificationStatus === 'current');
+  // Every past generated call script/voicemail/email is also a
+  // knowledge_items row (type 'generated_communication') — it must
+  // never be treated as a "fact about the company," or a single bad
+  // generation permanently poisons every generation after it by
+  // feeding its own output back in as if it were real research.
+  const knowledgeItems = getKnowledgeItemsForAccount(accountId).filter(
+    (k) => k.verificationStatus === 'current' && k.type !== 'generated_communication'
+  );
   const findings = getResearchFindingsForAccount(accountId);
 
   // Prefer real recorded knowledge (something a person or a fetched
   // source actually said) over generic account fields. Most-recent
-  // first, deduplicated, capped.
+  // first, deduplicated, capped. Only news-type findings qualify as a
+  // "fact" here — a raw company-website scrape is the prospect's own
+  // marketing copy (often 1000+ characters of nav/tagline text), not a
+  // fact about them, and feeding it in whole caused the model to quote
+  // the prospect's own website tagline back as if it were the rep's —
+  // see docs/SELLER_STYLE.md. A short AI-synthesized company summary
+  // exists for that (ai_company_summary, deliberately excluded here to
+  // avoid feeding AI output back into another AI generation).
+  const MAX_FACT_LENGTH = 220;
   const factCandidates = [
     ...knowledgeItems
       .filter((k) => !(k.structuredValue as { kind?: string } | null)?.kind?.startsWith('ai_'))
       .map((k) => k.content),
-    ...findings.map((f) => f.content),
-  ];
+    ...findings.filter((f) => f.findingType === 'news').map((f) => f.content),
+  ].map((f) => (f.length > MAX_FACT_LENGTH ? `${f.slice(0, MAX_FACT_LENGTH).trim()}…` : f));
   const relevantFacts = [...new Set(factCandidates)].slice(0, MAX_RELEVANT_FACTS);
 
   const lists = getListsForAccount(accountId);
