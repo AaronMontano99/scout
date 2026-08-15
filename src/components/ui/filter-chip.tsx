@@ -1,9 +1,7 @@
 'use client';
 
-// Shared pill-filter control — see DESIGN.md "filter-chip". Reused
-// across Today/Lists/Accounts/People so filter interaction looks and
-// behaves identically everywhere (product spec's "restrained, not
-// bespoke per screen" rule).
+// Pill filter control matching scout-ui.html: 999px radius, 12-12.5px
+// font, 1px border, active = ink-filled, inactive = pale-bordered.
 
 export interface FilterChipOption<T extends string> {
   id: T;
@@ -27,8 +25,10 @@ export function FilterChipGroup<T extends string>({
           type="button"
           onClick={() => onChange(option.id)}
           aria-pressed={value === option.id}
-          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            value === option.id ? 'bg-ink text-canvas' : 'bg-surface-strong text-body hover:text-ink'
+          className={`rounded-full border px-3 py-1 text-[12.5px] font-medium whitespace-nowrap transition-colors ${
+            value === option.id
+              ? 'border-ink bg-ink text-canvas'
+              : 'border-hairline-strong bg-canvas text-body hover:text-ink'
           }`}
         >
           {option.label}

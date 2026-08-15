@@ -14,13 +14,13 @@ const PRIORITY_CONFIG: Record<PriorityLabel, { label: string; dot: string }> = {
 export function PriorityLabelChip({ priority }: { priority: PriorityLabel }) {
   const config = PRIORITY_CONFIG[priority];
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs text-body">
-      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12.5px] text-body">
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${config.dot}`} />
       {config.label}
     </span>
   );
 }
 
 export function FreshnessChip({ label }: { label: string }) {
-  return <span className="text-xs text-muted">{label}</span>;
+  return <span className="text-[11.5px] text-[#B8BDC4]">{label}</span>;
 }

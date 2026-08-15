@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getImport, getReviewRows } from '@/data/imports';
 import { ImportStepper } from '@/components/import-stepper';
+import { Panel } from '@/components/ui/panel';
 import { resolveImportRowAction } from '../../actions';
 
 export default async function ResolveMatchesPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,17 +15,17 @@ export default async function ResolveMatchesPage({ params }: { params: Promise<{
   if (rows.length === 0) redirect(`/app/imports/${id}/validate`);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <ImportStepper current={4} />
 
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Resolve matches — {importRecord.fileName}</h1>
+      <div>
+        <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-ink">Resolve matches — {importRecord.fileName}</h1>
         <p className="mt-1 text-sm text-body">
           {rows.length} row{rows.length === 1 ? '' : 's'} may already exist as an account. Decide each one before importing.
         </p>
-      </header>
+      </div>
 
-      <div className="rounded-lg border border-hairline-strong bg-surface-card">
+      <Panel>
         {rows.map((r) => {
           const merge = resolveImportRowAction.bind(null, id, r.id, 'merge');
           const createNew = resolveImportRowAction.bind(null, id, r.id, 'create_new');
@@ -55,7 +56,7 @@ export default async function ResolveMatchesPage({ params }: { params: Promise<{
             </div>
           );
         })}
-      </div>
+      </Panel>
 
       <Link href={`/app/imports/${id}/validate`} className="text-xs text-text-link hover:underline">
         ← Back to Validation

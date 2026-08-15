@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getImport, getImportRows } from '@/data/imports';
 import { ImportStepper } from '@/components/import-stepper';
+import { Panel } from '@/components/ui/panel';
+import { MicroLabel } from '@/components/ui/micro-label';
 
 export default async function ValidateRowsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,48 +26,52 @@ export default async function ValidateRowsPage({ params }: { params: Promise<{ i
   const failedRows = rows.filter((r) => r.error);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <ImportStepper current={3} />
 
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Validate rows — {importRecord.fileName}</h1>
+      <div>
+        <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-ink">Validate rows — {importRecord.fileName}</h1>
         <p className="mt-1 text-sm text-body">{rows.length} rows checked against your mapping and existing accounts.</p>
-      </header>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {tiles.map((t) => (
-          <div key={t.label} className="rounded-lg border border-hairline-strong bg-surface-card p-4">
+          <Panel key={t.label} className="p-4">
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${t.dot}`} />
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted">{t.label}</span>
+              <span className={`h-1.5 w-1.5 rounded-full ${t.dot}`} />
+              <span className="text-[12.5px] text-body">{t.label}</span>
             </div>
-            <div className="mt-1 font-mono text-2xl text-ink">{t.value}</div>
-            <div className="text-xs text-muted">of {t.of} rows</div>
-          </div>
+            <div className="mt-1.5 text-[22px] font-semibold text-ink">{t.value}</div>
+            <div className="mt-0.5 text-[11.5px] text-muted">of {t.of} rows</div>
+          </Panel>
         ))}
       </div>
 
       {failedRows.length > 0 && (
         <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Issues</h2>
-          <div className="rounded-lg border border-hairline-strong bg-surface-card">
+          <div className="mb-2">
+            <MicroLabel>Issues</MicroLabel>
+          </div>
+          <Panel className="overflow-hidden">
             {failedRows.map((r) => (
               <div key={r.id} className="border-b border-hairline px-4 py-3 text-sm last:border-b-0">
                 <span className="font-mono text-xs text-muted">Row {r.rowNumber}</span> — {r.error}
               </div>
             ))}
-          </div>
+          </Panel>
         </section>
       )}
 
       <div>
         {needsReview > 0 ? (
-          <Link href={`/app/imports/${id}/resolve`} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">
-            Resolve {needsReview} Match{needsReview === 1 ? '' : 'es'}
+          <Link href={`/app/imports/${id}/resolve`}>
+            <span className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">
+              Resolve {needsReview} Match{needsReview === 1 ? '' : 'es'}
+            </span>
           </Link>
         ) : (
-          <Link href={`/app/imports/${id}/summary`} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">
-            Continue to Import
+          <Link href={`/app/imports/${id}/summary`}>
+            <span className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">Continue to Import</span>
           </Link>
         )}
       </div>

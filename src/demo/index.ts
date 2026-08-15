@@ -50,6 +50,7 @@ export interface ListRow {
   pinned: boolean;
   priorityLabel: PriorityLabel;
   lastOutcome: (typeof fx.DEMO_CALL_OUTCOMES)[number] | null;
+  sourcesCount: number;
 }
 
 export function getListRows(listId: string): ListRow[] {
@@ -71,6 +72,7 @@ export function getListRows(listId: string): ListRow[] {
         pinned: item.pinned,
         priorityLabel: toPriorityLabel(scores.get(item.accountId)),
         lastOutcome: outcomes[0] ?? null,
+        sourcesCount: fx.DEMO_RESEARCH_FINDINGS.filter((f) => f.accountId === item.accountId).length,
       };
     })
     .filter((r): r is ListRow => r !== null);

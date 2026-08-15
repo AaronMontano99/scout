@@ -14,7 +14,7 @@ const CERTAINTY_STYLES: Record<CertaintyType, string> = {
 export function CertaintyBadge({ certainty }: { certainty: CertaintyType }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${CERTAINTY_STYLES[certainty]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-[0.08em] ${CERTAINTY_STYLES[certainty]}`}
     >
       {certainty}
     </span>
@@ -33,7 +33,7 @@ const ROLE_LABELS: Record<BuyingRole, string> = {
 
 export function RoleBadge({ role }: { role: BuyingRole }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-surface-strong px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink">
+    <span className="inline-flex items-center rounded-full bg-surface-strong px-2.5 py-0.5 text-[11.5px] font-medium text-ink">
       {ROLE_LABELS[role]}
     </span>
   );

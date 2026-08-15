@@ -8,26 +8,24 @@ const STEPS = [
 
 export function ImportStepper({ current }: { current: 1 | 2 | 3 | 4 | 5 }) {
   return (
-    <div className="flex items-center">
+    <div className="flex items-center rounded-lg border border-hairline-strong bg-surface-card p-4">
       {STEPS.map((step, i) => (
-        <div key={step.n} className="flex items-center">
-          <div className="flex flex-col items-center gap-1">
+        <div key={step.n} className="flex flex-1 items-center">
+          <div className="flex items-center gap-2.5 whitespace-nowrap">
             <div
-              className={`flex h-7 w-7 items-center justify-center rounded-full font-mono text-xs font-medium ${
+              className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border font-mono text-[10px] ${
                 step.n < current
-                  ? 'bg-primary text-on-primary'
+                  ? 'border-ink bg-ink text-canvas'
                   : step.n === current
-                    ? 'border-2 border-ink text-ink'
-                    : 'border border-hairline-strong text-muted'
+                    ? 'border-ink text-ink'
+                    : 'border-hairline-strong text-muted'
               }`}
             >
               {step.n < current ? '✓' : step.n}
             </div>
-            <span className={`text-[11px] ${step.n <= current ? 'text-ink' : 'text-muted'}`}>{step.label}</span>
+            <span className={`text-[12.5px] font-medium ${step.n <= current ? 'text-ink' : 'text-muted'}`}>{step.label}</span>
           </div>
-          {i < STEPS.length - 1 && (
-            <div className={`mx-2 h-px w-10 sm:w-16 ${step.n < current ? 'bg-primary' : 'bg-hairline-strong'}`} />
-          )}
+          {i < STEPS.length - 1 && <div className={`mx-3 h-px flex-1 ${step.n < current ? 'bg-ink' : 'bg-hairline-strong'}`} />}
         </div>
       ))}
     </div>

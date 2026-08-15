@@ -4,6 +4,7 @@ import { StatTile, formatRate } from '@/components/stat-tile';
 import { EmptyState } from '@/components/states';
 import { FirstRun } from '@/components/first-run';
 import { TodayList } from '@/components/today-list';
+import { PageHeader } from '@/components/ui/page-header';
 
 // Today — "who should I contact today, why, and what do we already
 // know" (docs/PRODUCT_CONSTITUTION.md's core questions), aggregated
@@ -32,11 +33,8 @@ export default function TodayPage() {
   const funnel = getFunnel();
 
   return (
-    <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Today</h1>
-        <p className="mt-1 text-sm text-body">Accounts worth working today, across all active lists.</p>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Today" subtitle="Your highest-priority accounts to work right now." />
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile label="Calls Attempted" value={String(funnel.callsAttempted)} />

@@ -7,6 +7,7 @@ import {
   createContact,
   addKnowledgeItem,
   createTargetList,
+  updateTargetList,
   addAccountToList,
   setTargetListItemPinned,
   setTargetListItemWorked,
@@ -67,6 +68,20 @@ export async function createTargetListAction(formData: FormData): Promise<void> 
 
   revalidatePath('/app/lists');
   redirect(`/app/lists/${list.id}`);
+}
+
+export async function updateTargetListAction(listId: string, formData: FormData): Promise<void> {
+  const name = str(formData, 'name');
+  if (!name) throw new Error('List name is required');
+
+  updateTargetList(listId, {
+    name,
+    description: str(formData, 'description'),
+    researchFocus: str(formData, 'researchFocus'),
+  });
+
+  revalidatePath(`/app/lists/${listId}`);
+  redirect(`/app/lists/${listId}`);
 }
 
 export async function addAccountToListAction(listId: string, formData: FormData): Promise<void> {

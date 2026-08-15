@@ -4,6 +4,9 @@ import { uploadImportAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/states';
+import { PageHeader } from '@/components/ui/page-header';
+import { Panel } from '@/components/ui/panel';
+import { MicroLabel } from '@/components/ui/micro-label';
 
 const STATUS_LABEL: Record<string, string> = {
   uploaded: 'Uploaded',
@@ -23,15 +26,12 @@ export default function ImportsPage() {
   const imports = listImports();
 
   return (
-    <div className="flex flex-col gap-8">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Imports</h1>
-        <p className="mt-1 text-sm text-body">Bring accounts and contacts in from a CSV or XLSX spreadsheet.</p>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Imports" subtitle="Bring in a spreadsheet and turn it into a usable target list." />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <section className="rounded-lg border border-hairline-strong bg-surface-card p-6">
-          <h2 className="text-sm font-semibold text-ink">Upload a file</h2>
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <Panel className="p-[18px_20px]">
+          <div className="text-[15px] font-semibold text-ink">Upload a file</div>
           <form action={uploadImportAction} className="mt-4 flex flex-col gap-4">
             <label className="flex flex-col gap-1 text-sm text-body">
               File (CSV or XLSX, up to 10MB)
@@ -51,34 +51,36 @@ export default function ImportsPage() {
               Upload &amp; Continue
             </Button>
           </form>
-        </section>
+        </Panel>
 
         <aside className="flex flex-col gap-4">
-          <div className="rounded-lg border border-hairline-strong bg-surface-card p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">What this creates</div>
-            <ul className="mt-2 flex flex-col gap-2 text-xs text-body">
+          <Panel className="p-4">
+            <MicroLabel>What This Creates</MicroLabel>
+            <ul className="mt-2.5 flex flex-col gap-2 text-xs text-body">
               <li>Accounts — one per row, matched against existing accounts when possible.</li>
               <li>Contacts — created if a contact-name column is mapped.</li>
               <li>Knowledge items — created if a notes/history column is mapped.</li>
             </ul>
-          </div>
-          <div className="rounded-lg border border-hairline-strong bg-surface-card p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted">Rules</div>
-            <ul className="mt-2 flex flex-col gap-2 text-xs text-body">
+          </Panel>
+          <Panel className="p-4">
+            <MicroLabel>Rules</MicroLabel>
+            <ul className="mt-2.5 flex flex-col gap-2 text-xs text-body">
               <li>You confirm every column mapping — nothing is guessed silently.</li>
               <li>A possible duplicate is never merged automatically — you decide.</li>
               <li>Your list progress never resets after an import.</li>
             </ul>
-          </div>
+          </Panel>
         </aside>
       </div>
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Recent Imports</h2>
+        <div className="mb-2">
+          <MicroLabel>Recent Imports</MicroLabel>
+        </div>
         {imports.length === 0 ? (
           <EmptyState title="No imports yet" body="Your uploaded files will show up here once you import your first one." />
         ) : (
-          <div className="rounded-lg border border-hairline-strong bg-surface-card">
+          <Panel className="overflow-hidden">
             {imports.map((imp) => (
               <Link
                 key={imp.id}
@@ -95,7 +97,7 @@ export default function ImportsPage() {
                 <span className="text-xs text-body">{STATUS_LABEL[imp.status] ?? imp.status}</span>
               </Link>
             ))}
-          </div>
+          </Panel>
         )}
       </section>
     </div>

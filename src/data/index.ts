@@ -118,6 +118,7 @@ export interface ListRow {
   pinned: boolean;
   priorityLabel: PriorityLabel;
   lastOutcome: CallOutcome | null;
+  sourcesCount: number;
 }
 
 export function getListRows(listId: string): ListRow[] {
@@ -136,6 +137,7 @@ export function getListRows(listId: string): ListRow[] {
         pinned: item.pinned,
         priorityLabel: toPriorityLabel(scores.get(item.accountId)),
         lastOutcome: outcomes[0] ?? null,
+        sourcesCount: getResearchFindingsForAccount(item.accountId).length,
       };
     })
     .filter((r): r is ListRow => r !== null);
@@ -433,6 +435,13 @@ export function createTargetList(input: { name: string; description?: string }):
   return getTargetList(id)!;
 }
 
+export function updateTargetList(id: string, input: { name: string; description?: string; researchFocus?: string }): TargetList {
+  getDb()
+    .prepare(`UPDATE target_lists SET name = ?, description = ?, research_focus = ? WHERE id = ?`)
+    .run(input.name, input.description ?? null, input.researchFocus ?? null, id);
+  return getTargetList(id)!;
+}
+
 export function addAccountToList(listId: string, accountId: string): TargetListItem {
   const id = uuid();
   getDb()
@@ -613,9 +622,12 @@ export interface TodayRow {
   entry: TodayEntry;
   keyPerson: { name: string; title: string | null; certainty: AccountContactRelationship['certaintyType'] } | null;
   whatWeKnow: string | null;
+  suggestedAngle: string | null;
   freshnessLabel: string;
   flag: string | null;
 }
+
+const GENERIC_TALKING_POINT = 'Add notes below to build talking points here.';
 
 export function getTodayRows(limit = 50): TodayRow[] {
   return getTodayEntries(limit).map((entry) => {
@@ -623,6 +635,8 @@ export function getTodayRows(limit = 50): TodayRow[] {
     const topContact = contacts[0];
     const items = getKnowledgeItemsForAccount(entry.account.id);
     const warning = getIdentityWarning(entry.account.id);
+    const brief = getAccountBrief(entry.account.id);
+    const talkingPoint = brief?.talkingPoints.find((t) => t !== GENERIC_TALKING_POINT) ?? null;
     return {
       entry,
       keyPerson: topContact
@@ -633,6 +647,7 @@ export function getTodayRows(limit = 50): TodayRow[] {
           }
         : null,
       whatWeKnow: items[0]?.content ?? null,
+      suggestedAngle: talkingPoint,
       freshnessLabel: describeCompanyFreshness(entry.account.id),
       flag:
         warning?.warning ??

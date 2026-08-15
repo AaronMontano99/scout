@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { TodayRow } from '@/data';
-import { PriorityLabelChip } from './priority';
 import { CertaintyBadge } from './badges';
 import { FilterChipGroup, type FilterChipOption } from './ui/filter-chip';
 import { SearchInput } from './ui/search-input';
+import { MicroLabel } from './ui/micro-label';
+import { Panel } from './ui/panel';
 import { PinToggleButton, MarkWorkedButton } from './list-item-actions';
 
 type Filter = 'all' | 'strong_context' | 'useful_context' | 'limited_data' | 'unworked' | 'needs_review';
@@ -19,6 +20,21 @@ const FILTERS: FilterChipOption<Filter>[] = [
   { id: 'unworked', label: 'Unworked' },
   { id: 'needs_review', label: 'Needs Review' },
 ];
+
+const PRIORITY_DOT: Record<string, string> = {
+  strong_context: 'bg-semantic-success',
+  useful_context: 'bg-text-link',
+  limited_data: 'bg-muted',
+  lower_confidence: 'bg-accent-warning',
+};
+const PRIORITY_TEXT: Record<string, string> = {
+  strong_context: 'Strong Context',
+  useful_context: 'Useful Context',
+  limited_data: 'Limited Data',
+  lower_confidence: 'Lower Confidence',
+};
+
+const GRID_COLS = 'grid-cols-[32px_220px_1fr_150px_1fr_1fr_120px]';
 
 function matchesFilter(row: TodayRow, filter: Filter): boolean {
   switch (filter) {
@@ -45,72 +61,83 @@ export function TodayList({ rows }: { rows: TodayRow[] }) {
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap items-center gap-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search accounts…" />
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-4">
         <FilterChipGroup options={FILTERS} value={filter} onChange={setFilter} />
-        <span className="ml-auto text-xs text-muted">{filtered.length} accounts</span>
+        <div className="w-[260px]">
+          <SearchInput value={query} onChange={setQuery} placeholder="Search accounts…" />
+        </div>
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-hairline-strong bg-surface-card px-4 py-8 text-center text-sm text-muted">
-          No accounts match these filters.
-        </div>
+        <Panel className="px-4 py-10 text-center text-sm text-muted">No accounts match these filters.</Panel>
       ) : (
-        <div className="flex flex-col gap-2">
+        <Panel className="overflow-hidden">
+          <div className={`grid ${GRID_COLS} gap-4 border-b border-hairline bg-canvas-soft px-[18px] py-2.5`}>
+            <div />
+            <MicroLabel>Account</MicroLabel>
+            <MicroLabel>Why Now</MicroLabel>
+            <MicroLabel>Key Person</MicroLabel>
+            <MicroLabel>What We Know</MicroLabel>
+            <MicroLabel>Suggested Angle</MicroLabel>
+            <div />
+          </div>
+
           {filtered.map((row) => {
             const { entry } = row;
             return (
-              <Link
+              <div
                 key={entry.account.id}
-                href={`/app/accounts/${entry.account.id}`}
-                className="block rounded-lg border border-hairline-strong bg-surface-card px-4 py-3 hover:bg-canvas-soft"
+                className={`grid ${GRID_COLS} items-start gap-4 border-b border-hairline px-[18px] py-4 last:border-b-0 hover:bg-canvas-soft`}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <PinToggleButton itemId={entry.item.id} pinned={entry.pinned} />
-                      <span className="truncate text-sm font-medium text-ink">{entry.account.name}</span>
-                      {entry.account.primaryDomain && (
-                        <span className="truncate text-xs text-muted">{entry.account.primaryDomain}</span>
-                      )}
-                      <PriorityLabelChip priority={entry.priorityLabel} />
-                    </div>
+                <div className="flex flex-col items-center gap-1.5 pt-0.5">
+                  <PinToggleButton itemId={entry.item.id} pinned={entry.pinned} />
+                </div>
 
-                    {entry.reasons.length > 0 && (
-                      <div className="mt-1 text-xs text-body">{entry.reasons.join(' · ')}</div>
-                    )}
-
-                    <div className="mt-2 grid gap-x-6 gap-y-1 text-xs text-body sm:grid-cols-2">
-                      <div>
-                        <span className="text-muted">Key person: </span>
-                        {row.keyPerson ? (
-                          <>
-                            {row.keyPerson.name}
-                            {row.keyPerson.title && <span className="text-muted"> · {row.keyPerson.title}</span>}{' '}
-                            <CertaintyBadge certainty={row.keyPerson.certainty} />
-                          </>
-                        ) : (
-                          <span className="text-muted">No person on file</span>
-                        )}
-                      </div>
-                      <div className="truncate">
-                        <span className="text-muted">What we know: </span>
-                        {row.whatWeKnow ?? <span className="text-muted">Nothing recorded yet</span>}
-                      </div>
-                    </div>
-
-                    <div className="mt-2 flex items-center gap-3 text-xs text-muted">
-                      <span>{row.freshnessLabel}</span>
-                      {row.flag && <span className="text-accent-warning">{row.flag}</span>}
-                    </div>
+                <div className="min-w-0">
+                  <Link href={`/app/accounts/${entry.account.id}`} className="block truncate text-sm font-semibold text-ink hover:underline">
+                    {entry.account.name}
+                  </Link>
+                  <div className="mt-0.5 truncate text-xs text-muted">{entry.account.primaryDomain}</div>
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${PRIORITY_DOT[entry.priorityLabel]}`} />
+                    <span className="text-xs text-body">{PRIORITY_TEXT[entry.priorityLabel]}</span>
                   </div>
+                  {row.flag && <div className="mt-1.5 text-[11.5px] leading-tight text-accent-warning">{row.flag}</div>}
+                </div>
 
+                <div className="text-[13px] leading-relaxed text-ink">
+                  {entry.reasons.length > 0 ? entry.reasons.join(' · ') : <span className="text-muted">—</span>}
+                </div>
+
+                <div>
+                  {row.keyPerson ? (
+                    <div>
+                      <div className="text-[13px] font-medium text-ink">{row.keyPerson.name}</div>
+                      <div className="mt-0.5 text-xs text-body">{row.keyPerson.title}</div>
+                      <div className="mt-1.5">
+                        <CertaintyBadge certainty={row.keyPerson.certainty} />
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-[12.5px] text-muted">No person on file</span>
+                  )}
+                </div>
+
+                <div className="truncate text-[13px] leading-relaxed text-body">
+                  {row.whatWeKnow ?? <span className="text-muted">Nothing recorded yet</span>}
+                </div>
+
+                <div className="truncate text-[13px] leading-relaxed text-body">
+                  {row.suggestedAngle ?? <span className="text-muted">—</span>}
+                </div>
+
+                <div className="flex justify-end">
                   <MarkWorkedButton itemId={entry.item.id} worked={entry.item.status === 'worked'} />
                 </div>
-              </Link>
+              </div>
             );
           })}
-        </div>
+        </Panel>
       )}
     </div>
   );

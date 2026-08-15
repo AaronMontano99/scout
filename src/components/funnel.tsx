@@ -31,15 +31,15 @@ export function ProspectingFunnelView({ funnel }: { funnel: ProspectingFunnel })
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3.5">
       {stages.map((stage) => (
         <div key={stage.label}>
-          <div className="mb-1 flex items-baseline justify-between text-sm">
-            <span className="text-ink">{stage.label}</span>
-            <span className="flex items-baseline gap-2">
-              <span className="font-mono text-ink">{stage.count}</span>
+          <div className="mb-1.5 flex items-baseline justify-between">
+            <span className="text-[13.5px] text-ink">{stage.label}</span>
+            <span className="flex items-baseline gap-2.5">
+              <span className="font-mono text-[13px] text-ink">{stage.count}</span>
               {stage.rateFromPrevious && (
-                <span className="text-xs text-muted">{formatRate(stage.rateFromPrevious).value}</span>
+                <span className="w-[100px] text-right text-[11.5px] text-muted">{formatRate(stage.rateFromPrevious).value}</span>
               )}
             </span>
           </div>

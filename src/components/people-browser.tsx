@@ -4,10 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { PersonRow } from '@/data';
 import type { CertaintyType } from '@/types/evidence';
-import { CertaintyBadge, RoleBadge } from './badges';
-import { FreshnessChip } from './priority';
+import { CertaintyBadge } from './badges';
+import { Avatar } from './ui/avatar';
 import { FilterChipGroup, type FilterChipOption } from './ui/filter-chip';
 import { SearchInput } from './ui/search-input';
+import { MicroLabel } from './ui/micro-label';
+import { Panel } from './ui/panel';
+import { Button } from './ui/button';
 
 type Filter = 'all' | 'known' | 'inferred' | 'suggested' | 'champion' | 'decision_maker' | 'economic_buyer';
 
@@ -21,11 +24,23 @@ const FILTERS: FilterChipOption<Filter>[] = [
   { id: 'economic_buyer', label: 'Economic Buyers' },
 ];
 
+const ROLE_LABEL: Record<string, string> = {
+  decision_maker: 'Decision Maker',
+  economic_buyer: 'Economic Buyer',
+  champion: 'Champion',
+  influencer: 'Influencer',
+  technical_buyer: 'Technical Buyer',
+  blocker: 'Blocker',
+  unknown: 'Unknown',
+};
+
 const CERTAINTY_EXPLANATION: Record<CertaintyType, string> = {
   KNOWN: 'Confirmed directly — you or a trusted source entered this as fact.',
   INFERRED: 'Inferred from context. Not yet confirmed — verify before relying on it.',
   SUGGESTED: 'A low-confidence suggestion. Treat as a starting point, not a fact.',
 };
+
+const GRID_COLS = 'grid-cols-[180px_1fr_150px_130px_110px]';
 
 function personName(contact: PersonRow['contact']): string {
   return `${contact.firstName ?? ''} ${contact.lastName ?? ''}`.trim() || 'Unnamed contact';
@@ -46,7 +61,7 @@ function matchesFilter(row: PersonRow, filter: Filter): boolean {
 
 export function PeopleBrowser({ rows, initialAccountId }: { rows: PersonRow[]; initialAccountId?: string }) {
   const [filter, setFilter] = useState<Filter>('all');
-  const [query, setQuery] = useState(initialAccountId ? '' : '');
+  const [query, setQuery] = useState('');
   const [accountFilter, setAccountFilter] = useState<string | undefined>(initialAccountId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -65,98 +80,115 @@ export function PeopleBrowser({ rows, initialAccountId }: { rows: PersonRow[]; i
   const related = selected ? rows.filter((r) => r.account.id === selected.account.id && r.contact.id !== selected.contact.id) : [];
 
   return (
-    <div>
-      <div className="mb-3 flex flex-wrap items-center gap-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search people by name, company, or role…" />
-        <FilterChipGroup options={FILTERS} value={filter} onChange={setFilter} />
+    <div className="flex items-start gap-5">
+      <Panel className="min-w-0 flex-1 overflow-hidden">
+        <div className="flex flex-wrap items-center gap-3 border-b border-hairline px-4 py-3.5">
+          <SearchInput value={query} onChange={setQuery} placeholder="Search people by name, company, or role…" />
+        </div>
+        <div className="border-b border-hairline px-4 py-3">
+          <FilterChipGroup options={FILTERS} value={filter} onChange={setFilter} />
+        </div>
         {accountFilter && (
-          <button
-            type="button"
-            onClick={() => setAccountFilter(undefined)}
-            className="rounded-full bg-surface-strong px-3 py-1 text-xs text-body hover:text-ink"
-          >
-            Filtered to {rows.find((r) => r.account.id === accountFilter)?.account.name ?? 'account'} ✕
-          </button>
-        )}
-        <span className="ml-auto text-xs text-muted">{filtered.length} people</span>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        {filtered.length === 0 ? (
-          <div className="rounded-lg border border-hairline-strong bg-surface-card px-4 py-8 text-center text-sm text-muted">
-            No people match these filters.
+          <div className="border-b border-hairline px-4 py-2">
+            <button
+              type="button"
+              onClick={() => setAccountFilter(undefined)}
+              className="rounded-full bg-surface-strong px-3 py-1 text-xs text-body hover:text-ink"
+            >
+              Filtered to {rows.find((r) => r.account.id === accountFilter)?.account.name ?? 'account'} ✕
+            </button>
           </div>
+        )}
+
+        <div className={`grid ${GRID_COLS} gap-3.5 border-b border-hairline bg-canvas-soft px-4 py-2`}>
+          <MicroLabel>Person</MicroLabel>
+          <MicroLabel>Account / Title</MicroLabel>
+          <MicroLabel>Buying Role</MicroLabel>
+          <MicroLabel>Certainty</MicroLabel>
+          <MicroLabel>Verified</MicroLabel>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-muted">No people match these filters.</div>
         ) : (
-          <div className="rounded-lg border border-hairline-strong bg-surface-card">
+          <div className="max-h-[640px] overflow-auto">
             {filtered.map((r) => (
               <button
                 key={r.contact.id}
                 type="button"
                 onClick={() => setSelectedId(r.contact.id)}
-                className={`flex w-full items-center justify-between gap-3 border-b border-hairline px-4 py-3 text-left last:border-b-0 hover:bg-canvas-soft ${
+                className={`grid ${GRID_COLS} w-full items-center gap-3.5 border-b border-hairline px-4 py-3 text-left last:border-b-0 hover:bg-canvas-soft ${
                   selected?.contact.id === r.contact.id ? 'bg-canvas-soft' : ''
                 }`}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-ink">{personName(r.contact)}</span>
-                    <RoleBadge role={r.relationship.roleHypothesis} />
-                    <CertaintyBadge certainty={r.relationship.certaintyType} />
-                  </div>
-                  <div className="mt-0.5 truncate text-xs text-body">
-                    {r.contact.title ?? 'No title on file'} · {r.account.name}
-                  </div>
-                </div>
-                <FreshnessChip label={r.freshnessLabel} />
+                <span className="flex min-w-0 items-center gap-2">
+                  <Avatar name={personName(r.contact)} />
+                  <span className="truncate text-[13.5px] font-medium text-ink">{personName(r.contact)}</span>
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[12.5px] text-ink">{r.account.name}</span>
+                  <span className="mt-0.5 block truncate text-[11.5px] text-muted">{r.contact.title ?? 'No title on file'}</span>
+                </span>
+                <span className="truncate text-[12.5px] text-ink">{ROLE_LABEL[r.relationship.roleHypothesis]}</span>
+                <span>
+                  <CertaintyBadge certainty={r.relationship.certaintyType} />
+                </span>
+                <span className="text-[11.5px] text-muted">{r.freshnessLabel}</span>
               </button>
             ))}
           </div>
         )}
+      </Panel>
 
-        {selected && (
-          <div className="h-fit rounded-lg border border-hairline-strong bg-surface-card p-4">
-            <div className="text-sm font-semibold text-ink">{personName(selected.contact)}</div>
-            <div className="text-xs text-body">
-              {selected.contact.title ?? 'No title on file'} · {selected.account.name}
+      {selected && (
+        <Panel className="w-[430px] shrink-0 overflow-hidden">
+          <div className="border-b border-hairline px-[22px] pt-5 pb-[18px]">
+            <div className="flex items-center gap-3">
+              <Avatar name={personName(selected.contact)} size="lg" />
+              <div className="min-w-0">
+                <div className="text-[18px] font-semibold tracking-[-0.01em] text-ink">{personName(selected.contact)}</div>
+                <div className="mt-0.5 text-[12.5px] text-body">
+                  {selected.contact.title ?? 'No title on file'} · {selected.account.name}
+                </div>
+              </div>
             </div>
-            <div className="mt-2 flex items-center gap-2">
-              <RoleBadge role={selected.relationship.roleHypothesis} />
+            <div className="mt-3.5 flex items-center gap-2">
+              <span className="inline-flex rounded-full bg-surface-strong px-2.5 py-0.5 text-[11.5px] font-medium text-ink">
+                {ROLE_LABEL[selected.relationship.roleHypothesis]}
+              </span>
               <CertaintyBadge certainty={selected.relationship.certaintyType} />
             </div>
-            <p className="mt-2 text-xs text-body">{CERTAINTY_EXPLANATION[selected.relationship.certaintyType]}</p>
-            {selected.sourceNote && (
-              <p className="mt-2 text-xs text-body">
-                <span className="text-muted">Why: </span>
-                {selected.sourceNote}
-              </p>
-            )}
+            <div className="mt-3.5 flex gap-2">
+              <Link href={`/app/accounts/${selected.account.id}`}>
+                <Button className="!px-[15px] !py-[9px] !text-[12.5px]">Open brief</Button>
+              </Link>
+              <Link href={`/app/accounts/${selected.account.id}`}>
+                <Button variant="secondary" className="!px-[15px] !py-[9px] !text-[12.5px]">
+                  View account
+                </Button>
+              </Link>
+            </div>
+          </div>
 
-            <div className="mt-4 flex gap-2">
-              <Link
-                href={`/app/accounts/${selected.account.id}`}
-                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary"
-              >
-                Open Brief
-              </Link>
-              <Link
-                href={`/app/accounts/${selected.account.id}`}
-                className="rounded-md border border-hairline-strong bg-surface-card px-3 py-1.5 text-xs font-medium text-ink hover:bg-canvas-soft"
-              >
-                Open Account
-              </Link>
+          <div className="flex flex-col gap-5 px-[22px] py-[18px]">
+            <div>
+              <MicroLabel>Why This Person Matters</MicroLabel>
+              <p className="mt-2 text-[13px] leading-[1.5] text-body">{CERTAINTY_EXPLANATION[selected.relationship.certaintyType]}</p>
+              {selected.sourceNote && (
+                <p className="mt-2 text-[13px] leading-[1.5] text-body">
+                  <span className="text-muted">Why: </span>
+                  {selected.sourceNote}
+                </p>
+              )}
             </div>
 
             {related.length > 0 && (
-              <div className="mt-4 border-t border-hairline pt-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-muted">Related People</div>
-                <ul className="mt-2 flex flex-col gap-2">
+              <div className="border-t border-hairline pt-4">
+                <MicroLabel>Related People</MicroLabel>
+                <ul className="mt-2.5 flex flex-col gap-2">
                   {related.map((r) => (
                     <li key={r.contact.id}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedId(r.contact.id)}
-                        className="text-xs text-text-link hover:underline"
-                      >
+                      <button type="button" onClick={() => setSelectedId(r.contact.id)} className="text-[12.5px] text-text-link hover:underline">
                         {personName(r.contact)} — {r.contact.title ?? 'No title'}
                       </button>
                     </li>
@@ -165,8 +197,8 @@ export function PeopleBrowser({ rows, initialAccountId }: { rows: PersonRow[]; i
               </div>
             )}
           </div>
-        )}
-      </div>
+        </Panel>
+      )}
     </div>
   );
 }
