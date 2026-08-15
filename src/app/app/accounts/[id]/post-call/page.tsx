@@ -48,6 +48,12 @@ export default async function PostCallPage({ params }: { params: Promise<{ id: s
                       {note.cleanNote}
                     </p>
                   )}
+                  {note?.followUpEmailDraft && (
+                    <div className="mt-1.5 rounded-md border border-hairline-strong bg-canvas-soft p-3">
+                      <div className="text-[11px] font-semibold tracking-wide text-muted uppercase">Follow-Up Email Draft</div>
+                      <p className="mt-1 text-[13px] whitespace-pre-wrap text-ink">{note.followUpEmailDraft}</p>
+                    </div>
+                  )}
                 </li>
               );
             })}

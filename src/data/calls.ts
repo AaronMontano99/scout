@@ -134,6 +134,11 @@ export function updateCleanNote(callOutcomeId: string, cleanNote: string): void 
   getDb().prepare(`UPDATE post_call_notes SET clean_note = ? WHERE call_outcome_id = ?`).run(cleanNote, callOutcomeId);
 }
 
+/** Best-effort AI-generated follow-up email draft, in the rep's saved Seller Style voice, based only on what actually happened on the call — see src/ai/seller-voice/ and docs/POST_CALL_WORKFLOW.md. */
+export function updateFollowUpEmailDraft(callOutcomeId: string, draft: string): void {
+  getDb().prepare(`UPDATE post_call_notes SET follow_up_email_draft = ? WHERE call_outcome_id = ?`).run(draft, callOutcomeId);
+}
+
 /** The account's open (not yet worked/skipped) list membership, if any — used to auto-mark-worked when a call is logged. */
 export function getPrimaryOpenListItemId(accountId: string): string | null {
   const r = row(

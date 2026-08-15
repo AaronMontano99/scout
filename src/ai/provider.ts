@@ -54,10 +54,24 @@ export interface SummaryResult {
   modelUsed: string;
 }
 
+export interface GenerationInput {
+  /** Instructions/persona/rules — kept separate from userPrompt so a provider can put it in the right slot (e.g. Ollama's system role). */
+  systemPrompt: string;
+  /** The actual request + structured context to write from. */
+  userPrompt: string;
+}
+
+export interface GenerationResult {
+  text: string;
+  modelUsed: string;
+}
+
 export interface AIProvider {
   classify(input: ClassificationInput): Promise<ClassificationResult>;
   extractStructuredData<T>(input: ExtractionInput<T>): Promise<StructuredResult<T>>;
   reason(input: ReasoningInput): Promise<ReasoningResult>;
   summarize(input: SummarizationInput): Promise<SummaryResult>;
+  /** Free-form generation from an explicit system+user prompt pair — see src/ai/seller-voice/ for the primary consumer (call scripts, emails, voicemails). Distinct from summarize/reason, which shape their inputs around an existing text to condense or a question to answer. */
+  generate(input: GenerationInput): Promise<GenerationResult>;
   embed(input: string | string[]): Promise<number[][]>;
 }

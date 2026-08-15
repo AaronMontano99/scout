@@ -14,6 +14,8 @@ export interface WorkspaceSettings {
   whatYouSell: string;
   idealBuyerRoles: string;
   callStyle: string;
+  /** Used in generated call scripts/voicemails as the callback number — see src/ai/seller-voice/. */
+  phoneNumber: string;
 }
 
 const DEFAULTS: WorkspaceSettings = {
@@ -24,6 +26,7 @@ const DEFAULTS: WorkspaceSettings = {
   whatYouSell: '',
   idealBuyerRoles: '',
   callStyle: '',
+  phoneNumber: '',
 };
 
 export function getSettings(): WorkspaceSettings {
