@@ -61,7 +61,7 @@ export const AI_FILLER_PHRASES: string[] = [
 ];
 
 export interface SellerVoiceLintIssue {
-  rule: 'cold_call_acknowledgment' | 'permission_opener' | 'corporate_jargon' | 'ai_filler' | 'excessive_dashes';
+  rule: 'cold_call_acknowledgment' | 'permission_opener' | 'corporate_jargon' | 'ai_filler' | 'excessive_dashes' | 'unfilled_placeholder';
   detail: string;
 }
 
@@ -105,6 +105,18 @@ export function lintExcessiveDashes(text: string): SellerVoiceLintIssue[] {
   return [];
 }
 
+// Matches unfilled template tokens like "[Your Company Name]" or
+// "[insert industry]" — a small local model sometimes falls back to
+// these when context is sparse (no contact or industry on file)
+// instead of writing around the gap. Never acceptable in a real
+// message, so this is a hard rule, not a style preference.
+const PLACEHOLDER_PATTERN = /\[[A-Za-z][^[\]\n]{0,40}\]/g;
+
+export function lintUnfilledPlaceholders(text: string): SellerVoiceLintIssue[] {
+  const matches = [...new Set((text.match(PLACEHOLDER_PATTERN) ?? []).map((m) => m.trim()))];
+  return matches.map((m) => ({ rule: 'unfilled_placeholder', detail: `Contains unfilled placeholder: ${m}` }));
+}
+
 /**
  * Full hard-rule pass over a generated communication. See
  * src/ai/seller-voice/generate.ts, which retries once (never more)
@@ -118,6 +130,7 @@ export function lintSellerVoiceOutput(text: string, customPhrasesToAvoid: string
     ...lintCorporateJargon(text),
     ...lintAiFiller(text),
     ...lintExcessiveDashes(text),
+    ...lintUnfilledPlaceholders(text),
     ...lintCustomPhrases(text, customPhrasesToAvoid),
   ];
 }

@@ -46,11 +46,33 @@ export interface ComposeInput {
   orgSettings: Pick<WorkspaceSettings, 'whatYouSell' | 'idealBuyerRoles' | 'callStyle'>;
 }
 
+/** Real sample(s) for this exact type, falling back to sampleScripts for voicemail (same pitch, different medium) when the rep hasn't taught one yet. */
+function resolveSamples(input: ComposeInput): { samples: string[]; fallbackNote: string } {
+  const style = input.sellerStyle;
+  const sampleKey = SAMPLE_KEY_FOR_TYPE[input.communicationType];
+  const direct = sampleKey ? (style[sampleKey] as string[] | undefined) : undefined;
+  if (direct && direct.length > 0) return { samples: direct, fallbackNote: '' };
+  if (input.communicationType === 'voicemail' && style.sampleScripts.length > 0) {
+    return {
+      samples: style.sampleScripts,
+      fallbackNote: ' (no voicemail example saved yet — these are the real call scripts this rep writes; adapt the same opening and pacing for a message left on an answering machine)',
+    };
+  }
+  return { samples: [], fallbackNote: '' };
+}
+
 function buildSystemPrompt(input: ComposeInput): string {
   const sections: string[] = [];
+  const hasSamples = resolveSamples(input).samples.length > 0;
 
   sections.push(
-    `You are helping a real B2B salesperson write ${TYPE_LABEL[input.communicationType]}. Write ONLY the communication itself — no preamble like "Here is..." or "Sure, here's...", no meta-commentary, no explanation. Just the message.`
+    [
+      `You are helping a real B2B salesperson write ${TYPE_LABEL[input.communicationType]}. Write ONLY the communication itself — no preamble like "Here is..." or "Sure, here's...", no meta-commentary, no explanation. Just the message.`,
+      hasSamples &&
+        'This rep has taught Scout real examples of their own writing, included below — that is the actual voice to write in. Everything else in this prompt is background context; the real example is the template.',
+    ]
+      .filter(Boolean)
+      .join(' ')
   );
 
   sections.push(`--- SCOUT'S DEFAULT SELLER VOICE (fallback — the rep's own saved style below always wins where they conflict) ---\n${DEFAULT_SELLER_STYLE_PROMPT}`);
@@ -81,14 +103,17 @@ function buildSystemPrompt(input: ComposeInput): string {
     sections.push(parts.join('\n'));
   }
 
-  const sampleKey = SAMPLE_KEY_FOR_TYPE[input.communicationType];
-  const samples = sampleKey ? (style[sampleKey] as string[] | undefined) : undefined;
-  if (samples && samples.length > 0) {
+  const { samples, fallbackNote: sampleFallbackNote } = resolveSamples(input);
+  if (samples.length > 0) {
     sections.push(
-      `--- REAL EXAMPLES OF HOW THIS REP WRITES ${TYPE_LABEL[input.communicationType].toUpperCase()} (match this voice closely) ---\n${samples
-        .slice(0, 3)
-        .map((s, i) => `Example ${i + 1}:\n${s}`)
-        .join('\n\n')}`
+      [
+        `--- THIS IS LITERALLY HOW THE REP WRITES — NOT A TONE REFERENCE, A TEMPLATE${sampleFallbackNote} ---`,
+        'The example(s) below are real messages this specific person sent. Do not write your own version of the message and sprinkle in some similar words — copy the actual structure: the same opening line pattern, the same sentence length and rhythm, the same order of ideas, the same level of directness, the same sign-off style. Only the specific facts should change (company name, contact name, the products/proof points, dates/times) to fit this new message. If you are unsure how casual or short to be, look at the example again rather than guessing generically.',
+        samples
+          .slice(0, 3)
+          .map((s, i) => `Example ${i + 1}:\n${s}`)
+          .join('\n\n'),
+      ].join('\n\n')
     );
   }
 
@@ -140,7 +165,12 @@ function buildUserPrompt(input: ComposeInput): string {
     lines.push('Base this follow-up ONLY on what happened on this call. Do not re-pitch the whole company or introduce unrelated products.');
   }
 
-  lines.push(`Write ${TYPE_LABEL[input.communicationType]} now.`);
+  const { samples } = resolveSamples(input);
+  lines.push(
+    samples.length > 0
+      ? `Write ${TYPE_LABEL[input.communicationType]} now, following the structure and phrasing of the rep's real example as closely as possible.`
+      : `Write ${TYPE_LABEL[input.communicationType]} now.`
+  );
 
   return lines.join('\n');
 }
