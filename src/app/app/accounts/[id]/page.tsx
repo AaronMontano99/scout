@@ -69,7 +69,11 @@ export default async function AccountPage({
   // sections above, so exclude them here to avoid showing the same
   // content twice. They still appear in the full timeline below.
   const teamKnowledgeItems = knowledgeItems.filter((k) => !(k.structuredValue as { kind?: string } | null)?.kind?.startsWith('ai_'));
-  const findings = getResearchFindingsForAccount(id);
+  // "Recent Developments" means news/events, not the raw company-website
+  // scrape (which can be thousands of characters of nav/marketing copy —
+  // that already feeds the short AI-synthesized "What They Do" summary
+  // above instead). Only news-type findings belong here.
+  const findings = getResearchFindingsForAccount(id).filter((f) => f.findingType === 'news');
   const outcomes = getCallOutcomesForAccount(id);
   const sellingSituations = getSellingSituationsForAccount(id);
 
@@ -227,13 +231,17 @@ export default async function AccountPage({
                     <MicroLabel>Recent Developments</MicroLabel>
                     <FreshnessChip label={describeNewsFreshness(id)} />
                   </div>
-                  <div className="mt-2.5 flex max-w-[800px] flex-col gap-2">
+                  <ul className="mt-2.5 flex max-w-[800px] flex-col gap-2">
                     {findings.map((f) => (
-                      <div key={f.id} className="text-[13.5px] leading-[1.55] text-body">
-                        {f.content} {f.url && <SourceChip url={f.url} label={f.sourceName} />}
-                      </div>
+                      <li key={f.id} className="flex items-start gap-2 text-[13.5px] leading-[1.5] text-body">
+                        <span className="mt-[7px] h-[3px] w-[3px] shrink-0 rounded-full bg-muted" />
+                        <span>
+                          {f.content.length > 220 ? `${f.content.slice(0, 220).trim()}…` : f.content}{' '}
+                          {f.url && <SourceChip url={f.url} label={f.sourceName} />}
+                        </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </section>
               )}
 

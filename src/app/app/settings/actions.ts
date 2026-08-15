@@ -22,7 +22,7 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
     phoneNumber: str(formData, 'phoneNumber'),
   });
   revalidatePath('/app/settings');
-  redirect('/app/settings');
+  redirect('/app/settings?saved=1');
 }
 
 export async function deleteLocalDataAction(formData: FormData): Promise<void> {
