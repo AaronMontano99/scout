@@ -370,6 +370,12 @@ CREATE TABLE IF NOT EXISTS seller_style_profiles (
   sample_emails TEXT NOT NULL DEFAULT '[]', -- JSON
   sample_voicemails TEXT NOT NULL DEFAULT '[]', -- JSON
   tone_notes TEXT,
+  -- Explicit, durable rules the rep has stated outright ("never use
+  -- dashes," "always offer two specific times") — see docs/SELLER_STYLE.md's
+  -- style hierarchy. Distinct from tone_notes (freeform prose describing
+  -- overall voice): {rules: string[], phrasesToAvoid: string[]}. JSON,
+  -- additive column so this stays the smallest correct schema change.
+  style_rules TEXT NOT NULL DEFAULT '{"rules":[],"phrasesToAvoid":[]}', -- JSON
   updated_at TEXT NOT NULL
 );
 

@@ -9,6 +9,8 @@ import type {
   ReasoningResult,
   SummarizationInput,
   SummaryResult,
+  GenerationInput,
+  GenerationResult,
 } from '../provider';
 
 /**
@@ -24,7 +26,13 @@ import type {
  * checkOllamaStatus() for the honest availability check Settings uses.
  */
 
-const REQUEST_TIMEOUT_MS = 30_000;
+// Seller-voice generation prompts (full style profile + samples + org
+// context) are much longer than the classify/summarize/reason prompts
+// this was originally tuned for, and local llama3.2 needs well over 30s
+// to process them on modest hardware. Every call site using this
+// provider is already best-effort/non-blocking (fire-and-forget from
+// server actions), so a generous ceiling here costs nothing.
+const REQUEST_TIMEOUT_MS = 120_000;
 
 function ollamaHost(): string {
   return getEnv().OLLAMA_HOST;
@@ -141,6 +149,11 @@ export class OllamaProvider implements AIProvider {
     const system = `Summarize the provided text factually and concisely${input.maxLength ? `, in under ${input.maxLength} characters` : ''}. Only state what the text actually says — never add outside information.`;
     const summary = await chat(this.model, system, input.content, false);
     return { summary: summary.trim().slice(0, input.maxLength ?? 4000), modelUsed: this.model };
+  }
+
+  async generate(input: GenerationInput): Promise<GenerationResult> {
+    const text = await chat(this.model, input.systemPrompt, input.userPrompt, false);
+    return { text: text.trim(), modelUsed: this.model };
   }
 
   async embed(input: string | string[]): Promise<number[][]> {

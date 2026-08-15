@@ -12,6 +12,7 @@ import {
   describeCompanyFreshness,
   describeNewsFreshness,
   getListsForAccount,
+  getGeneratedCommunication,
 } from '@/data';
 import { getPrimaryListItemForAccount } from '@/data/calls';
 import { CertaintyBadge, OutcomeBadge } from '@/components/badges';
@@ -22,6 +23,7 @@ import { MicroLabel } from '@/components/ui/micro-label';
 import { Button } from '@/components/ui/button';
 import { MarkWorkedButtonBrief } from '@/components/list-item-actions';
 import { RefreshResearchButton } from '@/components/refresh-research-button';
+import { CommunicationGenerator } from '@/components/communication-generator';
 
 // Account page for your real data — same layout as
 // src/app/demo/accounts/[id]/page.tsx, honest instead of AI-authored:
@@ -76,6 +78,9 @@ export default async function AccountPage({
   const competitorMemory = incumbentName ? getCompetitorMemory().find((m) => m.competitor === incumbentName) : null;
   const lists = getListsForAccount(id);
   const primaryItem = getPrimaryListItemForAccount(id);
+  const callScriptDraft = getGeneratedCommunication(id, 'call_script')?.content ?? null;
+  const voicemailDraft = getGeneratedCommunication(id, 'voicemail_script')?.content ?? null;
+  const emailDraft = getGeneratedCommunication(id, 'email_draft')?.content ?? null;
 
   return (
     <div className="mx-auto flex max-w-[1080px] flex-col gap-4">
@@ -244,6 +249,16 @@ export default async function AccountPage({
               </section>
             </>
           )}
+        </div>
+      </div>
+
+      <div>
+        <MicroLabel>Outreach</MicroLabel>
+        <p className="mt-1 text-xs text-muted">Written in your saved Seller Style (Settings → Seller Style) — never invents facts, times, or customer names.</p>
+        <div className="mt-2.5 grid gap-3 sm:grid-cols-3">
+          <CommunicationGenerator accountId={id} communicationType="call_script" initialText={callScriptDraft} />
+          <CommunicationGenerator accountId={id} communicationType="voicemail" initialText={voicemailDraft} />
+          <CommunicationGenerator accountId={id} communicationType="email" initialText={emailDraft} />
         </div>
       </div>
 

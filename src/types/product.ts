@@ -127,7 +127,13 @@ export type KnowledgeItemType =
   | 'historical_event'
   | 'research_finding'
   | 'announcement'
-  | 'inferred_observation';
+  | 'inferred_observation'
+  // AI-generated seller-voice output (call script, voicemail, email
+  // draft, talk track) — see src/ai/seller-voice/. Which one is
+  // distinguished by structuredValue.kind, not a separate type per
+  // communication, to avoid enum sprawl for what's the same kind of
+  // record (a generated draft, superseded on regeneration).
+  | 'generated_communication';
 
 export interface KnowledgeItem {
   id: string;

@@ -19,6 +19,7 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
     whatYouSell: str(formData, 'whatYouSell'),
     idealBuyerRoles: str(formData, 'idealBuyerRoles'),
     callStyle: str(formData, 'callStyle'),
+    phoneNumber: str(formData, 'phoneNumber'),
   });
   revalidatePath('/app/settings');
   redirect('/app/settings');

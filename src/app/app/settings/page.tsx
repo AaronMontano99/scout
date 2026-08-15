@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import { getAIProviderStatus } from '@/ai/config';
+import { getOrCreateSellerStyleProfile } from '@/data/seller-style';
 
 // Settings — the control surface for the local app. Every field here
 // persists to workspace_settings; every provider status is honest
@@ -36,6 +37,7 @@ function SectionCard({ n, title, help, children }: { n: number; title: string; h
 export default async function SettingsPage() {
   const settings = getSettings();
   const aiStatus = await getAIProviderStatus();
+  const sellerStyleProfile = getOrCreateSellerStyleProfile();
 
   const providers: { label: string; help: string; status: string; dot: string }[] = [
     { label: 'CSV / XLSX Import', help: 'Local, deterministic column mapping — no AI required.', status: 'Available', dot: 'bg-semantic-success' },
@@ -75,6 +77,10 @@ export default async function SettingsPage() {
                 Territory
                 <Input name="territory" defaultValue={settings.territory} placeholder="e.g. West Region" />
               </label>
+              <label className="flex flex-col gap-1.5 text-[12.5px] font-medium text-ink">
+                Phone (callback number for generated scripts/voicemails)
+                <Input name="phoneNumber" defaultValue={settings.phoneNumber} placeholder="e.g. (555) 123-4567" />
+              </label>
             </div>
           </SectionCard>
 
@@ -98,6 +104,20 @@ export default async function SettingsPage() {
           <Button type="submit" className="self-start">
             Save Settings
           </Button>
+
+          <Panel className="flex items-center justify-between gap-4 p-[18px_20px]">
+            <div>
+              <div className="text-[15px] font-semibold text-ink">Seller Style</div>
+              <p className="mt-1 text-[12.5px] text-body">
+                {sellerStyleProfile.styleRules.rules.length} rule{sellerStyleProfile.styleRules.rules.length === 1 ? '' : 's'}, {sellerStyleProfile.styleRules.phrasesToAvoid.length} phrase{sellerStyleProfile.styleRules.phrasesToAvoid.length === 1 ? '' : 's'} to avoid,{' '}
+                {sellerStyleProfile.sampleScripts.length + sellerStyleProfile.sampleEmails.length + sellerStyleProfile.sampleVoicemails.length} example
+                {sellerStyleProfile.sampleScripts.length + sellerStyleProfile.sampleEmails.length + sellerStyleProfile.sampleVoicemails.length === 1 ? '' : 's'} saved. Once taught, every generated call script, voicemail, and email uses this automatically.
+              </p>
+            </div>
+            <Link href="/app/settings/seller-style" className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary">
+              Edit Style
+            </Link>
+          </Panel>
 
           <Panel className="flex items-center justify-between gap-4 bg-canvas-soft p-[12px_14px]">
             <div>
