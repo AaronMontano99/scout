@@ -26,12 +26,32 @@ function ReachBar({ label, rate }: { label: string; rate: ReturnType<typeof getR
   );
 }
 
-export default function AnalyticsPage() {
-  const activity = getActivityCounts();
-  const funnel = getFunnel();
-  const reach = getRoleReach();
+type Range = '7d' | '30d' | 'all';
+
+const RANGES: { id: Range; label: string }[] = [
+  { id: '7d', label: 'Last 7 days' },
+  { id: '30d', label: 'Last 30 days' },
+  { id: 'all', label: 'All time' },
+];
+
+function sinceFor(range: Range): string | undefined {
+  if (range === 'all') return undefined;
+  const days = range === '7d' ? 7 : 30;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString();
+}
+
+export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+  const { range: rangeParam } = await searchParams;
+  const range: Range = rangeParam === '7d' || rangeParam === '30d' ? rangeParam : 'all';
+  const since = sinceFor(range);
+
+  const activity = getActivityCounts(since);
+  const funnel = getFunnel(since);
+  const reach = getRoleReach(since);
   const lists = getTargetLists();
-  const recentOutcomes = getRecentOutcomes(10);
+  const recentOutcomes = getRecentOutcomes(10, since);
 
   const funnelTiles = [
     { label: 'Calls Attempted', value: funnel.callsAttempted, denom: null },
@@ -44,7 +64,33 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader title="Analytics" subtitle="Concrete prospecting metrics tied to real calls, conversations, and meetings." />
+      <PageHeader
+        title="Analytics"
+        subtitle="Concrete prospecting metrics tied to real calls, conversations, and meetings."
+        actions={
+          <>
+            <div className="flex items-center overflow-hidden rounded-md border border-hairline-strong">
+              {RANGES.map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/app/analytics?range=${r.id}`}
+                  className={`px-3.5 py-[9px] text-[12.5px] font-medium whitespace-nowrap ${
+                    range === r.id ? 'bg-ink text-canvas' : 'bg-canvas text-body hover:bg-canvas-soft'
+                  }`}
+                >
+                  {r.label}
+                </Link>
+              ))}
+            </div>
+            <a
+              href="/app/settings/export"
+              className="rounded-md border border-hairline-strong bg-canvas px-4 py-[9px] text-[13.5px] font-medium whitespace-nowrap text-ink hover:bg-canvas-soft"
+            >
+              Export
+            </a>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {funnelTiles.map((t) => (

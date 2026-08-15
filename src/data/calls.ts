@@ -137,3 +137,14 @@ export function getPrimaryOpenListItemId(accountId: string): string | null {
   );
   return (r?.id as string | undefined) ?? null;
 }
+
+/** The account's most relevant list-membership row, whatever its status — used by the Account Brief's Mark Worked control so it reflects real current state (including already-worked). Prefers an open item, falls back to the most recently added membership. */
+export function getPrimaryListItemForAccount(accountId: string): { id: string; worked: boolean } | null {
+  const open = row(
+    `SELECT id, status FROM target_list_items WHERE account_id = ? AND status IN ('not_started', 'in_progress') ORDER BY added_at ASC LIMIT 1`,
+    [accountId]
+  );
+  const r = open ?? row(`SELECT id, status FROM target_list_items WHERE account_id = ? ORDER BY added_at DESC LIMIT 1`, [accountId]);
+  if (!r) return null;
+  return { id: r.id as string, worked: r.status === 'worked' };
+}

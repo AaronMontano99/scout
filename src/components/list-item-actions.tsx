@@ -34,6 +34,43 @@ export function PinToggleButton({ itemId, pinned }: { itemId: string; pinned: bo
   );
 }
 
+/** Full-width secondary-style variant for the Account Brief's action column — see docs/PRODUCT_UX.md. Renders disabled with an explanation when the account isn't on any open list item, since there's nothing to mark worked yet. */
+export function MarkWorkedButtonBrief({ itemId, worked }: { itemId: string | null; worked: boolean }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  if (!itemId) {
+    return (
+      <button
+        type="button"
+        disabled
+        title="Add this account to a Target List to enable Mark Worked"
+        className="w-full rounded-md border border-hairline-strong bg-surface-card px-4 py-[9px] text-[12.5px] font-medium text-muted opacity-60"
+      >
+        Mark worked
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() => {
+        startTransition(async () => {
+          await setItemWorkedAction(itemId, !worked);
+          router.refresh();
+        });
+      }}
+      className={`w-full rounded-md border border-hairline-strong px-4 py-[9px] text-[12.5px] font-medium transition-colors disabled:opacity-50 ${
+        worked ? 'bg-surface-strong text-ink' : 'bg-surface-card text-ink hover:bg-canvas-soft'
+      }`}
+    >
+      {isPending ? 'Saving…' : worked ? 'Worked ✓' : 'Mark worked'}
+    </button>
+  );
+}
+
 export function MarkWorkedButton({ itemId, worked }: { itemId: string; worked: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();

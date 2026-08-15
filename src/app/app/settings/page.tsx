@@ -42,7 +42,7 @@ export default function SettingsPage() {
   const settings = getSettings();
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex max-w-[1120px] flex-col gap-5">
       <PageHeader title="Settings" subtitle="Your workspace, what you sell, and how research behaves. Everything stays on this machine." />
 
       <div className="flex items-start gap-5">

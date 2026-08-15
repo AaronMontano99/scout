@@ -162,9 +162,9 @@ export function PeopleBrowser({ rows, initialAccountId }: { rows: PersonRow[]; i
               <Link href={`/app/accounts/${selected.account.id}`}>
                 <Button className="!px-[15px] !py-[9px] !text-[12.5px]">Open brief</Button>
               </Link>
-              <Link href={`/app/accounts/${selected.account.id}`}>
+              <Link href={`/app/accounts/${selected.account.id}?expand=1`}>
                 <Button variant="secondary" className="!px-[15px] !py-[9px] !text-[12.5px]">
-                  View account
+                  View full account
                 </Button>
               </Link>
             </div>

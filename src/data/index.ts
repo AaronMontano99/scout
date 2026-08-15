@@ -275,16 +275,25 @@ export function describeNewsFreshness(accountId: string) {
 
 // === Analytics =============================================================
 
-export function getFunnel() {
-  return computeFunnel(rows('SELECT * FROM analytics_events').map(mapAnalyticsEvent));
+export function getFunnel(since?: string) {
+  const events = since
+    ? rows('SELECT * FROM analytics_events WHERE occurred_at >= ?', [since])
+    : rows('SELECT * FROM analytics_events');
+  return computeFunnel(events.map(mapAnalyticsEvent));
 }
 
-export function getRoleReach() {
-  return computeRoleReach(rows('SELECT * FROM call_outcomes').map(mapCallOutcome));
+export function getRoleReach(since?: string) {
+  const outcomes = since
+    ? rows('SELECT * FROM call_outcomes WHERE occurred_at >= ?', [since])
+    : rows('SELECT * FROM call_outcomes');
+  return computeRoleReach(outcomes.map(mapCallOutcome));
 }
 
-export function getActivityCounts() {
-  return computeActivityCounts(rows('SELECT * FROM analytics_events').map(mapAnalyticsEvent));
+export function getActivityCounts(since?: string) {
+  const events = since
+    ? rows('SELECT * FROM analytics_events WHERE occurred_at >= ?', [since])
+    : rows('SELECT * FROM analytics_events');
+  return computeActivityCounts(events.map(mapAnalyticsEvent));
 }
 
 export interface RecentOutcomeRow {
@@ -292,8 +301,12 @@ export interface RecentOutcomeRow {
   accountName: string;
 }
 
-export function getRecentOutcomes(limit = 10): RecentOutcomeRow[] {
-  return rows('SELECT * FROM call_outcomes ORDER BY occurred_at DESC LIMIT ?', [limit])
+export function getRecentOutcomes(limit = 10, since?: string): RecentOutcomeRow[] {
+  const sql = since
+    ? 'SELECT * FROM call_outcomes WHERE occurred_at >= ? ORDER BY occurred_at DESC LIMIT ?'
+    : 'SELECT * FROM call_outcomes ORDER BY occurred_at DESC LIMIT ?';
+  const params = since ? [since, limit] : [limit];
+  return rows(sql, params)
     .map(mapCallOutcome)
     .map((outcome) => ({ outcome, accountName: getAccount(outcome.accountId)?.name ?? 'Unknown account' }));
 }

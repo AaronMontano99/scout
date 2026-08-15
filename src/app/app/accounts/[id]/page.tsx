@@ -13,12 +13,14 @@ import {
   describeNewsFreshness,
   getListsForAccount,
 } from '@/data';
+import { getPrimaryListItemForAccount } from '@/data/calls';
 import { CertaintyBadge, OutcomeBadge } from '@/components/badges';
 import { SourceChip } from '@/components/states';
 import { Disclosure } from '@/components/disclosure';
 import { FreshnessChip } from '@/components/priority';
 import { MicroLabel } from '@/components/ui/micro-label';
 import { Button } from '@/components/ui/button';
+import { MarkWorkedButtonBrief } from '@/components/list-item-actions';
 
 // Account page for your real data — same layout as
 // src/app/demo/accounts/[id]/page.tsx, honest instead of AI-authored:
@@ -44,8 +46,15 @@ const ROLE_LABEL: Record<string, string> = {
   unknown: 'Unknown',
 };
 
-export default async function AccountPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AccountPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ expand?: string }>;
+}) {
   const { id } = await params;
+  const { expand } = await searchParams;
   const account = getAccount(id);
   if (!account) notFound();
 
@@ -60,6 +69,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
   const incumbentName = incumbentItem?.structuredValue?.competitor_name as string | undefined;
   const competitorMemory = incumbentName ? getCompetitorMemory().find((m) => m.competitor === incumbentName) : null;
   const lists = getListsForAccount(id);
+  const primaryItem = getPrimaryListItemForAccount(id);
 
   return (
     <div className="mx-auto flex max-w-[1080px] flex-col gap-4">
@@ -113,12 +123,13 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
                     Add note
                   </Button>
                 </Link>
-                <Link href={`/app/accounts/${id}/contacts/new`} className="flex-1">
-                  <Button variant="secondary" className="w-full !py-[9px] !text-[12.5px]">
-                    Add contact
-                  </Button>
-                </Link>
+                <div className="flex-1">
+                  <MarkWorkedButtonBrief itemId={primaryItem?.id ?? null} worked={primaryItem?.worked ?? false} />
+                </div>
               </div>
+              <span title="No research provider is configured — see Settings" className="mt-0.5 cursor-not-allowed text-center text-[12.5px] text-muted">
+                Refresh research
+              </span>
             </div>
           </div>
         </div>
@@ -162,7 +173,14 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
               </section>
 
               <section>
-                <MicroLabel>Who Matters</MicroLabel>
+                <div className="flex items-baseline justify-between">
+                  <MicroLabel>Who Matters</MicroLabel>
+                  {contacts.length > 0 && (
+                    <Link href={`/app/accounts/${id}/contacts/new`} className="text-[12.5px] text-text-link hover:underline">
+                      + Add contact
+                    </Link>
+                  )}
+                </div>
                 {contacts.length === 0 ? (
                   <p className="mt-2 text-[13.5px] text-muted">
                     No relevant people confirmed yet.{' '}
@@ -257,7 +275,7 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
         </section>
       )}
 
-      <Disclosure label="Show full account brain →" expandedLabel="↑ Hide full account brain">
+      <Disclosure label="Show full account brain →" expandedLabel="↑ Hide full account brain" defaultOpen={expand === '1'}>
         <div className="flex flex-col gap-6 border-t border-hairline pt-6">
           <div className="flex items-center justify-between">
             <MicroLabel>Full Knowledge Timeline</MicroLabel>

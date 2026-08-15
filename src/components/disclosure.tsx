@@ -10,12 +10,15 @@ export function Disclosure({
   label,
   expandedLabel,
   children,
+  defaultOpen = false,
 }: {
   label: string;
   expandedLabel: string;
   children: React.ReactNode;
+  /** Only ever true as the direct result of a user's own navigation (e.g. a "View full account" link) — never the default for a plain visit. */
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div>
       <button

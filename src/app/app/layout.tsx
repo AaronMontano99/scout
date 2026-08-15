@@ -24,7 +24,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const ownerName = 'You';
 
   return (
-    <div className="flex min-h-screen bg-canvas-soft text-[14px]">
+    <div className="flex min-h-screen w-full min-w-[1280px] bg-canvas-soft text-[14px]">
       <Sidebar dbPath="data/scout.db" />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-hairline bg-canvas px-6">
@@ -39,7 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <WorkspaceAvatar initials={membership.role === 'OWNER' ? 'Y' : 'U'} />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1240px] flex-1 overflow-auto px-7 py-[26px] pb-10">{children}</main>
+        <main className="w-full flex-1 overflow-auto px-7 py-[26px] pb-10">{children}</main>
       </div>
     </div>
   );
