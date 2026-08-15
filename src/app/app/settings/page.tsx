@@ -34,7 +34,8 @@ function SectionCard({ n, title, help, children }: { n: number; title: string; h
   );
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
+  const { saved } = await searchParams;
   const settings = getSettings();
   const aiStatus = await getAIProviderStatus();
   const sellerStyleProfile = getOrCreateSellerStyleProfile();
@@ -56,6 +57,12 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex max-w-[1120px] flex-col gap-5">
       <PageHeader title="Settings" subtitle="Your workspace, what you sell, and how research behaves. Everything stays on this machine." />
+
+      {saved === '1' && (
+        <div className="rounded-md border border-semantic-success/40 bg-semantic-success/10 px-4 py-2.5 text-[13px] text-semantic-success">
+          Settings saved.
+        </div>
+      )}
 
       <div className="flex items-start gap-5">
         <form action={saveSettingsAction} className="flex min-w-0 flex-1 flex-col gap-4">
