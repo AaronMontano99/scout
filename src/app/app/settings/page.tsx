@@ -5,18 +5,13 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
+import { getAIProviderStatus } from '@/ai/config';
 
 // Settings — the control surface for the local app. Every field here
 // persists to workspace_settings; every provider status is honest
 // (Available / Not configured / Unavailable), never a fake connection.
-// See docs/PRODUCT_UX.md.
-
-const PROVIDERS: { label: string; help: string; status: string; dot: string }[] = [
-  { label: 'CSV / XLSX Import', help: 'Local, deterministic column mapping — no AI required.', status: 'Available', dot: 'bg-semantic-success' },
-  { label: 'Research Provider', help: 'Free Web Research: company website + public news search. No API key, never LinkedIn.', status: 'Available', dot: 'bg-semantic-success' },
-  { label: 'AI Provider', help: 'Optional — not required to use Scout locally.', status: 'Not configured', dot: 'bg-muted' },
-  { label: 'CRM Adapter', help: 'Future extension point — no CRM writeback exists yet.', status: 'Unavailable', dot: 'bg-muted' },
-];
+// AI Provider status is a live check (getAIProviderStatus pings Ollama
+// at request time) — never a static claim. See docs/PRODUCT_UX.md.
 
 const PRODUCT_RULES = [
   'Scout never hides a denominator behind a rate.',
@@ -38,8 +33,23 @@ function SectionCard({ n, title, help, children }: { n: number; title: string; h
   );
 }
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
   const settings = getSettings();
+  const aiStatus = await getAIProviderStatus();
+
+  const providers: { label: string; help: string; status: string; dot: string }[] = [
+    { label: 'CSV / XLSX Import', help: 'Local, deterministic column mapping — no AI required.', status: 'Available', dot: 'bg-semantic-success' },
+    { label: 'Research Provider', help: 'Free Web Research: company website + public news search. No API key, never LinkedIn.', status: 'Available', dot: 'bg-semantic-success' },
+    {
+      label: 'AI Provider',
+      help: aiStatus.available
+        ? `Ollama, model "${aiStatus.model}" — clean call notes + research summaries.`
+        : (aiStatus.reason ?? 'Optional — not required to use Scout locally.'),
+      status: aiStatus.available ? `Available (${aiStatus.provider})` : 'Not configured',
+      dot: aiStatus.available ? 'bg-semantic-success' : 'bg-muted',
+    },
+    { label: 'CRM Adapter', help: 'Future extension point — no CRM writeback exists yet.', status: 'Unavailable', dot: 'bg-muted' },
+  ];
 
   return (
     <div className="mx-auto flex max-w-[1120px] flex-col gap-5">
@@ -102,7 +112,7 @@ export default function SettingsPage() {
           <Panel className="p-[18px_20px]">
             <div className="text-[15px] font-semibold text-ink">Local data and providers</div>
             <div className="mt-3 flex flex-col gap-3">
-              {PROVIDERS.map((p) => (
+              {providers.map((p) => (
                 <div key={p.label} className="flex items-center justify-between gap-3 border-b border-hairline pb-3 last:border-b-0 last:pb-0">
                   <div>
                     <div className="text-[13px] font-medium text-ink">{p.label}</div>

@@ -129,6 +129,11 @@ export function logCall(accountId: string, input: LogCallInput): LogCallResult {
   return { callOutcomeId: outcomeId, proposedUpdates };
 }
 
+/** Best-effort AI-generated clean note, applied after logCall — see src/app/app/accounts/[id]/post-call/actions.ts. Never invents facts, just rewrites the rep's own words; if it's unavailable the raw note stands on its own, which was always the honest fallback. */
+export function updateCleanNote(callOutcomeId: string, cleanNote: string): void {
+  getDb().prepare(`UPDATE post_call_notes SET clean_note = ? WHERE call_outcome_id = ?`).run(cleanNote, callOutcomeId);
+}
+
 /** The account's open (not yet worked/skipped) list membership, if any — used to auto-mark-worked when a call is logged. */
 export function getPrimaryOpenListItemId(accountId: string): string | null {
   const r = row(

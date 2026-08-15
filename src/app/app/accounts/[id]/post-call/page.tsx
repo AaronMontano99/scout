@@ -1,13 +1,14 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAccount, getContactsForAccount, getCallOutcomesForAccount } from '@/data';
+import { getAccount, getContactsForAccount, getCallOutcomesForAccount, getPostCallNoteForOutcome } from '@/data';
 import { LogCallForm } from '@/components/log-call-form';
 import { OutcomeBadge } from '@/components/badges';
 
 // Real post-call workflow — logs a CallOutcome and (with explicit
 // approval) writes proposed observations into account memory, always
-// tagged INFERRED. No AI-generated "clean note" here — there's no AI
-// provider connected in local mode. See docs/POST_CALL_WORKFLOW.md.
+// tagged INFERRED. Clean-note rewriting is best-effort AI (Ollama) —
+// see src/app/app/accounts/[id]/post-call/actions.ts; the raw note is
+// always saved regardless of whether that succeeds.
 
 export default async function PostCallPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,14 +33,24 @@ export default async function PostCallPage({ params }: { params: Promise<{ id: s
       {outcomes.length > 0 && (
         <section>
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">Call History</div>
-          <ul className="mt-2 flex flex-col gap-2">
-            {outcomes.map((o) => (
-              <li key={o.id} className="flex items-center gap-2 text-sm text-body">
-                <OutcomeBadge outcome={o.outcomeType} />
-                <span>{new Date(o.occurredAt).toLocaleString()}</span>
-                {o.contactRoleObserved && <span>— {o.contactRoleObserved}</span>}
-              </li>
-            ))}
+          <ul className="mt-2 flex flex-col gap-3">
+            {outcomes.map((o) => {
+              const note = getPostCallNoteForOutcome(o.id);
+              return (
+                <li key={o.id} className="text-sm text-body">
+                  <div className="flex items-center gap-2">
+                    <OutcomeBadge outcome={o.outcomeType} />
+                    <span>{new Date(o.occurredAt).toLocaleString()}</span>
+                    {o.contactRoleObserved && <span>— {o.contactRoleObserved}</span>}
+                  </div>
+                  {note?.cleanNote && (
+                    <p className="mt-1.5 rounded-md border border-hairline-strong bg-surface-card px-3 py-2 text-[13px] text-ink">
+                      {note.cleanNote}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

@@ -12,13 +12,17 @@ export function RefreshResearchButton({ accountId, variant = 'link' }: { account
 
   const run = () => {
     startTransition(async () => {
-      const r = await runResearchForAccount(accountId);
+      const r = await runResearchForAccount(accountId, { awaitSynthesis: true });
       setResult(r);
       router.refresh();
     });
   };
 
-  const label = isPending ? 'Searching public web + news…' : result ? `Found ${result.saved} new item${result.saved === 1 ? '' : 's'}` : 'Refresh research';
+  const label = isPending
+    ? 'Searching public web + news, then summarizing…'
+    : result
+      ? `Found ${result.saved} new item${result.saved === 1 ? '' : 's'}`
+      : 'Refresh research';
 
   if (variant === 'button') {
     return (

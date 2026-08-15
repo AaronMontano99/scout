@@ -28,13 +28,31 @@ it any time from an account's "Refresh research" button (see
 **This never touches LinkedIn or any other login-walled platform —
 that's a permanent rule, not a missing feature**, matching
 [`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) and
-[`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md). There's still no AI
-provider connected — Call-Ready Briefs summarize only what you've
-actually entered, imported, or fetched, never AI-generated narrative
-(see [`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) for why
-that's deliberately out of scope). Settings shows exactly which
-providers are Available, Not Configured, or Unavailable — never a fake
-connection.
+[`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
+
+There's also an optional local AI provider — [Ollama](https://ollama.com),
+running entirely on your own machine (no API key, nothing leaves your
+computer). If `ollama serve` is running with a model pulled (defaults
+to `llama3.2`; see
+[`src/ai/providers/ollama-provider.ts`](./src/ai/providers/ollama-provider.ts)),
+Scout uses it for two things, both best-effort and both still honest
+about certainty:
+
+- **Call-Ready Brief summaries** — after Research fetches a company's
+  website/news, Ollama turns that into a "What They Do" description
+  and a few "What Matters" bullets, strictly grounded in the fetched
+  text (instructed never to invent) and always tagged `SUGGESTED`.
+- **Clean call notes** — after you log a call, Ollama rewrites your
+  rough dictated note into a clean CRM-style note, keeping every fact
+  and adding nothing.
+
+Neither ever blocks the action that triggered it — both run in the
+background and the UI just picks up the result once it's ready, since
+local inference can take 10-30+ seconds. If Ollama isn't running,
+these steps quietly do nothing and Scout works exactly as it does
+without them; nothing else in Scout requires it. Settings shows
+exactly which providers are Available, Not Configured, or Unavailable
+— never a fake connection.
 [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
 and
 [`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) are
@@ -69,7 +87,7 @@ your real workspace).
 | **Lists** | Target Lists: progress, suggested calls, all-accounts filters. Progress never resets. |
 | **Accounts** | Browse/search every real account; opens into the Call-Ready Brief / Account Brain. |
 | **People** | Every real contact, always shown with both a buying-role guess *and* its certainty (`KNOWN` / `INFERRED` / `SUGGESTED`) — never one without the other. |
-| **Research** | Resolves a company/domain against your existing accounts, shows everything stored locally, and can pull fresh public web/news evidence on demand. Never LinkedIn, never AI-generated. |
+| **Research** | Resolves a company/domain against your existing accounts, shows everything stored locally, and can pull fresh public web/news evidence on demand (plus an AI summary of it, if Ollama's running). Never LinkedIn. |
 | **Imports** | Real CSV/XLSX pipeline: upload → map columns → validate → resolve possible duplicates → import. Creates Accounts, Contacts, and Knowledge Items; can drop everything into a new Target List. |
 | **Analytics** | Event-sourced funnel and role-reach numbers, always shown as numerator + denominator (a rate with no attempts renders `—`, never `0%`). |
 | **Settings** | Workspace/sales-profile fields (persisted), honest provider status, and real data controls: export a full JSON snapshot, download the raw `data/scout.db` file, or permanently delete everything. |
@@ -77,7 +95,9 @@ your real workspace).
 Logging a call (from any account's **Log Call** button) writes a real
 `CallOutcome`, marks that list item worked, and — after you explicitly
 approve — adds any notes/observations to that account's memory, always
-tagged `INFERRED` until you promote them yourself.
+tagged `INFERRED` until you promote them yourself. If Ollama's
+running, a clean rewritten version of your note appears alongside the
+raw one a few seconds later.
 
 ## Start here
 
@@ -181,6 +201,15 @@ No `.env.local` is required to run Scout. `ANTHROPIC_API_KEY` (see
 `.env.example`) is entirely optional and unused by anything in Local
 Mode today — see `docs/LOCAL_MODE.md`.
 
+Want AI-generated brief summaries and clean call notes? Install
+[Ollama](https://ollama.com), run `ollama pull llama3.2` once, then
+keep `ollama serve` running in the background. Nothing to configure —
+Scout looks for it at `http://localhost:11434` by default (override
+with `OLLAMA_HOST`, or pick a different pulled model per workload via
+`AI_MODEL_EXTRACTION`/`AI_MODEL_SUMMARY`/etc. — see `.env.example`).
+Skip this entirely and Scout works exactly the same, just without
+those two AI touches.
+
 ## Commands
 
 ```
@@ -194,15 +223,17 @@ npm run format         # prettier --write
 
 ## What's NOT here yet
 
-An AI provider (optional even when one exists) and CRM writeback/
-adapters remain unconfigured — their interfaces exist in
-`src/services/*-provider.ts` as future extension points, but nothing
-is wired up, and Settings says so honestly rather than faking a
-connection. The Research Provider *is* real now (see above), but it's
-deliberately limited to two free, public, keyless sources — a
-company's own website and public news search — and will never expand
-to LinkedIn or other login-walled platforms; that's a permanent
-product boundary, not a roadmap item. There's also no in-app
+CRM writeback/adapters remain unconfigured — the interface exists in
+`src/services/crm-provider.ts` as a future extension point, but
+nothing is wired up, and Settings says so honestly rather than faking
+a connection. The Research Provider and AI Provider are both real now
+(see above), but Research is deliberately limited to two free, public,
+keyless sources — a company's own website and public news search —
+and will never expand to LinkedIn or other login-walled platforms;
+that's a permanent product boundary, not a roadmap item. The AI
+Provider (Ollama) only rewrites/summarizes text you already have —
+Scout doesn't ask it to make prospecting decisions or invent facts.
+There's also no in-app
 Selling-Situation creation flow yet, and entity resolution during
 import only checks against accounts already in the database (not
 against other rows in the same file). Multi-user auth and billing are

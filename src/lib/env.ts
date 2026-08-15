@@ -9,14 +9,19 @@ const envSchema = z.object({
   // AI provider — entirely optional in local-first mode (see
   // docs/LOCAL_MODE.md). Model names are config, never hardcoded in
   // business logic — see docs/AI_ARCHITECTURE.md.
-  AI_MODEL_EXTRACTION: z.string().min(1).default('placeholder-extraction-model'),
-  AI_MODEL_CLASSIFICATION: z
-    .string()
-    .min(1)
-    .default('placeholder-classification-model'),
-  AI_MODEL_REASONING: z.string().min(1).default('placeholder-reasoning-model'),
-  AI_MODEL_SUMMARY: z.string().min(1).default('placeholder-summary-model'),
-  AI_MODEL_EMBEDDING: z.string().min(1).default('placeholder-embedding-model'),
+  // Defaults target Ollama (see src/ai/providers/ollama-provider.ts) —
+  // free, local, no signup. Override per-workload if you've pulled a
+  // different model, or point at a different vendor's provider
+  // implementation entirely (this config only names the model; which
+  // provider class reads it is a separate wiring decision).
+  AI_MODEL_EXTRACTION: z.string().min(1).default('llama3.2'),
+  AI_MODEL_CLASSIFICATION: z.string().min(1).default('llama3.2'),
+  AI_MODEL_REASONING: z.string().min(1).default('llama3.2'),
+  AI_MODEL_SUMMARY: z.string().min(1).default('llama3.2'),
+  AI_MODEL_EMBEDDING: z.string().min(1).default('llama3.2'),
+  // Ollama server address — defaults to its standard local port, no
+  // config needed for the common case of `ollama serve` on this machine.
+  OLLAMA_HOST: z.string().min(1).default('http://localhost:11434'),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
 });
 

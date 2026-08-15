@@ -176,13 +176,29 @@ export function getAccountBrief(accountId: string): AccountBrief | null {
   if (!account) return null;
 
   const items = getKnowledgeItemsForAccount(accountId);
-  const whatTheyDo = account.industry
-    ? `${account.industry}${account.employeeCountRange ? `, ${account.employeeCountRange} employees` : ''}.`
-    : 'No description added yet — edit this account to add one.';
+
+  // AI-synthesized summary/matters (see src/app/app/research/actions.ts's
+  // synthesizeAccountSummary) take priority when present — they're
+  // grounded in real fetched evidence, not fabricated. Always SUGGESTED
+  // certainty; never silently upgraded. Only the current (non-superseded)
+  // synthesis is used here — history stays intact in the full timeline.
+  const current = items.filter((k) => k.verificationStatus === 'current');
+  const aiSummary = current.find((k) => (k.structuredValue as { kind?: string } | null)?.kind === 'ai_company_summary');
+  const aiMatters = current.filter((k) => (k.structuredValue as { kind?: string } | null)?.kind === 'ai_what_matters');
+
+  const whatTheyDo =
+    aiSummary?.content ??
+    (account.industry
+      ? `${account.industry}${account.employeeCountRange ? `, ${account.employeeCountRange} employees` : ''}.`
+      : 'No description added yet — edit this account to add one, or run Research to fetch one.');
+
+  const nonAiItems = current.filter((k) => !(k.structuredValue as { kind?: string } | null)?.kind);
   const whatMatters =
-    items.length > 0
-      ? items.slice(0, 5).map((k) => k.content)
-      : ['No notes yet — add one below to start building a record of what matters here.'];
+    aiMatters.length > 0
+      ? aiMatters.slice(0, 5).map((k) => k.content)
+      : nonAiItems.length > 0
+        ? nonAiItems.slice(0, 5).map((k) => k.content)
+        : ['No notes yet — add one below to start building a record of what matters here.'];
 
   return {
     whatTheyDo,
@@ -404,6 +420,36 @@ export function createContact(
     )
     .run(uuid(), accountId, id, input.roleHypothesis ?? 'unknown', now, now);
   return mapContact(row('SELECT * FROM contacts WHERE id = ?', [id])!);
+}
+
+/**
+ * Replaces the account's AI-synthesized "what they do"/"what matters"
+ * with a fresh version — used after a Research refresh. Never
+ * hard-deletes: prior synthesis is marked superseded (still visible in
+ * the full knowledge timeline, just no longer used for the brief's
+ * headline text) rather than destroyed — see docs/EVIDENCE_MODEL.md.
+ */
+export function replaceAiSynthesis(accountId: string, whatTheyDo: string, whatMatters: string[]): void {
+  const now = nowIso();
+  getDb()
+    .prepare(
+      `UPDATE knowledge_items SET verification_status = 'superseded', valid_until = ?
+       WHERE account_id = ? AND verification_status = 'current'
+         AND type = 'research_finding' AND origin = 'research_derived'
+         AND json_extract(structured_value, '$.kind') IN ('ai_company_summary', 'ai_what_matters')`
+    )
+    .run(now, accountId);
+
+  addKnowledgeItem(accountId, whatTheyDo, 'research_finding', 'research_derived', {
+    certaintyType: 'SUGGESTED',
+    structuredValue: { kind: 'ai_company_summary' },
+  });
+  for (const bullet of whatMatters) {
+    addKnowledgeItem(accountId, bullet, 'research_finding', 'research_derived', {
+      certaintyType: 'SUGGESTED',
+      structuredValue: { kind: 'ai_what_matters' },
+    });
+  }
 }
 
 export function addKnowledgeItem(

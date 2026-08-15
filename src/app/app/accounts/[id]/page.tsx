@@ -62,6 +62,11 @@ export default async function AccountPage({
   const brief = getAccountBrief(id);
   const contacts = getContactsForAccount(id);
   const knowledgeItems = getKnowledgeItemsForAccount(id);
+  // "What Your Team Knows" shows things a person recorded — the
+  // AI-synthesized What They Do/What Matters already have their own
+  // sections above, so exclude them here to avoid showing the same
+  // content twice. They still appear in the full timeline below.
+  const teamKnowledgeItems = knowledgeItems.filter((k) => !(k.structuredValue as { kind?: string } | null)?.kind?.startsWith('ai_'));
   const findings = getResearchFindingsForAccount(id);
   const outcomes = getCallOutcomesForAccount(id);
   const sellingSituations = getSellingSituationsForAccount(id);
@@ -158,10 +163,10 @@ export default async function AccountPage({
               <section>
                 <MicroLabel>What Your Team Knows</MicroLabel>
                 <div className="mt-2.5 flex max-w-[800px] flex-col gap-2">
-                  {knowledgeItems.length === 0 ? (
+                  {teamKnowledgeItems.length === 0 ? (
                     <p className="text-sm text-muted">No notes yet — add one to start building a record here.</p>
                   ) : (
-                    knowledgeItems.slice(0, 6).map((k) => (
+                    teamKnowledgeItems.slice(0, 6).map((k) => (
                       <div key={k.id} className="flex items-baseline gap-2.5 rounded-md px-2 py-1.5">
                         <CertaintyBadge certainty={k.certaintyType} />
                         <span className="text-[13.5px] leading-[1.55] text-body">{k.content}</span>
