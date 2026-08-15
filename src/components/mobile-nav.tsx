@@ -8,7 +8,13 @@ import { Drawer } from './ui/drawer';
 // is desktop-first but must stay usable on smaller screens. Reuses the
 // Drawer primitive rather than building a second mobile-nav mechanism.
 
-export function MobileNav({ items }: { items: { href: string; label: string }[] }) {
+export interface NavItem {
+  href: string;
+  label: string;
+  dividerBefore?: boolean;
+}
+
+export function MobileNav({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -24,14 +30,16 @@ export function MobileNav({ items }: { items: { href: string; label: string }[] 
       <Drawer open={open} onClose={() => setOpen(false)} title="Navigate">
         <nav className="flex flex-col gap-1">
           {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-2 text-sm text-body hover:bg-canvas-soft hover:text-ink"
-            >
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              {item.dividerBefore && <div className="my-2 border-t border-hairline" />}
+              <Link
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="block rounded-md px-3 py-2 text-sm text-body hover:bg-canvas-soft hover:text-ink"
+              >
+                {item.label}
+              </Link>
+            </div>
           ))}
         </nav>
       </Drawer>

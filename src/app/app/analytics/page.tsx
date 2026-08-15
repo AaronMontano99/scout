@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { getActivityCounts, getFunnel, getRoleReach, getTargetLists, getListPerformance } from '@/data';
+import { getActivityCounts, getFunnel, getRoleReach, getTargetLists, getListPerformance, getRecentOutcomes } from '@/data';
 import { StatTile, formatRate } from '@/components/stat-tile';
 import { ProspectingFunnelView } from '@/components/funnel';
 import { Card } from '@/components/ui/card';
+import { OutcomeBadge } from '@/components/badges';
 
 // Real-data analytics — same layout as src/app/demo/analytics/page.tsx.
 // Every number here is computed from analytics_events rows you actually
@@ -14,6 +15,7 @@ export default function AnalyticsPage() {
   const funnel = getFunnel();
   const reach = getRoleReach();
   const lists = getTargetLists();
+  const recentOutcomes = getRecentOutcomes(10);
 
   return (
     <div className="flex flex-col gap-8">
@@ -97,6 +99,39 @@ export default function AnalyticsPage() {
             })}
           </div>
         </section>
+      )}
+
+      <section>
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Recent Outcomes</h2>
+        {recentOutcomes.length === 0 ? (
+          <p className="text-sm text-muted">No calls logged yet — outcomes you log will show up here.</p>
+        ) : (
+          <div className="rounded-lg border border-hairline-strong bg-surface-card">
+            {recentOutcomes.map(({ outcome, accountName }) => (
+              <Link
+                key={outcome.id}
+                href={`/app/accounts/${outcome.accountId}`}
+                className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 last:border-b-0 hover:bg-canvas-soft"
+              >
+                <div className="flex items-center gap-2">
+                  <OutcomeBadge outcome={outcome.outcomeType} />
+                  <span className="text-sm text-ink">{accountName}</span>
+                </div>
+                <span className="text-xs text-muted">{new Date(outcome.occurredAt).toLocaleString()}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {activity.call_attempted === 0 && (
+        <div className="rounded-lg border border-hairline-strong bg-surface-card px-4 py-6 text-center text-sm text-muted">
+          No activity logged yet.{' '}
+          <Link href="/app" className="text-text-link hover:underline">
+            Open Today
+          </Link>{' '}
+          to start working accounts.
+        </div>
       )}
     </div>
   );

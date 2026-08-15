@@ -104,7 +104,7 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
           All Accounts ({rows.length})
         </h2>
-        <AccountFilterList rows={rows} />
+        <AccountFilterList rows={rows} basePath="/demo" />
       </section>
     </div>
   );

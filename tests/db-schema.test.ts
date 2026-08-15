@@ -55,6 +55,7 @@ describe('db/schema.sql', () => {
         'sources',
         'target_list_items',
         'target_lists',
+        'workspace_settings',
       ].sort()
     );
   });

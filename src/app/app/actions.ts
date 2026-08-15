@@ -2,7 +2,15 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { createAccount, createContact, addKnowledgeItem, createTargetList, addAccountToList } from '@/data';
+import {
+  createAccount,
+  createContact,
+  addKnowledgeItem,
+  createTargetList,
+  addAccountToList,
+  setTargetListItemPinned,
+  setTargetListItemWorked,
+} from '@/data';
 import type { AccountRelationshipStatus, BuyingRole } from '@/types/product';
 
 function str(formData: FormData, key: string): string | undefined {
@@ -69,4 +77,20 @@ export async function addAccountToListAction(listId: string, formData: FormData)
 
   revalidatePath(`/app/lists/${listId}`);
   redirect(`/app/lists/${listId}`);
+}
+
+// Called directly from client components (no <form>, no redirect) —
+// the caller re-renders via router.refresh() after these resolve.
+
+export async function setItemPinnedAction(itemId: string, pinned: boolean): Promise<void> {
+  setTargetListItemPinned(itemId, pinned);
+  revalidatePath('/app');
+  revalidatePath('/app/lists', 'layout');
+}
+
+export async function setItemWorkedAction(itemId: string, worked: boolean): Promise<void> {
+  setTargetListItemWorked(itemId, worked);
+  revalidatePath('/app');
+  revalidatePath('/app/lists', 'layout');
+  revalidatePath('/app/analytics');
 }

@@ -94,6 +94,27 @@ export function explainSuggestion(score: AccountScore | undefined, pinned: boole
   return reasons;
 }
 
+const PRIORITY_WEIGHT: Record<PriorityLabel, number> = {
+  strong_context: 3,
+  useful_context: 2,
+  limited_data: 1,
+  lower_confidence: 0,
+};
+
+/**
+ * Shared ordering rule used everywhere accounts are ranked for a rep to
+ * work — pins always outrank automatic ordering (product spec §36).
+ * Exported so any view composing its own list (e.g. a cross-list Today
+ * view) gets the identical rule rather than re-implementing it.
+ */
+export function comparePinnedThenPriority(
+  a: { pinned: boolean; priorityLabel: PriorityLabel },
+  b: { pinned: boolean; priorityLabel: PriorityLabel }
+): number {
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+  return PRIORITY_WEIGHT[b.priorityLabel] - PRIORITY_WEIGHT[a.priorityLabel];
+}
+
 /**
  * Orders a Target List's accounts for the "Suggested Calls" view.
  * Product spec §36: pins always win regardless of automatic ordering
@@ -126,18 +147,7 @@ export function rankSuggestedCalls(
     })
     .filter((e): e is SuggestedCallEntry => e !== null);
 
-  const labelWeight: Record<PriorityLabel, number> = {
-    strong_context: 3,
-    useful_context: 2,
-    limited_data: 1,
-    lower_confidence: 0,
-  };
-
-  entries.sort((a, b) => {
-    // Pinned accounts always sort first — user control beats any automatic ordering.
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    return labelWeight[b.priorityLabel] - labelWeight[a.priorityLabel];
-  });
+  entries.sort(comparePinnedThenPriority);
 
   return entries.slice(0, limit);
 }

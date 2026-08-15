@@ -11,6 +11,7 @@ import {
   getCompetitorMemory,
   describeCompanyFreshness,
   describeNewsFreshness,
+  getListsForAccount,
 } from '@/data';
 import { CertaintyBadge, RoleBadge, OutcomeBadge } from '@/components/badges';
 import { SourceChip } from '@/components/states';
@@ -48,13 +49,14 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
   const competitorMemory = incumbentName
     ? getCompetitorMemory().find((m) => m.competitor === incumbentName)
     : null;
+  const lists = getListsForAccount(id);
 
   return (
     <div className="flex flex-col gap-8">
       <header>
         <div className="text-xs text-muted">
-          <Link href="/app/lists" className="hover:text-ink">
-            My Lists
+          <Link href="/app/accounts" className="hover:text-ink">
+            Accounts
           </Link>{' '}
           / {account.name}
         </div>
@@ -63,6 +65,20 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
           <span>{RELATIONSHIP_LABEL[account.relationshipStatus]}</span>
           {account.primaryDomain && <span>{account.primaryDomain}</span>}
           {account.employeeCountRange && <span>{account.employeeCountRange} employees</span>}
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+          {lists.length > 0 ? (
+            lists.map((l) => (
+              <Link key={l.id} href={`/app/lists/${l.id}`} className="text-text-link hover:underline">
+                {l.name}
+              </Link>
+            ))
+          ) : (
+            <span>Not on any Target List yet</span>
+          )}
+          <Link href={`/app/people?account=${id}`} className="text-text-link hover:underline">
+            View all people →
+          </Link>
         </div>
       </header>
 
@@ -140,9 +156,19 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
         </>
       )}
 
-      {outcomes.length > 0 && (
-        <section>
+      <section>
+        <div className="flex items-center justify-between">
           <div className="text-xs font-semibold uppercase tracking-wide text-muted">Call History</div>
+          <Link
+            href={`/app/accounts/${id}/post-call`}
+            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-on-primary"
+          >
+            Log Call
+          </Link>
+        </div>
+        {outcomes.length === 0 ? (
+          <p className="mt-1 text-sm text-muted">No calls logged yet.</p>
+        ) : (
           <ul className="mt-1 flex flex-col gap-2">
             {outcomes.map((o) => (
               <li key={o.id} className="flex items-center gap-2 text-sm text-body">
@@ -152,14 +178,8 @@ export default async function AccountPage({ params }: { params: Promise<{ id: st
               </li>
             ))}
           </ul>
-          <Link
-            href={`/app/accounts/${id}/post-call`}
-            className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-on-primary"
-          >
-            View Post-Call Workflow
-          </Link>
-        </section>
-      )}
+        )}
+      </section>
 
       {sellingSituations.length > 0 && (
         <section>

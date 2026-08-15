@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { getTargetListOverview, getListRows, getSuggestedCalls, getIdentityWarning } from '@/data';
 import { AccountFilterList } from '@/components/account-filter-list';
 import { PriorityLabelChip } from '@/components/priority';
+import { PinToggleButton, MarkWorkedButton } from '@/components/list-item-actions';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 // Target List workspace for your real data — same layout as
@@ -41,6 +43,13 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
             Suggested Calls ({suggested.length})
           </h2>
+          {suggested[0] && (
+            <Link href={`/app/accounts/${suggested[0].account.id}`}>
+              <Button variant="secondary" className="!px-3 !py-1 text-xs">
+                Work Suggested Calls
+              </Button>
+            </Link>
+          )}
         </div>
         {suggested.length === 0 ? (
           <p className="mt-2 text-sm text-muted">No accounts to work yet — add one below.</p>
@@ -49,23 +58,23 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
             {suggested.map((entry) => {
               const warning = getIdentityWarning(entry.account.id);
               return (
-                <Link
+                <div
                   key={entry.item.id}
-                  href={`/app/accounts/${entry.account.id}`}
-                  className="flex items-center justify-between border-b border-hairline px-4 py-3 last:border-b-0 hover:bg-canvas-soft"
+                  className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 last:border-b-0"
                 >
-                  <div className="flex items-center gap-3">
-                    {entry.pinned && <span title="Pinned">📌</span>}
-                    <div>
-                      <div className="text-sm font-medium text-ink">{entry.account.name}</div>
+                  <Link href={`/app/accounts/${entry.account.id}`} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
+                    <PinToggleButton itemId={entry.item.id} pinned={entry.pinned} />
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-ink">{entry.account.name}</div>
                       {entry.reasons.length > 0 && (
-                        <div className="text-xs text-muted">{entry.reasons.join(' · ')}</div>
+                        <div className="truncate text-xs text-muted">{entry.reasons.join(' · ')}</div>
                       )}
                       {warning && <div className="text-xs text-accent-warning">{warning.warning}</div>}
                     </div>
-                  </div>
+                  </Link>
                   <PriorityLabelChip priority={entry.priorityLabel} />
-                </Link>
+                  <MarkWorkedButton itemId={entry.item.id} worked={entry.item.status === 'worked'} />
+                </div>
               );
             })}
           </div>
@@ -84,7 +93,7 @@ export default async function TargetListPage({ params }: { params: Promise<{ id:
         {rows.length === 0 ? (
           <p className="text-sm text-muted">No accounts on this list yet.</p>
         ) : (
-          <AccountFilterList rows={rows} />
+          <AccountFilterList rows={rows} basePath="/app" />
         )}
       </section>
     </div>

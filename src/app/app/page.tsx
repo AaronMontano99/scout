@@ -1,95 +1,72 @@
 import Link from 'next/link';
-import { getTargetLists, getTargetListOverview, getFunnel } from '@/data';
+import { getTodayRows, listAccounts, getTargetLists, getFunnel } from '@/data';
 import { StatTile, formatRate } from '@/components/stat-tile';
-import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/states';
+import { FirstRun } from '@/components/first-run';
+import { TodayList } from '@/components/today-list';
 
-// "Pick up where you left off" home — same experience as
-// src/app/demo/page.tsx, backed by your real local data instead of
-// fixtures. See docs/LOCAL_MODE.md.
+// Today — "who should I contact today, why, and what do we already
+// know" (docs/PRODUCT_CONSTITUTION.md's core questions), aggregated
+// across every active Target List. See docs/LOCAL_MODE.md — real data
+// only, no fabricated priority scores.
 
-export default function AppHomePage() {
+export default function TodayPage() {
+  const hasAnyAccounts = listAccounts().length > 0;
+  if (!hasAnyAccounts) {
+    return <FirstRun />;
+  }
+
   const lists = getTargetLists();
-
   if (lists.length === 0) {
     return (
       <EmptyState
-        title="Nothing here yet"
-        body="Add your first account, then create a Target List to start organizing and prioritizing real prospects."
-        ctaLabel="Add Account"
-        ctaHref="/app/accounts/new"
+        title="No Target Lists yet"
+        body="You have accounts, but nothing organized into a Target List yet. Create one to start working accounts from Today."
+        ctaLabel="Create a List"
+        ctaHref="/app/lists/new"
       />
     );
   }
 
-  const overviews = lists.map((l) => getTargetListOverview(l.id)!).filter(Boolean);
-  const mostRecentlyWorked = [...overviews].sort((a, b) =>
-    (b.list.lastWorkedAt ?? '').localeCompare(a.list.lastWorkedAt ?? '')
-  )[0];
+  const rows = getTodayRows(50);
   const funnel = getFunnel();
 
   return (
     <div className="flex flex-col gap-8">
-      {mostRecentlyWorked && (
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">Today</h1>
+        <p className="mt-1 text-sm text-body">Accounts worth working today, across all active lists.</p>
+      </header>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatTile label="Calls Attempted" value={String(funnel.callsAttempted)} />
+        <StatTile label="Meetings Booked" value={String(funnel.meetingsBooked)} />
+        <StatTile label="Selling Situations" value={String(funnel.sellingSituationsCreated)} />
+        <StatTile
+          label="Call → Meeting Rate"
+          value={formatRate(funnel.callToMeetingRate).value}
+          denominatorLabel={formatRate(funnel.callToMeetingRate).denominatorLabel}
+        />
+      </section>
+
+      {rows.length === 0 ? (
+        <EmptyState
+          title="No accounts to work"
+          body="Every account on your active lists has been skipped, or your lists are empty. Add accounts to a list to see them here."
+          ctaLabel="Open Lists"
+          ctaHref="/app/lists"
+        />
+      ) : (
         <section>
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-            Pick Up Where You Left Off
-          </h2>
-          <Link href={`/app/lists/${mostRecentlyWorked.list.id}`} className="block">
-            <Card padding="lg" className="hover:bg-canvas-soft">
-              <div className="text-lg font-semibold text-ink">{mostRecentlyWorked.list.name}</div>
-              <div className="mt-1 text-sm text-body">
-                {mostRecentlyWorked.progress.worked} / {mostRecentlyWorked.progress.total} worked
-                {mostRecentlyWorked.list.lastWorkedAt && (
-                  <> · last worked {new Date(mostRecentlyWorked.list.lastWorkedAt).toLocaleDateString()}</>
-                )}
-              </div>
-              <span className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-[18px] py-[10px] text-sm font-medium text-on-primary">
-                Continue
-              </span>
-            </Card>
-          </Link>
+          <TodayList rows={rows} />
         </section>
       )}
 
-      <section>
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Active Lists</h2>
-        <div className="flex flex-col gap-2">
-          {overviews.map(({ list, progress }) => (
-            <Link
-              key={list.id}
-              href={`/app/lists/${list.id}`}
-              className="flex items-center justify-between rounded-lg border border-hairline bg-surface-card px-4 py-3 hover:bg-canvas-soft"
-            >
-              <div>
-                <div className="text-sm font-medium text-ink">{list.name}</div>
-                <div className="text-xs text-muted">
-                  {progress.worked} / {progress.total} worked · {progress.pinnedCount} pinned
-                </div>
-              </div>
-              <span className="text-xs text-text-link">Open →</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">Recent Results</h2>
-          <Link href="/app/analytics" className="text-xs text-text-link hover:underline">
-            View full analytics →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile label="Calls Attempted" value={String(funnel.callsAttempted)} />
-          <StatTile label="Meetings Booked" value={String(funnel.meetingsBooked)} />
-          <StatTile label="Selling Situations" value={String(funnel.sellingSituationsCreated)} />
-          <StatTile
-            label="Call → Meeting Rate"
-            value={formatRate(funnel.callToMeetingRate).value}
-            denominatorLabel={formatRate(funnel.callToMeetingRate).denominatorLabel}
-          />
-        </div>
+      <section className="flex items-center justify-between text-xs text-muted">
+        <span>{lists.length} active lists</span>
+        <Link href="/app/analytics" className="text-text-link hover:underline">
+          View full analytics →
+        </Link>
       </section>
     </div>
   );

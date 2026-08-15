@@ -454,3 +454,15 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events (event_type);
 CREATE INDEX IF NOT EXISTS idx_analytics_events_occurred ON analytics_events (occurred_at);
 CREATE INDEX IF NOT EXISTS idx_analytics_events_target_list ON analytics_events (target_list_id);
+
+-- === Settings (local-first, single implicit user) =====================
+-- One row, free-form JSON — this workspace has exactly one user and a
+-- handful of profile fields (see docs/PRODUCT_UX.md's Settings screen),
+-- so a full key/value table would be needless structure for what it
+-- stores. See src/data/settings.ts.
+
+CREATE TABLE IF NOT EXISTS workspace_settings (
+  id TEXT PRIMARY KEY DEFAULT 'local',
+  data TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL
+);

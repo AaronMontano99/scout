@@ -18,7 +18,12 @@ build/
 !.env.example
 
 # Local SQLite database (see src/db/client.ts, docs/LOCAL_MODE.md)
-data/
+# Anchored to the repo root — an unanchored `data/` pattern also matches
+# src/data/, which is real source code (the entire Local Mode accessor
+# layer), not generated data. That bug meant src/data/ was never
+# actually committed; see the fix that added it in the same change as
+# this comment.
+/data/
 
 # Supabase local dev (historical reference only — see supabase/README.md)
 supabase/.branches/

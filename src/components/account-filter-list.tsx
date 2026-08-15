@@ -1,17 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import type { ListRow } from '@/demo';
+import type { ListRow as DemoListRow } from '@/demo';
+import type { ListRow as AppListRow } from '@/data';
 import { AccountListRow } from './list-row';
+import { FilterChipGroup, type FilterChipOption } from './ui/filter-chip';
+import { SearchInput } from './ui/search-input';
 
 // Lightweight client-side filtering for the Target List's "All
 // Accounts" view — product spec §39. Deliberately a small fixed set of
 // filters, not a full filter-builder panel (ARCHITECTURE.md's
 // "don't build for hypothetical requirements" principle).
 
+type ListRow = DemoListRow | AppListRow;
 type Filter = 'all' | 'worked' | 'unworked' | 'pinned' | 'ready' | 'limited_data' | 'needs_review' | 'meeting_booked';
 
-const FILTERS: { id: Filter; label: string }[] = [
+const FILTERS: FilterChipOption<Filter>[] = [
   { id: 'all', label: 'All' },
   { id: 'unworked', label: 'Unworked' },
   { id: 'worked', label: 'Worked' },
@@ -43,7 +47,7 @@ function matchesFilter(row: ListRow, filter: Filter): boolean {
   }
 }
 
-export function AccountFilterList({ rows }: { rows: ListRow[] }) {
+export function AccountFilterList({ rows, basePath }: { rows: ListRow[]; basePath: '/app' | '/demo' }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
 
@@ -54,26 +58,8 @@ export function AccountFilterList({ rows }: { rows: ListRow[] }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <input
-          type="search"
-          placeholder="Search accounts…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="rounded-md border border-hairline-strong bg-surface-card px-3 py-1.5 text-sm text-ink placeholder:text-muted focus:border-2 focus:border-ink focus:outline-none"
-        />
-        <div className="flex flex-wrap gap-1.5">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                filter === f.id ? 'bg-ink text-canvas' : 'bg-surface-strong text-body hover:text-ink'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <SearchInput value={query} onChange={setQuery} placeholder="Search accounts…" />
+        <FilterChipGroup options={FILTERS} value={filter} onChange={setFilter} />
       </div>
 
       {filtered.length === 0 ? (
@@ -83,7 +69,7 @@ export function AccountFilterList({ rows }: { rows: ListRow[] }) {
       ) : (
         <div className="rounded-lg border border-hairline-strong bg-surface-card">
           {filtered.map((row) => (
-            <AccountListRow key={row.itemId} row={row} />
+            <AccountListRow key={row.itemId} row={row} basePath={basePath} />
           ))}
         </div>
       )}
