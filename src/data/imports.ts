@@ -298,6 +298,8 @@ export interface ImportCommitSummary {
   failedRows: number;
   listId: string | null;
   listName: string | null;
+  /** Newly created (not matched-to-existing) account ids — used to trigger best-effort research per new account. */
+  newAccountIds: string[];
 }
 
 /** Step 5 — commit. Refuses to run while any row is still needs_review — no silent writes. */
@@ -317,6 +319,7 @@ export function commitImport(importId: string): ImportCommitSummary {
   let contactsCreated = 0;
   let knowledgeItemsCreated = 0;
   let failedRows = 0;
+  const newAccountIds: string[] = [];
 
   for (const r of dataRows) {
     if (r.resolutionStatus === 'failed') {
@@ -338,6 +341,7 @@ export function commitImport(importId: string): ImportCommitSummary {
     } else {
       account = createAccount({ name: accountName ?? domain!, primaryDomain: domain ?? undefined });
       accountsCreated += 1;
+      newAccountIds.push(account.id);
     }
 
     if (contactName) {
@@ -367,5 +371,14 @@ export function commitImport(importId: string): ImportCommitSummary {
     .prepare(`UPDATE imports SET status = 'completed', error_count = ?, completed_at = ? WHERE id = ?`)
     .run(failedRows, nowIso(), importId);
 
-  return { accountsCreated, accountsMatched, contactsCreated, knowledgeItemsCreated, failedRows, listId: list?.id ?? null, listName: list?.name ?? null };
+  return {
+    accountsCreated,
+    accountsMatched,
+    contactsCreated,
+    knowledgeItemsCreated,
+    failedRows,
+    listId: list?.id ?? null,
+    listName: list?.name ?? null,
+    newAccountIds,
+  };
 }

@@ -10,6 +10,17 @@ import {
   commitImport,
   ImportValidationError,
 } from '@/data/imports';
+import { runResearchForAccount } from '../research/actions';
+
+const RESEARCH_CONCURRENCY = 4;
+
+/** Best-effort research for freshly imported accounts, a few at a time so a large import doesn't open dozens of sockets at once. Never blocks/fails the import on a research error. */
+async function runResearchForNewAccounts(accountIds: string[]): Promise<void> {
+  for (let i = 0; i < accountIds.length; i += RESEARCH_CONCURRENCY) {
+    const batch = accountIds.slice(i, i + RESEARCH_CONCURRENCY);
+    await Promise.allSettled(batch.map((id) => runResearchForAccount(id)));
+  }
+}
 
 function str(formData: FormData, key: string): string | undefined {
   const value = formData.get(key);
@@ -61,7 +72,17 @@ export async function resolveImportRowAction(importId: string, rowId: string, de
 }
 
 export async function commitImportAction(importId: string): Promise<void> {
-  commitImport(importId);
+  const summary = commitImport(importId);
+
+  // Real public-web research for every newly created account — see
+  // src/services/free-web-research-provider.ts. Best-effort; a slow
+  // or failed fetch for one account never blocks the import.
+  try {
+    await runResearchForNewAccounts(summary.newAccountIds);
+  } catch {
+    // already best-effort inside runResearchForNewAccounts; this is defense in depth
+  }
+
   revalidatePath('/app');
   revalidatePath('/app/accounts');
   revalidatePath('/app/people');

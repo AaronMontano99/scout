@@ -13,7 +13,7 @@ import { Panel } from '@/components/ui/panel';
 
 const PROVIDERS: { label: string; help: string; status: string; dot: string }[] = [
   { label: 'CSV / XLSX Import', help: 'Local, deterministic column mapping — no AI required.', status: 'Available', dot: 'bg-semantic-success' },
-  { label: 'Research Provider', help: 'No live web/news research provider is connected.', status: 'Not configured', dot: 'bg-muted' },
+  { label: 'Research Provider', help: 'Free Web Research: company website + public news search. No API key, never LinkedIn.', status: 'Available', dot: 'bg-semantic-success' },
   { label: 'AI Provider', help: 'Optional — not required to use Scout locally.', status: 'Not configured', dot: 'bg-muted' },
   { label: 'CRM Adapter', help: 'Future extension point — no CRM writeback exists yet.', status: 'Unavailable', dot: 'bg-muted' },
 ];

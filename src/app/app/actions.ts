@@ -13,6 +13,7 @@ import {
   setTargetListItemWorked,
 } from '@/data';
 import type { AccountRelationshipStatus, BuyingRole } from '@/types/product';
+import { runResearchForAccount } from './research/actions';
 
 function str(formData: FormData, key: string): string | undefined {
   const value = formData.get(key);
@@ -30,6 +31,15 @@ export async function createAccountAction(formData: FormData): Promise<void> {
     employeeCountRange: str(formData, 'employeeCountRange'),
     relationshipStatus: str(formData, 'relationshipStatus') as AccountRelationshipStatus | undefined,
   });
+
+  // Best-effort, real public-web research for the account you just
+  // added — never blocks account creation on failure. See
+  // src/services/free-web-research-provider.ts.
+  try {
+    await runResearchForAccount(account.id);
+  } catch {
+    // Network/parse failures are expected sometimes — the account still exists either way.
+  }
 
   revalidatePath('/app');
   redirect(`/app/accounts/${account.id}`);

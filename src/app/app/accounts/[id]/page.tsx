@@ -21,6 +21,7 @@ import { FreshnessChip } from '@/components/priority';
 import { MicroLabel } from '@/components/ui/micro-label';
 import { Button } from '@/components/ui/button';
 import { MarkWorkedButtonBrief } from '@/components/list-item-actions';
+import { RefreshResearchButton } from '@/components/refresh-research-button';
 
 // Account page for your real data — same layout as
 // src/app/demo/accounts/[id]/page.tsx, honest instead of AI-authored:
@@ -127,9 +128,7 @@ export default async function AccountPage({
                   <MarkWorkedButtonBrief itemId={primaryItem?.id ?? null} worked={primaryItem?.worked ?? false} />
                 </div>
               </div>
-              <span title="No research provider is configured — see Settings" className="mt-0.5 cursor-not-allowed text-center text-[12.5px] text-muted">
-                Refresh research
-              </span>
+              <RefreshResearchButton accountId={id} />
             </div>
           </div>
         </div>

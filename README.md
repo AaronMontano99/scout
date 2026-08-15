@@ -20,14 +20,21 @@ zero setup. The two never share data (see
 You can get real accounts and contacts into Scout two ways: add them by
 hand (`/app/accounts/new`), or import a CSV/XLSX spreadsheet
 (`/app/imports`) — a real local parser with deterministic column
-mapping, no AI required. There's no live web/research provider
-connected — Call-Ready Briefs and the Research screen are honest,
-non-fabricated summaries of what you've actually entered or imported,
-never AI-generated content (see
-[`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) for why that
-was deliberately out of scope rather than unfinished). Settings shows
-exactly which providers are Available, Not Configured, or Unavailable
-— never a fake connection.
+mapping, no AI required. Either path automatically runs real research
+for each new account — the company's own public website plus public
+news search (Google News RSS), free and keyless — and you can re-run
+it any time from an account's "Refresh research" button (see
+[`src/services/free-web-research-provider.ts`](./src/services/free-web-research-provider.ts)).
+**This never touches LinkedIn or any other login-walled platform —
+that's a permanent rule, not a missing feature**, matching
+[`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) and
+[`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md). There's still no AI
+provider connected — Call-Ready Briefs summarize only what you've
+actually entered, imported, or fetched, never AI-generated narrative
+(see [`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) for why
+that's deliberately out of scope). Settings shows exactly which
+providers are Available, Not Configured, or Unavailable — never a fake
+connection.
 [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
 and
 [`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) are
@@ -62,7 +69,7 @@ your real workspace).
 | **Lists** | Target Lists: progress, suggested calls, all-accounts filters. Progress never resets. |
 | **Accounts** | Browse/search every real account; opens into the Call-Ready Brief / Account Brain. |
 | **People** | Every real contact, always shown with both a buying-role guess *and* its certainty (`KNOWN` / `INFERRED` / `SUGGESTED`) — never one without the other. |
-| **Research** | Resolves a company/domain against your existing accounts and shows what's already known locally. Honest about there being no live research provider connected. |
+| **Research** | Resolves a company/domain against your existing accounts, shows everything stored locally, and can pull fresh public web/news evidence on demand. Never LinkedIn, never AI-generated. |
 | **Imports** | Real CSV/XLSX pipeline: upload → map columns → validate → resolve possible duplicates → import. Creates Accounts, Contacts, and Knowledge Items; can drop everything into a new Target List. |
 | **Analytics** | Event-sourced funnel and role-reach numbers, always shown as numerator + denominator (a rate with no attempts renders `—`, never `0%`). |
 | **Settings** | Workspace/sales-profile fields (persisted), honest provider status, and real data controls: export a full JSON snapshot, download the raw `data/scout.db` file, or permanently delete everything. |
@@ -187,11 +194,15 @@ npm run format         # prettier --write
 
 ## What's NOT here yet
 
-A live research/web-evidence provider, an AI provider (optional even
-when one exists), and CRM writeback/adapters all remain unconfigured —
-their interfaces exist in `src/services/*-provider.ts` as future
-extension points, but nothing is wired up, and Settings says so
-honestly rather than faking a connection. There's also no in-app
+An AI provider (optional even when one exists) and CRM writeback/
+adapters remain unconfigured — their interfaces exist in
+`src/services/*-provider.ts` as future extension points, but nothing
+is wired up, and Settings says so honestly rather than faking a
+connection. The Research Provider *is* real now (see above), but it's
+deliberately limited to two free, public, keyless sources — a
+company's own website and public news search — and will never expand
+to LinkedIn or other login-walled platforms; that's a permanent
+product boundary, not a roadmap item. There's also no in-app
 Selling-Situation creation flow yet, and entity resolution during
 import only checks against accounts already in the database (not
 against other rows in the same file). Multi-user auth and billing are

@@ -12,13 +12,13 @@ import { SourceChip } from '@/components/states';
 import { PageHeader } from '@/components/ui/page-header';
 import { Panel } from '@/components/ui/panel';
 import { MicroLabel } from '@/components/ui/micro-label';
+import { RefreshResearchButton } from '@/components/refresh-research-button';
 
 // Research — resolves a company/domain against existing local
-// knowledge and reports research-provider status honestly. No live
-// provider is wired up in local-first mode (src/services/research-
-// provider.ts is an unimplemented interface — see docs/LOCAL_MODE.md),
-// so a "refresh" action is never offered; existing account memory is
-// still fully shown.
+// knowledge, and can pull fresh public evidence for the matched
+// account: the company's own website + public news search (see
+// src/services/free-web-research-provider.ts). Free, keyless, no
+// LinkedIn/scraping — see that file's header comment for why.
 
 export default async function ResearchPage({
   searchParams,
@@ -56,9 +56,8 @@ export default async function ResearchPage({
             <Panel className="p-6">
               <div className="text-[13.5px] font-semibold text-ink">No existing account matches &ldquo;{query}&rdquo;</div>
               <p className="mt-1.5 text-[13.5px] leading-[1.55] text-body">
-                Scout found nothing in your local workspace for this company. Live web research isn&apos;t available
-                (see the Research Provider status), so the only way to get this account into Scout right now is to
-                add it yourself.
+                Scout found nothing in your local workspace for this company. Add it as an account first — then you
+                can pull public web/news research for it.
               </p>
               <Link href="/app/accounts/new">
                 <Button className="mt-3.5">Add &ldquo;{query}&rdquo; as an Account</Button>
@@ -75,12 +74,12 @@ export default async function ResearchPage({
           <Panel className="p-4">
             <MicroLabel>Research Provider</MicroLabel>
             <div className="mt-2.5 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-muted" />
-              <span className="text-[13.5px] font-medium text-ink">Not configured</span>
+              <span className="h-2 w-2 rounded-full bg-semantic-success" />
+              <span className="text-[13.5px] font-medium text-ink">Free Web Research</span>
             </div>
             <p className="mt-2 text-xs leading-[1.5] text-body">
-              No live research provider is connected, so Scout can&apos;t fetch new web/news evidence right now.
-              Everything shown here comes from what&apos;s already stored locally.
+              Pulls the company&apos;s public website and recent public news coverage. Free, no signup, no API key.
+              Never touches LinkedIn or any login-walled platform — see Settings for details.
             </p>
             <Link href="/app/settings" className="mt-2 inline-block text-xs text-text-link hover:underline">
               Open Settings →
@@ -107,9 +106,12 @@ function ResolvedAccount({ accountId, verdict, name }: { accountId: string; verd
           </div>
           {verdict === 'review' && <span className="text-[12px] text-accent-warning">Needs review — confirm this is the right company</span>}
         </div>
-        <Link href={`/app/accounts/${accountId}`} className="mt-3 inline-block">
-          <Button>Open Brief</Button>
-        </Link>
+        <div className="mt-3 flex items-center gap-3">
+          <Link href={`/app/accounts/${accountId}`}>
+            <Button>Open Brief</Button>
+          </Link>
+          <RefreshResearchButton accountId={accountId} variant="button" />
+        </div>
       </Panel>
 
       <Panel className="overflow-hidden">
