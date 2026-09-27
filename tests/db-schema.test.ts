@@ -4,8 +4,7 @@ import path from 'node:path';
 import initSqlJs from 'sql.js';
 
 // Standalone check of db/schema.sql itself — doesn't go through
-// src/db/client.ts, so it never touches the real dev database. See
-// docs/LOCAL_MODE.md.
+// src/db/client.ts, so it never touches the real database.
 
 const schemaPath = path.join(import.meta.dirname, '..', 'db', 'schema.sql');
 const schema = fs.readFileSync(schemaPath, 'utf-8');
@@ -22,7 +21,7 @@ beforeAll(async () => {
 });
 
 describe('db/schema.sql', () => {
-  it('applies cleanly and creates every expected table', () => {
+  it('applies cleanly and creates exactly the tables Scout uses', () => {
     db.run(schema);
     const stmt = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name");
     const tables: string[] = [];
@@ -30,72 +29,33 @@ describe('db/schema.sql', () => {
     stmt.free();
 
     expect(tables).toEqual(
-      [
-        'account_contact_relationships',
-        'account_match_candidates',
-        'account_score_components',
-        'account_scores',
-        'accounts',
-        'analytics_events',
-        'call_outcomes',
-        'contacts',
-        'contract_info',
-        'import_rows',
-        'imports',
-        'integrations',
-        'interactions',
-        'knowledge_items',
-        'post_call_notes',
-        'research_findings',
-        'research_runs',
-        'seller_style_profiles',
-        'selling_situation_definitions',
-        'selling_situations',
-        'signals',
-        'sources',
-        'target_list_items',
-        'target_lists',
-        'workspace_settings',
-      ].sort()
+      ['accounts', 'crm_notes', 'sdr_activities', 'sdr_drafts', 'sdr_hotlist', 'sdr_hotlist_checks', 'sdr_intel', 'sdr_lead_candidates', 'settings'].sort()
     );
   });
 
-  it('re-applying is idempotent (CREATE TABLE IF NOT EXISTS throughout)', () => {
+  it('re-applying is idempotent', () => {
     expect(() => db.run(schema)).not.toThrow();
   });
 
-  it('accepts a cross-referenced insert with no foreign key violations', () => {
-    const now = '2026-01-01T00:00:00.000Z';
-    db.run(`INSERT INTO accounts (id, name, normalized_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`, [
-      'acc-1',
-      'Acme',
-      'acme',
-      now,
-      now,
-    ]);
-    db.run(`INSERT INTO contacts (id, account_id, first_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`, [
-      'con-1',
-      'acc-1',
-      'Jane',
-      now,
-      now,
-    ]);
+  it('cascades an account delete to its notes, research, drafts, and Hot List row', () => {
+    const now = new Date().toISOString();
+    db.run(`INSERT INTO accounts (id, name, normalized_name, created_at, updated_at) VALUES ('a1', 'Northgate Fabrication', 'northgate fabrication', ?, ?)`, [now, now]);
+    db.run(`INSERT INTO crm_notes (id, account_id, content, created_at) VALUES ('n1', 'a1', 'Front desk routes calls', ?)`, [now]);
+    db.run(`INSERT INTO sdr_intel (account_id, data, researched_at) VALUES ('a1', '{}', ?)`, [now]);
+    db.run(`INSERT INTO sdr_drafts (id, account_id, kind, data, created_at) VALUES ('d1', 'a1', 'call_card', '{}', ?)`, [now]);
+    db.run(`INSERT INTO sdr_hotlist (account_id, added_at, updated_at) VALUES ('a1', ?, ?)`, [now, now]);
     db.run(
-      `INSERT INTO account_contact_relationships (id, account_id, contact_id, valid_from, created_at) VALUES (?, ?, ?, ?, ?)`,
-      ['acr-1', 'acc-1', 'con-1', now, now]
+      `INSERT INTO sdr_activities (id, account_id, account_name, channel, occurred_at, created_at) VALUES ('x1', 'a1', 'Northgate Fabrication', 'call', ?, ?)`,
+      [now, now]
     );
-    db.run(`INSERT INTO target_lists (id, name, created_at) VALUES (?, ?, ?)`, ['tl-1', 'My List', now]);
-    db.run(`INSERT INTO target_list_items (id, target_list_id, account_id, added_at) VALUES (?, ?, ?, ?)`, [
-      'tli-1',
-      'tl-1',
-      'acc-1',
-      now,
-    ]);
 
-    const stmt = db.prepare('PRAGMA foreign_key_check');
-    const violations: unknown[] = [];
-    while (stmt.step()) violations.push(stmt.getAsObject());
-    stmt.free();
-    expect(violations).toEqual([]);
+    db.run(`DELETE FROM accounts WHERE id = 'a1'`);
+    const count = (table: string) => db.exec(`SELECT COUNT(*) FROM ${table}`)[0]!.values[0]![0];
+    expect(count('crm_notes')).toBe(0);
+    expect(count('sdr_intel')).toBe(0);
+    expect(count('sdr_drafts')).toBe(0);
+    expect(count('sdr_hotlist')).toBe(0);
+    // Logged activity survives (Day finished history), just unlinked.
+    expect(count('sdr_activities')).toBe(1);
   });
 });

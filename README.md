@@ -1,265 +1,160 @@
-# Scout (working name)
+# Scout
 
-Sales intelligence layer for small/midsize B2B sales organizations —
-turns fragmented CRM notes, spreadsheets, and rep knowledge into a
-prioritized, explainable prospecting workspace. See
-[`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) for
-the full mission, customer, and philosophy.
+**A Lead SDR for calls and emails.** Before you pick up the phone or hit
+send, Scout does the intelligence work, so there's a real reason you're
+reaching out, not just calling to call.
 
-**Status: Local Mode — runs entirely on your own machine.** No cloud
-accounts, no signup, no services to run in the background. Your data
-lives in a local SQLite file (`data/scout.db`), not a hosted database
-— see [`docs/LOCAL_MODE.md`](./docs/LOCAL_MODE.md) for the full
-architecture and why. `/app` is a full workstation — Today, Lists,
-Accounts, People, Research, Imports, Analytics, and Settings — wired to
-your own real accounts, contacts, and notes; `/demo` is the same shell
-wired to fictional fixture data instead, safe to click through with
-zero setup. The two never share data (see
-[`docs/DEMO.md`](./docs/DEMO.md)).
+It runs your own prospecting playbooks word for word on your Claude
+membership, with live web research.
 
-You can get real accounts and contacts into Scout two ways: add them by
-hand (`/app/accounts/new`), or import a CSV/XLSX spreadsheet
-(`/app/imports`) — a real local parser with deterministic column
-mapping, no AI required. Either path automatically runs real research
-for each new account — the company's own public website plus public
-news search (Google News RSS), free and keyless — and you can re-run
-it any time from an account's "Refresh research" button (see
-[`src/services/free-web-research-provider.ts`](./src/services/free-web-research-provider.ts)).
-**This never touches LinkedIn or any other login-walled platform —
-that's a permanent rule, not a missing feature**, matching
-[`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) and
-[`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
+> Prospect = worth contacting. Lead = meeting booked. The first sale is the meeting.
 
-There's also an optional local AI provider — [Ollama](https://ollama.com),
-running entirely on your own machine (no API key, nothing leaves your
-computer). If `ollama serve` is running with a model pulled (defaults
-to `llama3.2`; see
-[`src/ai/providers/ollama-provider.ts`](./src/ai/providers/ollama-provider.ts)),
-Scout uses it for:
+---
 
-- **Call-Ready Brief summaries** — after Research fetches a company's
-  website/news, Ollama turns that into a "What They Do" description
-  and a few "What Matters" bullets, strictly grounded in the fetched
-  text (instructed never to invent) and always tagged `SUGGESTED`.
-- **Clean call notes** — after you log a call, Ollama rewrites your
-  rough dictated note into a clean CRM-style note, keeping every fact
-  and adding nothing.
-- **Call scripts, voicemails, prospecting emails, and post-call
-  follow-ups, written in your own voice** — teach Scout your tone,
-  explicit rules, phrases to avoid, and real sample messages once at
-  `/app/settings/seller-style`, and it's remembered for every message
-  Scout writes after that, no re-teaching per account. Hard rules are
-  enforced in code, not just requested in the prompt: never
-  acknowledges a cold call, never uses a permission-based opener
-  ("do you have 30 seconds?"), never invents a fact, a meeting time,
-  a customer name, or a contact's name/title it doesn't actually have,
-  and never leaves an unfilled placeholder like `[Company Name]` — a
-  generated message that trips one of these gets one automatic rewrite
-  before being shown to you, and any issue that survives that is
-  flagged, never hidden. See
-  [`docs/SELLER_STYLE.md`](./docs/SELLER_STYLE.md).
+## How it works
 
-The brief summary and clean-note steps never block the action that
-triggered them — both run in the background and the UI just picks up
-the result once it's ready. Generating a call script/voicemail/email
-is different: you click Generate and it waits for the real result
-before showing it, with a loading state while it works and a plain
-error with a retry button if Ollama didn't respond in time — nothing
-is ever silently swallowed or shown as fake success. **Local inference
-speed depends entirely on your own hardware** — an older CPU-only
-machine (no discrete GPU) can take 30 seconds to a couple of minutes
-per message, especially for the longer seller-voice prompts; a machine
-with GPU acceleration will be much faster. If Ollama isn't running,
-all of this quietly does nothing and Scout works exactly as it does
-without it; nothing else in Scout requires it. Settings shows exactly
-which providers are Available, Not Configured, or Unavailable — never
-a fake connection.
-[`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md)
-and
-[`docs/COUNCIL_REVIEW_PHASE4.md`](./docs/COUNCIL_REVIEW_PHASE4.md) are
-historical — the UI/UX work they describe is unchanged, but their
-Supabase/multi-tenancy framing predates Local Mode.
-(Earlier phases: [`PHASE_3_COMPLETION_REPORT.md`](./docs/PHASE_3_COMPLETION_REPORT.md) ·
-[`PHASE_2_COMPLETION_REPORT.md`](./docs/PHASE_2_COMPLETION_REPORT.md).)
+### Calls
+Type **"I'm calling ___"**, paste your CRM notes if you have any, and add
+anything else ("calling the local office, not the old contact").
 
-## Try it
+Scout researches the company first (the local office and ZIP, who
+decides, dated signals like hiring, new leaders, moves, acquisitions),
+labels the reason to call **HARD SIGNAL / SOFT SIGNAL / NO RECENT
+SIGNAL** with an honest "why now", reads your notes, and hands back the
+**call card**:
 
-```
-npm install && npm run dev
-```
+`REASON · HYPOTHESIS · PRIMARY QUESTION · FOLLOW-UP · LISTEN FOR · ANGLE · MEETING BRIDGE · MEETING ASK`
 
-Then open **http://localhost:3000/app**. No `.env.local` required. Open
-`/` for the marketing homepage, `/demo` for a product tour with
-fictional data (see [`docs/DEMO.md`](./docs/DEMO.md)), or `/app` for
-your own workspace — everything you add stays in a local SQLite file
-at `data/scout.db` on your own machine. See
-[`docs/LOCAL_MODE.md`](./docs/LOCAL_MODE.md).
+plus the opening line, if/then branches, a 20-40 second voicemail, what
+to ask a gatekeeper, the 10-minute meeting to earn, and what to do if
+nobody picks up.
 
-A fresh `/app` shows a first-run screen with three starting points:
-**Import a List** (upload a spreadsheet), **Add an Account** (enter one
-by hand), or **Explore Demo Data** (jump to `/demo` without touching
-your real workspace).
+**After the call**, paste what happened for sales-manager coaching,
+bullet CRM notes, a post-call email when there's a real reason, and the
+Hot List update. "No answer" / "Left VM" are one tap and give you a
+tracker line; repeated no-pickups move the account to walk-in.
 
-### The `/app` screens
+**Today's leads** lives on the Calls tab: net-new accounts in your ZIPs
+with a dated reason to call. It never repeats one and never pads a weak
+batch.
 
-| Screen | What it does |
-| --- | --- |
-| **Today** | Accounts worth working today, ranked across every active Target List — pins always outrank automatic ordering. |
-| **Lists** | Target Lists: progress, suggested calls, all-accounts filters. Progress never resets. |
-| **Accounts** | Browse/search every real account; opens into the Call-Ready Brief / Account Brain, including buttons to generate a call script, voicemail, or email in your own taught voice (Recent Developments shows only real news, as short bullet points — never a raw scrape dump). |
-| **People** | Every real contact, always shown with both a buying-role guess *and* its certainty (`KNOWN` / `INFERRED` / `SUGGESTED`) — never one without the other. |
-| **Research** | Resolves a company/domain against your existing accounts, shows everything stored locally, and can pull fresh public web/news evidence on demand (plus an AI summary of it, if Ollama's running). Never LinkedIn. |
-| **Imports** | Real CSV/XLSX pipeline: upload → map columns → validate → resolve possible duplicates → import. Creates Accounts, Contacts, and Knowledge Items; can drop everything into a new Target List. |
-| **Analytics** | Event-sourced funnel and role-reach numbers, always shown as numerator + denominator (a rate with no attempts renders `—`, never `0%`). |
-| **Settings** | Workspace/sales-profile fields (persisted, with a visible confirmation on save), honest provider status, [Seller Style](./docs/SELLER_STYLE.md) editor (tone, rules, phrases to avoid, real sample scripts/emails/voicemails), and real data controls: export a full JSON snapshot, download the raw `data/scout.db` file, or permanently delete everything. |
+### Emails
+Type **"I'm emailing ___"** and paste your notes. Scout finds the real
+signal for **why now**, reopens the exact unfinished thread (or leads
+with a signal for net-new), and writes the email: 60-100 words, one
+angle, one 15-minute ask. When more information is needed first, it
+writes a question-first email instead; when email is the wrong move
+(the contact left), it says call first.
 
-Logging a call (from any account's **Log Call** button) writes a real
-`CallOutcome`, marks that list item worked, and — after you explicitly
-approve — adds any notes/observations to that account's memory, always
-tagged `INFERRED` until you promote them yourself. If Ollama's
-running, a clean rewritten version of your note appears alongside the
-raw one a few seconds later.
+The **email log** shows every company you've emailed: status (sent and
+awaiting reply, replied, meeting booked, call first, skipped), whether
+it's **qualified IN or OUT** and why, and the next step. Mark accounts
+in or out yourself with a reason.
 
-## Start here
+### Hot List
+Your Qualified-IN accounts: worth working, no meeting yet. It updates
+itself from calls, emails, and pasted notes. Each row answers *what did
+I learn last time, and what do I need to learn next to earn the
+meeting?* ACT NOW / DUE / UPCOMING / LATER flags keep today on top.
+Exports to Excel with filter dropdowns.
 
-- [`docs/PRODUCT_CONSTITUTION.md`](./docs/PRODUCT_CONSTITUTION.md) — mission, customer, council, non-goals
-- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — system layers and stack decisions
-- [`docs/DATA_MODEL.md`](./docs/DATA_MODEL.md) — entities, relationships, Mermaid ERD (Phase 1 + 2 + 3 Additions)
-- [`DESIGN.md`](./DESIGN.md) — visual authority: marketing-site + in-app design system
-- [`docs/PHASE_4_COMPLETION_REPORT.md`](./docs/PHASE_4_COMPLETION_REPORT.md) — what's actually built, right now
-- [`docs/PHASE_3_5_STATUS.md`](./docs/PHASE_3_5_STATUS.md) — why the product isn't "READY" outright
-- [`docs/ROADMAP.md`](./docs/ROADMAP.md) — phases + explicit non-goals
-- [`docs/runbooks/`](./docs/runbooks/) — founder operations, written for a first-time SaaS operator
+### Day finished
+A tracker-ready breakdown of only what you logged (dials, connects, DM
+conversations, meeting asks, meetings, emails, replies), prospecting vs
+admin, with a funnel read.
 
-**UI/UX docs (Phase 4)**: [`ONBOARDING_UX.md`](./docs/ONBOARDING_UX.md) ·
-[`CUSTOMER_ADMIN.md`](./docs/CUSTOMER_ADMIN.md)
+Scout isn't a CRM and there's nothing to manage. It quietly remembers
+each company's notes, research, and history so the next touch builds
+on the last one.
 
-**Research engine docs (Phase 3)**: [`RESEARCH_ENGINE.md`](./docs/RESEARCH_ENGINE.md) ·
-[`ENTITY_RESOLUTION.md`](./docs/ENTITY_RESOLUTION.md) ·
-[`SOURCE_MODEL.md`](./docs/SOURCE_MODEL.md) ·
-[`RESEARCH_FRESHNESS.md`](./docs/RESEARCH_FRESHNESS.md) ·
-[`PEOPLE_DISCOVERY.md`](./docs/PEOPLE_DISCOVERY.md) ·
-[`EVIDENCE_MODEL.md`](./docs/EVIDENCE_MODEL.md) ·
-[`CALL_READY_BRIEF.md`](./docs/CALL_READY_BRIEF.md) ·
-[`RESEARCH_COSTS.md`](./docs/RESEARCH_COSTS.md) ·
-[`RESEARCH_SECURITY.md`](./docs/RESEARCH_SECURITY.md) ·
-[`RESEARCH_OPERATIONS.md`](./docs/RESEARCH_OPERATIONS.md) ·
-[`AI_EVALUATIONS.md`](./docs/AI_EVALUATIONS.md)
+---
 
-**Product docs (Phase 2)**: [`TARGET_LISTS.md`](./docs/TARGET_LISTS.md) ·
-[`ACCOUNT_BRAIN.md`](./docs/ACCOUNT_BRAIN.md) ·
-[`PEOPLE_INTELLIGENCE.md`](./docs/PEOPLE_INTELLIGENCE.md) ·
-[`SELLER_STYLE.md`](./docs/SELLER_STYLE.md) ·
-[`POST_CALL_WORKFLOW.md`](./docs/POST_CALL_WORKFLOW.md) ·
-[`CRM_WRITEBACK.md`](./docs/CRM_WRITEBACK.md) ·
-[`PROSPECTING_ANALYTICS.md`](./docs/PROSPECTING_ANALYTICS.md) ·
-[`RESEARCH_WORKSPACE.md`](./docs/RESEARCH_WORKSPACE.md) ·
-[`CUSTOMER_IMPLEMENTATION.md`](./docs/CUSTOMER_IMPLEMENTATION.md) ·
-[`PILOT.md`](./docs/PILOT.md) ·
-[`FOUNDER_OPERATIONS.md`](./docs/FOUNDER_OPERATIONS.md) ·
-[`WEBSITE.md`](./docs/WEBSITE.md) ·
-[`PRODUCT_UX.md`](./docs/PRODUCT_UX.md) · [`DEMO.md`](./docs/DEMO.md)
+## Private content (never in git)
 
-**Architecture docs (Phase 1)**: [`RESEARCH_ARCHITECTURE.md`](./docs/RESEARCH_ARCHITECTURE.md) ·
-[`AI_ARCHITECTURE.md`](./docs/AI_ARCHITECTURE.md) ·
-[`SECURITY.md`](./docs/SECURITY.md) ·
-[`INTEGRATIONS.md`](./docs/INTEGRATIONS.md) ·
-[`COST_MODEL.md`](./docs/COST_MODEL.md) ·
-[`JOBS_ARCHITECTURE.md`](./docs/JOBS_ARCHITECTURE.md) ·
-[`DECISIONS.md`](./docs/DECISIONS.md) (ADRs, incl. Phase 3's ADR-0008) ·
-[`COUNCIL_REVIEW.md`](./docs/COUNCIL_REVIEW.md) (Phase 1)
+Everything specific to you stays on your machine:
 
-## Repo structure
+- **`private/`** (git-ignored) holds your playbooks and reference
+  material, which Scout loads word for word:
+  - `private/playbooks/calls.md`, `emails.md`, `hotlist.md`, `examples.md`
+  - `private/reference/workflow.md`, `verticals.md`, `objections.md`, `sessions.md`, `training.md`
 
-```
-src/
-  app/            Next.js App Router — presentation layer
-                    page.tsx  Marketing homepage (hero, story flow, CTA)
-                    demo/     Demo Mode: fictional data, product tour (see DEMO.md)
-                    app/      Local Mode: your real data — mirrors demo/ route-for-route (see LOCAL_MODE.md)
-                    admin/    Founder Operations Console (unauthenticated stub — see FOUNDER_OPERATIONS.md)
-  components/     Shared UI primitives
-                    ui/       Button, Card, Input, Tabs, Skeleton, Drawer — DESIGN.md tokens as code
-                    marketing/  Nav, hero product composite (CSS-3D, no engine dependency)
-                    (badges, priority labels, stat tiles, states, funnel, filters — Scout-specific)
-  demo/           Demo Mode fixture data + accessor layer, incl. stress-test fixtures (see DEMO.md)
-  data/           Local Mode accessor layer, backed by SQLite (see LOCAL_MODE.md)
-                    index.ts       accounts/contacts/lists/people/analytics reads + mutations
-                    imports.ts     CSV/XLSX import pipeline (upload/map/validate/resolve/commit)
-                    calls.ts       post-call workflow (CallOutcome + approved memory writes)
-                    settings.ts    workspace/sales-profile settings
-                    export.ts, danger.ts   real data export + delete-all-local-data
-  features/       Feature-level UI composition
-  domain/         Business logic — target lists, analytics, entity resolution,
-                    freshness, source quality, research security/status,
-                    brief quality lint (all tested)
-  services/       Provider interfaces (CRM incl. writeback, enrichment, research, import).
-                    research/enrichment/CRM are unused in Local Mode, kept as future adapter
-                    contracts; local-import-provider.ts is a real CSV/XLSX implementation of
-                    the import contract (deterministic column mapping, no AI)
-  integrations/   Concrete vendor adapters implementing services/ interfaces (empty)
-  ai/             AIProvider abstraction, workload-keyed model config — optional, unused in Local Mode
-  db/             SQLite connection construction (centralized — nowhere else, see LOCAL_MODE.md)
-  auth/           Local single-user auth context, centralized permissions matrix
-  lib/            Env validation, branding config
-  types/          Shared types (tenancy, evidence, product)
-db/               db/schema.sql — the schema actually applied to data/scout.db
-supabase/         Historical reference only — see supabase/README.md
-tests/            Vitest — highest-risk logic first (see ARCHITECTURE.md)
+  Point `SCOUT_PRIVATE_DIR` somewhere else to keep them outside the repo.
+  A test pins their exact text, so they can't change by accident.
+- **Settings** (stored in the local database) hold your name, company,
+  city, territory ZIPs, and callback number. The rules below use them.
+- **`data/`** (git-ignored) holds the SQLite database: accounts, notes,
+  research, drafts, activity.
+
+## Rules enforced in code
+
+What can be checked is enforced on every output, not just requested
+from the AI. Anything that fails gets one automatic rewrite, and the
+screen shows a ✓ or exactly what's off:
+
+- **Emails** ([`email-style.ts`](./src/domain/email-style.ts)): your
+  greeting and sign-off, 60-100 words, one closing 15-minute ask (or a
+  question-first email), no dashes, bullets, or exclamation points, one
+  angle, a plain subject, and no filler like "hope this finds you well",
+  "just following up", "touching base", "quick chat".
+- **Call cards** ([`call-style.ts`](./src/domain/call-style.ts)): your
+  opening ("[Name], [you] with [company] here in [city]. Reason for my
+  call..."), one primary question, max one follow-up, a low-risk
+  10-minute ask (never "assessment"), 20-40 second voicemails, gatekeeper
+  questions that route to the owner, no permission openers.
+- **Territory** ([`territory.ts`](./src/domain/territory.ts)): computed
+  from the actual ZIP against your Settings.
+- **Never invented**: phones, emails, people, headcount, revenue,
+  signals, pain, or referrals. Estimates say "est.", shaky facts say
+  "unverified", and claims link to sources.
+
+---
+
+## Run it
+
+```bash
+npm install
+npm run dev
 ```
 
-## Environment
+Open **http://localhost:3000**, then fill in Settings (the gear).
 
-Requires **Node ≥22**. Full toolchain (typecheck, lint, build, test) is
-verified green on Node 22.23.2. If your `node -v` shows 21.x or lower,
-`npm install` will still mostly work but `npm test` will fail outright
-(Vitest's bundler needs a Node-22-only `node:util` export) — upgrade
-first. `npm run dev`/`npm run build` are more forgiving: local storage
-uses `sql.js` (WASM SQLite, no native addon), so those keep working
-even on Node 21.
-
-No `.env.local` is required to run Scout. `ANTHROPIC_API_KEY` (see
-`.env.example`) is entirely optional and unused by anything in Local
-Mode today — see `docs/LOCAL_MODE.md`.
-
-Want AI-generated brief summaries and clean call notes? Install
-[Ollama](https://ollama.com), run `ollama pull llama3.2` once, then
-keep `ollama serve` running in the background. Nothing to configure —
-Scout looks for it at `http://localhost:11434` by default (override
-with `OLLAMA_HOST`, or pick a different pulled model per workload via
-`AI_MODEL_EXTRACTION`/`AI_MODEL_SUMMARY`/etc. — see `.env.example`).
-Skip this entirely and Scout works exactly the same, just without
-those two AI touches.
+Scout calls the [Claude Code](https://claude.com/claude-code) CLI in
+headless mode (`claude -p`) with web search, so it runs on whatever
+Claude account the CLI is logged into. No API key; `ANTHROPIC_API_KEY`
+is stripped so it never switches to API billing, and each call is
+isolated from your own Claude Code setup. Pick Sonnet (faster) or Opus
+(strongest writing) in Settings. A first call card or email takes about
+a minute because it researches live; after that, research is reused for
+14 days. Every run counts toward your Claude usage limits.
 
 ## Commands
 
-```
-npm run dev         # local dev server
-npm run build        # production build
-npm run lint          # eslint
-npm run typecheck     # tsc --noEmit
-npm run test           # vitest
-npm run format         # prettier --write
+```bash
+npm run dev          # http://localhost:3000
+npm run build
+npm run lint
+npm run typecheck
+npm run test         # needs Node 22+; on older Node: npx -y node@22 node_modules/vitest/vitest.mjs run
 ```
 
-## What's NOT here yet
+## How it's built
 
-CRM writeback/adapters remain unconfigured — the interface exists in
-`src/services/crm-provider.ts` as a future extension point, but
-nothing is wired up, and Settings says so honestly rather than faking
-a connection. The Research Provider and AI Provider are both real now
-(see above), but Research is deliberately limited to two free, public,
-keyless sources — a company's own website and public news search —
-and will never expand to LinkedIn or other login-walled platforms;
-that's a permanent product boundary, not a roadmap item. The AI
-Provider (Ollama) rewrites/summarizes text you already have and writes
-new call scripts/voicemails/emails in your own taught voice, but it
-never makes prospecting decisions for you and is instructed, and
-checked in code, never to invent a fact, a meeting time, or a customer
-name it wasn't actually given. There's also no in-app
-Selling-Situation creation flow yet, and entity resolution during
-import only checks against accounts already in the database (not
-against other rows in the same file). Multi-user auth and billing are
-explicitly out of scope for a local single-user tool; see the
-historical `docs/PHASE_4_COMPLETION_REPORT.md` for the earlier
-hosted-SaaS framing these superseded.
+Next.js 16 + React 19, SQLite via `sql.js` (WASM), zod-validated AI output.
+
+```
+src/
+  ai/providers/claude-cli-provider.ts  headless `claude -p` runner (web search, JSON schema output)
+  ai/sdr/playbooks.ts                  loads the private playbooks + reference
+  ai/sdr/prompts.ts                    playbooks + enforced rules → prompts
+  ai/sdr/engine.ts                     research, call cards, emails, coaching, Hot List, leads
+  ai/sdr/schemas.ts                    output shapes
+  app/calls, app/emails                "I'm calling / emailing X"
+  app/hot-list, app/day, app/settings
+  app/api/sdr/route.ts                 long AI runs (never block the UI)
+  app/actions.ts                       quick saves
+  components/sdr/                      call card, email + log, after-the-call, Hot List, research, leads
+  data/                                accounts, notes, research, drafts, activity, Hot List, settings
+  domain/                              email + call rules, territory, identity, Hot List, email log, day summary
+db/schema.sql                          schema, applied at startup
+tests/                                 rules, Hot List, email log, day summary, data layer, schema
+```
