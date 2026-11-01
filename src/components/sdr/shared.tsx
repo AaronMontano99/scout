@@ -80,8 +80,8 @@ export function AiProgress({ label, elapsed }: { label: string; elapsed: number 
   return (
     <div className="flex items-center gap-3 rounded-md border border-hairline-strong bg-canvas-soft px-4 py-3 text-[13px] text-body">
       <span className="relative flex h-2.5 w-2.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2F80FF] opacity-60" />
-        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#2F80FF]" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
       </span>
       <span>{label}</span>
       <span className="ml-auto font-mono text-[12px] text-muted">{elapsed}s</span>
@@ -103,30 +103,30 @@ export function ErrorNote({ message, onRetry }: { message: string; onRetry?: () 
 }
 
 const PRIORITY_CLASS: Record<string, string> = {
-  HIGH: 'bg-[#DCFCE7] text-[#166534]',
-  MEDIUM: 'bg-[#E0EDFF] text-[#1E4FA8]',
+  HIGH: 'bg-good-soft text-good',
+  MEDIUM: 'bg-info-soft text-info',
   LOW: 'bg-surface-strong text-body',
-  SKIP: 'bg-[#FDECEC] text-[#9B1C1C]',
+  SKIP: 'bg-bad-soft text-bad',
 };
 
 export function PriorityChip({ priority }: { priority: string }) {
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 font-mono text-[10.5px] font-semibold tracking-[0.06em] ${PRIORITY_CLASS[priority] ?? PRIORITY_CLASS.LOW}`}>
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${PRIORITY_CLASS[priority] ?? PRIORITY_CLASS.LOW}`}>
       {priority}
     </span>
   );
 }
 
 const SIGNAL_CLASS: Record<string, string> = {
-  'HARD SIGNAL': 'bg-[#FFF1D6] text-[#8A5300]',
-  'SOFT SIGNAL': 'bg-[#E0EDFF] text-[#1E4FA8]',
+  'HARD SIGNAL': 'bg-warn-soft text-warn',
+  'SOFT SIGNAL': 'bg-info-soft text-info',
   'NO RECENT SIGNAL': 'bg-surface-strong text-muted',
 };
 
 /** HARD / SOFT / NO RECENT SIGNAL — Aaron's honesty label for "why now". */
 export function SignalChip({ status }: { status: string }) {
   return (
-    <span className={`inline-flex rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.05em] ${SIGNAL_CLASS[status] ?? SIGNAL_CLASS['NO RECENT SIGNAL']}`}>
+    <span className={`inline-flex rounded px-1.5 py-0.5 text-[12px] font-semibold ${SIGNAL_CLASS[status] ?? SIGNAL_CLASS['NO RECENT SIGNAL']}`}>
       {status}
     </span>
   );
@@ -135,8 +135,8 @@ export function SignalChip({ status }: { status: string }) {
 export function StrengthChip({ strength }: { strength: 'HARD' | 'SOFT' }) {
   return (
     <span
-      className={`inline-flex shrink-0 rounded px-1.5 py-px font-mono text-[9.5px] font-semibold tracking-[0.06em] ${
-        strength === 'HARD' ? 'bg-[#FFF1D6] text-[#8A5300]' : 'bg-surface-strong text-muted'
+      className={`inline-flex shrink-0 rounded px-1.5 py-px text-[12px] font-semibold ${
+        strength === 'HARD' ? 'bg-warn-soft text-warn' : 'bg-surface-strong text-muted'
       }`}
     >
       {strength}
@@ -176,9 +176,9 @@ export function Field({
 }) {
   if (children == null || children === '' || (Array.isArray(children) && children.length === 0)) return null;
   return (
-    <div className={emphasis ? 'rounded-md border border-[#CFE0FF] bg-[#F5F9FF] px-4 py-3' : ''}>
+    <div className={emphasis ? 'rounded-md border border-hairline-strong bg-canvas-soft px-4 py-3' : ''}>
       <div className="flex items-center justify-between gap-3">
-        <MicroLabel color={emphasis ? 'text-[#1E4FA8]' : undefined}>{label}</MicroLabel>
+        <MicroLabel color={emphasis ? 'text-info' : undefined}>{label}</MicroLabel>
         {copy && <CopyButton text={copy} />}
       </div>
       <div className={`mt-1 leading-[1.55] ${emphasis ? 'text-[14.5px] text-ink' : 'text-[13.5px] text-ink'}`}>{children}</div>

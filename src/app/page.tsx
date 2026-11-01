@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation';
+import { OverviewPage } from '@/components/dashboard/overview';
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
-  redirect('/calls');
+  return <OverviewPage />;
 }

@@ -48,7 +48,7 @@ export function HotListCard({
   const onList = entry && isActive(entry.stage);
 
   return (
-    <div className={`flex flex-col gap-3 rounded-lg border p-4 ${onList ? 'border-[#F5C26B] bg-[#FFFBF2]' : 'border-hairline-strong bg-surface-card'}`}>
+    <div className={`flex flex-col gap-3 rounded-lg border p-4 ${onList ? 'border-warn bg-warn-soft' : 'border-hairline-strong bg-surface-card'}`}>
       <div className="flex items-baseline justify-between">
         <MicroLabel color={onList ? 'text-accent-warning' : undefined}>Hot List</MicroLabel>
         <Link href="/hot-list" className="text-[12px] text-text-link hover:underline">

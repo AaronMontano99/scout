@@ -29,7 +29,7 @@ export function HotListProposal({
 }) {
   const active = update.decision === 'qualify_in' || update.decision === 'update';
   return (
-    <div className={`flex flex-col gap-3 rounded-md border p-4 ${apply ? 'border-[#F5C26B] bg-[#FFFBF2]' : 'border-hairline-strong'}`}>
+    <div className={`flex flex-col gap-3 rounded-md border p-4 ${apply ? 'border-warn bg-warn-soft' : 'border-hairline-strong'}`}>
       <div className="flex flex-wrap items-center gap-2.5">
         <MicroLabel color="text-accent-warning">Hot List</MicroLabel>
         <span className="text-[13.5px] font-medium text-ink">{DECISION_LABEL[update.decision]}</span>

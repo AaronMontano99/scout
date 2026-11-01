@@ -36,15 +36,15 @@ export default async function DayPage({ searchParams }: { searchParams: Promise<
   const next = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
 
   return (
-    <div className="mx-auto flex max-w-[1080px] flex-col gap-6">
+    <div className="rise mx-auto flex max-w-[1080px] flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <PageHeader title={isToday ? 'Day finished' : label} subtitle="Only what you logged. Nothing estimated." />
         <div className="flex items-center gap-3 text-[12.5px]">
-          <Link href={`/day?date=${ymd(prev)}`} className="text-text-link hover:underline">
+          <Link href={`/day?date=${ymd(prev)}`} className="rounded-full border border-hairline-strong px-3.5 py-1.5 text-[13.5px] text-ink hover:bg-surface-strong">
             ← {prev.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </Link>
           {!isToday && (
-            <Link href={`/day?date=${ymd(next)}`} className="text-text-link hover:underline">
+            <Link href={`/day?date=${ymd(next)}`} className="rounded-full border border-hairline-strong px-3.5 py-1.5 text-[13.5px] text-ink hover:bg-surface-strong">
               {next.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} →
             </Link>
           )}
@@ -63,8 +63,8 @@ export default async function DayPage({ searchParams }: { searchParams: Promise<
         />
       </section>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="rounded-[14px] border border-hairline-strong bg-surface-card p-6">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="glass p-6">
           <div className="flex items-center justify-between">
             <MicroLabel>Tracker-ready</MicroLabel>
             <CopyButton text={tracker} label="Copy for tracker" />

@@ -19,22 +19,22 @@ import { MicroLabel } from '@/components/ui/micro-label';
 import { SearchInput } from '@/components/ui/search-input';
 
 const FLAG_CLASS: Record<ActionFlag, string> = {
-  'ACT NOW': 'bg-[#FDECEC] text-[#9B1C1C]',
-  'SET DATE': 'bg-[#FFF1D6] text-[#8A5300]',
-  DUE: 'bg-[#FFF1D6] text-[#8A5300]',
-  UPCOMING: 'bg-[#E0EDFF] text-[#1E4FA8]',
-  LATER: 'bg-surface-strong text-muted',
+  'ACT NOW': 'bg-bad-soft text-bad',
+  'SET DATE': 'bg-warn-soft text-warn',
+  DUE: 'bg-warn-soft text-warn',
+  UPCOMING: 'bg-info-soft text-info',
+  LATER: 'bg-surface-strong text-body',
 };
 const PRIORITY_SELECT: Record<HotPriority, string> = {
-  HIGH: 'bg-[#DCFCE7] text-[#166534]',
-  MEDIUM: 'bg-[#E0EDFF] text-[#1E4FA8]',
+  HIGH: 'bg-good-soft text-good',
+  MEDIUM: 'bg-info-soft text-info',
   LOW: 'bg-surface-strong text-body',
 };
 const FLAGS: ActionFlag[] = ['ACT NOW', 'DUE', 'UPCOMING', 'LATER', 'SET DATE'];
 const PRIORITIES: HotPriority[] = ['HIGH', 'MEDIUM', 'LOW'];
 
 export function FlagBadge({ flag }: { flag: ActionFlag }) {
-  return <span className={`inline-flex shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-[0.05em] ${FLAG_CLASS[flag]}`}>{flag}</span>;
+  return <span className={`flag inline-flex shrink-0 rounded-md px-2 py-0.5 text-[12px] font-semibold ${FLAG_CLASS[flag]}`}>{flag}</span>;
 }
 
 function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -124,7 +124,7 @@ export function HotListTable({ entries, today }: { entries: HotListEntry[]; toda
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-hairline-strong bg-surface-card">
+      <div className="glass overflow-hidden">
         <div className="grid grid-cols-[92px_minmax(160px,1.1fr)_96px_140px_minmax(140px,1fr)_minmax(200px,1.6fr)_150px] gap-3 border-b border-hairline bg-canvas-soft px-4 py-2">
           <MicroLabel>Flag</MicroLabel>
           <MicroLabel>Company</MicroLabel>
@@ -160,14 +160,14 @@ function Row({ entry: e, today, open, onToggle }: { entry: HotListEntry; today: 
           <Link href={`/calls?a=${e.accountId}`} className="block truncate text-[13.5px] font-medium text-ink hover:underline">
             {e.accountName}
           </Link>
-          <button type="button" onClick={onToggle} className="text-[11.5px] text-text-link hover:underline">
+          <button type="button" onClick={onToggle} className="text-[12px] text-text-link hover:underline">
             {open ? 'Hide details' : 'Details'}
           </button>
         </div>
         <select
           value={e.priority}
           onChange={(ev) => save({ priority: ev.target.value as HotPriority })}
-          className={`${INLINE_SELECT} font-mono text-[11px] font-semibold ${PRIORITY_SELECT[e.priority]}`}
+          className={`${INLINE_SELECT} font-mono text-[12px] font-semibold ${PRIORITY_SELECT[e.priority]}`}
         >
           {PRIORITIES.map((p) => (
             <option key={p} value={p}>

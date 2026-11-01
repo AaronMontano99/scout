@@ -22,7 +22,7 @@ export function CrmHistory({ accountId, notes }: { accountId: string; notes: { c
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-hairline-strong bg-surface-card p-4">
+    <div className="flex flex-col gap-3 glass p-4">
       <div className="flex items-baseline justify-between">
         <MicroLabel>Your notes</MicroLabel>
         {!open && (

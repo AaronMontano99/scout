@@ -9,7 +9,7 @@ import { SourceLinks, StrengthChip } from './shared';
 export function IntelPanel({ intel, researchedAt }: { intel: AccountIntel | null; researchedAt: string | null }) {
   if (!intel) {
     return (
-      <div className="rounded-lg border border-hairline-strong bg-surface-card p-4">
+      <div className="glass p-4">
         <MicroLabel>Why now</MicroLabel>
         <p className="mt-1.5 text-[13px] text-muted">Researched live when the call card or email is built.</p>
       </div>
@@ -26,10 +26,10 @@ export function IntelPanel({ intel, researchedAt }: { intel: AccountIntel | null
   ].filter(([, v]) => v);
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-hairline-strong bg-surface-card p-4">
+    <div className="flex flex-col gap-4 glass p-4">
       <div className="flex items-baseline justify-between">
         <MicroLabel>Why now: live research</MicroLabel>
-        {researchedAt && <span className="text-[11px] text-muted">live, {new Date(researchedAt).toLocaleDateString()}</span>}
+        {researchedAt && <span className="text-[12px] text-muted">live, {new Date(researchedAt).toLocaleDateString()}</span>}
       </div>
 
       {intel.summary && <p className="-mt-2 text-[13px] leading-[1.55] text-ink">{intel.summary}</p>}
@@ -40,8 +40,8 @@ export function IntelPanel({ intel, researchedAt }: { intel: AccountIntel | null
           <div className="flex flex-wrap items-center gap-2">
             {office.phone && <a href={`tel:${office.phone}`} className="text-text-link hover:underline">{office.phone}</a>}
             <span
-              className={`rounded-full px-2 py-px text-[10.5px] font-medium ${
-                office.inTerritory === 'yes' ? 'bg-[#DCFCE7] text-[#166534]' : office.inTerritory === 'no' ? 'bg-[#FDECEC] text-[#9B1C1C]' : 'bg-surface-strong text-muted'
+              className={`rounded-full px-2 py-px text-[12px] font-medium ${
+                office.inTerritory === 'yes' ? 'bg-good-soft text-good' : office.inTerritory === 'no' ? 'bg-bad-soft text-bad' : 'bg-surface-strong text-muted'
               }`}
             >
               {territoryLabel}
@@ -111,7 +111,7 @@ export function IntelPanel({ intel, researchedAt }: { intel: AccountIntel | null
       )}
 
       {intel.crmCorrections.length > 0 && (
-        <div className="rounded-md bg-[#FFF8EB] px-3 py-2.5">
+        <div className="rounded-md bg-warn-soft px-3 py-2.5">
           <MicroLabel color="text-accent-warning">Check your CRM</MicroLabel>
           <ul className="mt-1 flex flex-col gap-1">
             {intel.crmCorrections.map((c, i) => (

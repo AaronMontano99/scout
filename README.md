@@ -13,6 +13,15 @@ membership, with live web research.
 
 ## How it works
 
+### Overview
+The home page: this week against last, your last 8 weeks of work, what to do
+next, your hottest accounts, your call funnel, and recent activity. **Every
+number is a count of what you logged.** Nothing is scored, and a rate with
+nothing to divide by shows a dash, not 0%.
+
+Press **⌘K** anywhere to jump to an account or do anything, or use the dock at
+the bottom. **Log a touch** takes about ten seconds and needs no AI run.
+
 ### Calls
 Type **"I'm calling ___"**, paste your CRM notes if you have any, and add
 anything else ("calling the local office, not the old contact").
@@ -56,16 +65,33 @@ Your Qualified-IN accounts: worth working, no meeting yet. It updates
 itself from calls, emails, and pasted notes. Each row answers *what did
 I learn last time, and what do I need to learn next to earn the
 meeting?* ACT NOW / DUE / UPCOMING / LATER flags keep today on top.
-Exports to Excel with filter dropdowns.
+Drag cards across the board, switch to the list view, and export to Excel
+with filter dropdowns. Dragging to Meeting booked asks you to log the meeting,
+because a meeting has to be logged to count.
+
+### Accounts
+Every company Scout knows, as a grid or table: contact, stage, signal, last
+contact, touches. Star the ones you care about, filter, search, export CSV.
+Each account has its own page with interaction history, tasks, research, and
+notes.
+
+### Schedule
+Month and week calendar, today's agenda, and overdue work. Tasks you add sit
+next to Hot List next touches, which show up on their own. Reschedule from the
+`...` menu, or move the whole backlog to today, with Undo on all of it.
+
+### Reports
+4, 12, 26, or 52 weeks: activity by channel, call and email funnels, connect
+rate by week, when people pick up, where meetings come from, and your
+most-worked accounts. Exports to CSV.
 
 ### Day finished
 A tracker-ready breakdown of only what you logged (dials, connects, DM
 conversations, meeting asks, meetings, emails, replies), prospecting vs
 admin, with a funnel read.
 
-Scout isn't a CRM and there's nothing to manage. It quietly remembers
-each company's notes, research, and history so the next touch builds
-on the last one.
+Scout remembers each company's notes, research, and history so the next
+touch builds on the last one.
 
 ---
 
@@ -127,10 +153,17 @@ isolated from your own Claude Code setup. Pick Sonnet (faster) or Opus
 a minute because it researches live; after that, research is reused for
 14 days. Every run counts toward your Claude usage limits.
 
+To see the dashboards full, run `npm run demo` and open
+**http://localhost:3001**. It seeds a separate `data/demo.db` with made-up
+companies and never touches your real database. Make the look your own with
+the sliders icon in the dock: three looks, three backgrounds (surf penguins
+included), four accents, three heading fonts.
+
 ## Commands
 
 ```bash
 npm run dev          # http://localhost:3000
+npm run demo         # http://localhost:3001, made-up data
 npm run build
 npm run lint
 npm run typecheck
@@ -149,12 +182,17 @@ src/
   ai/sdr/engine.ts                     research, call cards, emails, coaching, Hot List, leads
   ai/sdr/schemas.ts                    output shapes
   app/calls, app/emails                "I'm calling / emailing X"
-  app/hot-list, app/day, app/settings
+  app/page.tsx, app/hot-list, app/accounts, app/schedule, app/reports
+  app/day, app/settings
   app/api/sdr/route.ts                 long AI runs (never block the UI)
   app/actions.ts                       quick saves
   components/sdr/                      call card, email + log, after-the-call, Hot List, research, leads
+  components/dashboard/                Overview, charts, accounts, schedule
+  components/shell/                    nav, dock, search, sheets, toasts, look tweaks
   data/                                accounts, notes, research, drafts, activity, Hot List, settings
-  domain/                              email + call rules, territory, identity, Hot List, email log, day summary
+  domain/                              email + call rules, territory, identity, Hot List, email log, day summary,
+                                       metrics, schedule, alerts, quick log
 db/schema.sql                          schema, applied at startup
+scripts/                               demo data
 tests/                                 rules, Hot List, email log, day summary, data layer, schema
 ```

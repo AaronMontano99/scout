@@ -57,8 +57,8 @@ export function LeadFinder({ territoryZips }: { territoryZips: string[] }) {
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-[14px] border border-hairline-strong bg-surface-card p-6">
-      {ZIPS.length === 0 && <p className="text-[12.5px] text-[#8A5300]">Add your territory ZIPs in Settings first.</p>}
+    <div className="flex flex-col gap-4 glass p-6">
+      {ZIPS.length === 0 && <p className="text-[12.5px] text-warn">Add your territory ZIPs in Settings first.</p>}
       <div>
         <MicroLabel>ZIPs</MicroLabel>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -94,7 +94,7 @@ export function LeadFinder({ territoryZips }: { territoryZips: string[] }) {
       </div>
       {pending && <AiProgress label="Searching the territory for net-new accounts with real signals. Usually 3 to 8 minutes; you can keep working in other tabs." elapsed={elapsed} />}
       {!pending && error && <ErrorNote message={error} onRetry={find} />}
-      {!pending && result && <p className="rounded-md bg-[#ECFDF3] px-4 py-2.5 text-[13px] text-[#166534]">{result}</p>}
+      {!pending && result && <p className="rounded-md bg-good-soft px-4 py-2.5 text-[13px] text-good">{result}</p>}
     </div>
   );
 }
@@ -112,7 +112,7 @@ export function LeadCard({ candidate }: { candidate: LeadCandidate }) {
     });
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-hairline-strong bg-surface-card p-5">
+    <div className="flex flex-col gap-3 glass p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5">

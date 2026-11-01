@@ -9,19 +9,19 @@ import { MicroLabel } from '@/components/ui/micro-label';
 type Filter = 'all' | Qualification | EmailStatus;
 
 const QUAL_CLASS: Record<Qualification, string> = {
-  in: 'bg-[#DCFCE7] text-[#166534]',
-  out: 'bg-[#FDECEC] text-[#9B1C1C]',
-  not_yet: 'bg-[#FFF1D6] text-[#8A5300]',
-  unassessed: 'bg-surface-strong text-muted',
+  in: 'bg-good-soft text-good',
+  out: 'bg-bad-soft text-bad',
+  not_yet: 'bg-warn-soft text-warn',
+  unassessed: 'bg-surface-strong text-body',
 };
 
 const STATUS_CLASS: Record<EmailStatus, string> = {
-  meeting_booked: 'text-[#166534] font-semibold',
-  replied: 'text-[#1E4FA8] font-semibold',
+  meeting_booked: 'text-good font-semibold',
+  replied: 'text-info font-semibold',
   awaiting_reply: 'text-ink',
-  call_first: 'text-[#8A5300]',
-  skipped: 'text-muted',
-  drafted: 'text-muted',
+  call_first: 'text-warn',
+  skipped: 'text-body',
+  drafted: 'text-body',
 };
 
 function shortDate(iso: string | null): string {
@@ -70,8 +70,8 @@ export function EmailLog({ rows }: { rows: EmailLogRow[] }) {
           </button>
         ))}
       </div>
-      <div className="overflow-hidden rounded-lg border border-hairline-strong bg-surface-card">
-        <div className="grid grid-cols-[minmax(150px,1fr)_minmax(150px,1.1fr)_150px_130px_minmax(200px,1.6fr)_minmax(180px,1.3fr)] gap-3 border-b border-hairline bg-canvas-soft px-4 py-2">
+      <div className="glass overflow-x-auto">
+        <div className="grid min-w-[980px] grid-cols-[minmax(150px,1fr)_minmax(150px,1.1fr)_150px_130px_minmax(200px,1.6fr)_minmax(180px,1.3fr)] gap-3 border-b border-hairline bg-canvas-soft px-4 py-2">
           <MicroLabel>Company</MicroLabel>
           <MicroLabel>Last email</MicroLabel>
           <MicroLabel>Status</MicroLabel>
@@ -110,7 +110,7 @@ function Row({ row: r }: { row: EmailLogRow }) {
 
   return (
     <div className="border-b border-hairline last:border-b-0">
-      <div className="grid grid-cols-[minmax(150px,1fr)_minmax(150px,1.1fr)_150px_130px_minmax(200px,1.6fr)_minmax(180px,1.3fr)] items-start gap-3 px-4 py-3 text-[12.5px] leading-[1.5]">
+      <div className="grid min-w-[980px] grid-cols-[minmax(150px,1fr)_minmax(150px,1.1fr)_150px_130px_minmax(200px,1.6fr)_minmax(180px,1.3fr)] items-start gap-3 px-4 py-3 text-[12.5px] leading-[1.5]">
         <div className="min-w-0">
           <Link href={`/emails?a=${r.accountId}`} className="block truncate text-[13.5px] font-medium text-ink hover:underline">
             {r.company}
@@ -128,9 +128,9 @@ function Row({ row: r }: { row: EmailLogRow }) {
         </div>
         <span className={STATUS_CLASS[r.status]}>{EMAIL_STATUS_LABEL[r.status]}</span>
         <div className="flex flex-col items-start gap-1">
-          <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${QUAL_CLASS[r.qualification]}`}>{QUALIFICATION_LABEL[r.qualification]}</span>
+          <span className={`rounded-full px-2 py-0.5 text-[12px] font-semibold ${QUAL_CLASS[r.qualification]}`}>{QUALIFICATION_LABEL[r.qualification]}</span>
           {!mode && (
-            <span className="flex gap-2 text-[11.5px]">
+            <span className="flex gap-2 text-[12px]">
               {r.qualification !== 'in' && (
                 <button type="button" onClick={() => setMode('in')} className="text-text-link hover:underline">
                   Mark IN
@@ -165,7 +165,7 @@ function Row({ row: r }: { row: EmailLogRow }) {
           </button>
         </div>
       )}
-      {note && <p className="px-4 pb-2 text-[12px] text-[#8A5300]">{note}</p>}
+      {note && <p className="px-4 pb-2 text-[12px] text-warn">{note}</p>}
     </div>
   );
 }

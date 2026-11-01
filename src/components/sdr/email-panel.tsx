@@ -107,7 +107,7 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
       {email && !pending && (
         <>
           {email.recommendation === 'call_first' && (
-            <div className="rounded-md border border-[#F5C26B] bg-[#FFFBF2] px-4 py-3 text-[13px] leading-[1.55] text-ink">
+            <div className="rounded-md border border-warn bg-warn-soft px-4 py-3 text-[13px] leading-[1.55] text-ink">
               <span className="font-semibold">Call first, don&apos;t send this yet. </span>
               {email.recommendationReason}{' '}
               <Link href={`/calls?a=${accountId}`} className="text-text-link hover:underline">
@@ -119,7 +119,7 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
             <PriorityChip priority={email.priority} />
             <SignalChip status={email.signalStatus} />
             {email.ctaType === 'question' && (
-              <span className="rounded bg-surface-strong px-1.5 py-0.5 text-[11px] text-body">Question first, no meeting ask yet</span>
+              <span className="rounded bg-surface-strong px-1.5 py-0.5 text-[12px] text-body">Question first, no meeting ask yet</span>
             )}
             {(email.contact.name || email.contact.title) && (
               <span className="text-[13.5px] text-ink">
@@ -129,7 +129,7 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
             )}
           </div>
           {email.priority === 'SKIP' && email.skipReason && (
-            <p className="rounded-md bg-[#FDECEC] px-3.5 py-2.5 text-[13px] text-[#9B1C1C]">Skip: {email.skipReason}</p>
+            <p className="rounded-md bg-bad-soft px-3.5 py-2.5 text-[13px] text-bad">Skip: {email.skipReason}</p>
           )}
 
           <div className="grid gap-x-5 gap-y-3 rounded-md border border-hairline px-4 py-3 sm:grid-cols-2">
@@ -189,7 +189,7 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
           )}
 
           {sent && (
-            <div className="flex items-center justify-between rounded-md bg-[#ECFDF3] px-4 py-3 text-[13px] text-[#166534]">
+            <div className="flex items-center justify-between rounded-md bg-good-soft px-4 py-3 text-[13px] text-good">
               <span>Logged as sent. It counts toward today&apos;s numbers.</span>
               <CopyButton text={crmNotes} label="Copy CRM notes" />
             </div>
@@ -211,7 +211,7 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
                 Update
               </Button>
             </div>
-            <div className="flex items-center justify-between text-[11.5px] text-muted">
+            <div className="flex items-center justify-between text-[12px] text-muted">
               <span>{createdAt ? `Written ${formatAge(createdAt)}` : ''}</span>
               <span className="flex gap-4">
                 <button type="button" onClick={() => build(false)} className="text-text-link hover:underline">
@@ -241,9 +241,9 @@ export function EmailPanel({ accountId, initialDraft, hasFreshIntel, initiallySe
 /** Live check against Aaron's hard-coded email style (src/domain/email-style.ts), including his own edits. */
 function StyleCheck({ subject, body, ctaType }: { subject: string; body: string; ctaType: 'meeting' | 'question' }) {
   const issues = lintEmail(subject, body, ctaType);
-  if (issues.length === 0) return <p className="text-[12px] text-[#166534]">✓ Passes your style rules</p>;
+  if (issues.length === 0) return <p className="text-[12px] text-good">✓ Passes your style rules</p>;
   return (
-    <div className="rounded-md bg-[#FFF8EB] px-3 py-2 text-[12px] text-ink">
+    <div className="rounded-md bg-warn-soft px-3 py-2 text-[12px] text-ink">
       <span className="font-medium text-accent-warning">Style check: </span>
       {issues.map((i) => i.detail).join(' · ')}
     </div>

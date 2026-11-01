@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAccount, findOrCreateAccount, getAccount } from '@/data/accounts';
+import { createAccount, findAccountByName, findOrCreateAccount, getAccount, updateAccountDetails, type Account } from '@/data/accounts';
 import {
   applyHotListUpdate,
   deleteActivity,
@@ -14,6 +14,7 @@ import {
   recordHotListTouch,
   saveCrmHistory,
   saveIntel,
+  setFavorite,
   setLeadCandidateStatus,
   updateDraftData,
   upsertHotList,
@@ -24,6 +25,9 @@ import { updateSettings, type Settings } from '@/data/settings';
 import { noPickupNextMove, type ActivityChannel } from '@/domain/day-summary';
 import type { AccountIntel, Debrief, EmailDraft, HotListUpdate } from '@/ai/sdr/schemas';
 import { assessHotList } from '@/ai/sdr/engine';
+import { createTask, deleteTask, getTask, updateTask, type TaskInput, type TaskPatch } from '@/data/tasks';
+import { addBusinessDays, ymd } from '@/domain/hot-list';
+import { outcomeFlags, touchLine, type QuickOutcome } from '@/domain/quick-log';
 import { jobKey, runJob } from '@/ai/sdr/jobs';
 
 /**
@@ -243,6 +247,8 @@ export async function saveSettingsAction(patch: Partial<Settings>): Promise<void
     ...(patch.territoryZips !== undefined ? { territoryZips: patch.territoryZips } : {}),
     ...(patch.phoneNumber !== undefined ? { phoneNumber: patch.phoneNumber.trim() } : {}),
     ...(patch.claudeModel ? { claudeModel: patch.claudeModel === 'opus' ? 'opus' : 'sonnet' } : {}),
+    ...(patch.weeklyDialGoal !== undefined ? { weeklyDialGoal: Math.max(0, Math.round(patch.weeklyDialGoal) || 0) } : {}),
+    ...(patch.weeklyMeetingGoal !== undefined ? { weeklyMeetingGoal: Math.max(0, Math.round(patch.weeklyMeetingGoal) || 0) } : {}),
   });
   refresh();
 }
@@ -277,4 +283,137 @@ export async function qualifyInAction(accountId: string, reason: string): Promis
     refresh();
     return { error: err instanceof Error ? err.message : 'Added without the full row; Claude was unavailable.' };
   }
+}
+
+// === Tasks ================================================================
+
+export async function createTaskAction(input: TaskInput): Promise<string> {
+  const id = createTask(input);
+  refresh();
+  return id;
+}
+
+export async function updateTaskAction(id: string, patch: TaskPatch): Promise<void> {
+  updateTask(id, patch);
+  refresh();
+}
+
+/** Returns what was deleted so the toast can put it back. */
+export async function deleteTaskAction(id: string): Promise<TaskInput | null> {
+  const task = getTask(id);
+  if (!task) return null;
+  deleteTask(id);
+  refresh();
+  return { accountId: task.accountId, title: task.title, kind: task.kind, dueDate: task.dueDate, dueTime: task.dueTime, notes: task.notes };
+}
+
+/** Moves many schedule items in one call, so a bulk move or its undo can't stop halfway. */
+export async function moveScheduleItemsAction(moves: { source: 'task' | 'touch'; refId: string; date: string }[]): Promise<void> {
+  for (const m of moves) {
+    if (m.source === 'task') updateTask(m.refId, { dueDate: m.date });
+    else upsertHotList(m.refId, { nextTouchDate: m.date });
+  }
+  refresh();
+}
+
+// === Accounts =============================================================
+
+export async function toggleFavoriteAction(accountId: string, starred: boolean): Promise<void> {
+  setFavorite(accountId, starred);
+  refresh();
+}
+
+export async function addAccountAction(input: {
+  name: string;
+  domain?: string;
+  phone?: string;
+  zip?: string;
+  industry?: string;
+  addToHotList?: boolean;
+}): Promise<{ accountId: string; existed: boolean } | { error: string }> {
+  const name = input.name.trim();
+  if (!name) return { error: 'What company is it?' };
+  const existing = findAccountByName(name);
+  const account = existing ?? createAccount({ name, domain: input.domain, phone: input.phone?.trim() || null, zip: input.zip?.trim() || null, industry: input.industry?.trim() || null });
+  if (input.addToHotList && !getHotListEntry(account.id)) upsertHotList(account.id, { stage: 'new_qi', whyQualified: 'Added by hand' });
+  refresh();
+  return { accountId: account.id, existed: Boolean(existing) };
+}
+
+export async function updateAccountAction(id: string, patch: Partial<Pick<Account, 'domain' | 'industry' | 'address' | 'zip' | 'phone'>>): Promise<void> {
+  updateAccountDetails(id, patch);
+  refresh();
+}
+
+// === Quick log ============================================================
+
+export interface QuickLogInput {
+  /** A company name. Scout finds it or starts it. */
+  company: string;
+  channel: ActivityChannel;
+  outcome: QuickOutcome;
+  contactName: string;
+  notes: string;
+  relevant: boolean;
+  meetingAsked: boolean;
+  /** Puts the booked meeting on the Schedule. */
+  meetingDate: string | null;
+  meetingTime: string | null;
+}
+
+/**
+ * The fast path for dashboards: one touch logged with no AI run. Counts
+ * the same as a touch logged through a call card, and keeps the Hot List
+ * and the no-pickup rule current the same way.
+ */
+export async function quickLogAction(input: QuickLogInput): Promise<{ accountId: string; note: string | null } | { error: string }> {
+  const company = input.company.trim();
+  if (!company) return { error: 'Which company?' };
+  const { account } = findOrCreateAccount(company);
+
+  if (input.channel === 'call' && (input.outcome === 'no_answer' || input.outcome === 'voicemail')) {
+    const result = await quickLogCallAction(account.id, input.outcome, input.contactName.trim() || undefined);
+    if (input.notes.trim()) saveCrmHistory(account.id, input.notes);
+    refresh();
+    return { accountId: account.id, note: result?.nextMove ?? null };
+  }
+
+  const flags = outcomeFlags(input.outcome);
+  const meetingBooked = flags.meetingBooked;
+  logActivity({
+    accountId: account.id,
+    accountName: account.name,
+    channel: input.channel,
+    category: 'prospecting',
+    outcome: input.outcome,
+    contactName: input.contactName.trim() || null,
+    rawNotes: input.notes.trim() || null,
+    crmNotes: input.notes.trim() ? [input.notes.trim()] : [],
+    coaching: null,
+    connected: flags.connected,
+    decisionMaker: flags.decisionMaker,
+    relevant: flags.relevant || input.relevant,
+    meetingAsked: flags.meetingAsked || input.meetingAsked,
+    meetingBooked,
+  });
+
+  const line = touchLine(input.channel, input.outcome);
+  if (meetingBooked && getHotListEntry(account.id)) {
+    upsertHotList(account.id, { stage: 'meeting_booked', lastInteraction: `${ymd(new Date())} ${line}` });
+  } else {
+    recordHotListTouch(account.id, line, 3);
+  }
+
+  if (meetingBooked) {
+    createTask({
+      accountId: account.id,
+      title: `Meeting with ${input.contactName.trim() || account.name}`,
+      kind: 'meeting',
+      dueDate: input.meetingDate || addBusinessDays(ymd(new Date()), 1),
+      dueTime: input.meetingTime || null,
+      notes: input.notes.trim(),
+    });
+  }
+  refresh();
+  return { accountId: account.id, note: null };
 }

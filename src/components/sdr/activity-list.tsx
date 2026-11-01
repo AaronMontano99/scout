@@ -11,7 +11,7 @@ const CHANNEL_LABEL: Record<string, string> = { call: 'Call', email: 'Email', wa
 export function ActivityList({ activities, showAccount = false, title = 'Activity' }: { activities: ActivityRecord[]; showAccount?: boolean; title?: string }) {
   const [pending, startTransition] = useTransition();
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-hairline-strong bg-surface-card p-4">
+    <div className="flex flex-col gap-3 glass p-4">
       <MicroLabel>{title}</MicroLabel>
       {activities.length === 0 && <p className="text-[12.5px] text-muted">Nothing logged yet.</p>}
       {activities.map((a) => {
@@ -28,8 +28,8 @@ export function ActivityList({ activities, showAccount = false, title = 'Activit
                 {when.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: '2-digit' })}{' '}
                 {when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
               </span>
-              {a.meetingBooked && <span className="rounded-full bg-[#DCFCE7] px-2 py-px text-[10.5px] font-medium text-[#166534]">Meeting booked</span>}
-              {a.category === 'admin' && <span className="rounded-full bg-surface-strong px-2 py-px text-[10.5px] text-muted">Admin</span>}
+              {a.meetingBooked && <span className="rounded-full bg-good-soft px-2 py-px text-[12px] font-medium text-good">Meeting booked</span>}
+              {a.category === 'admin' && <span className="rounded-full bg-surface-strong px-2 py-px text-[12px] text-muted">Admin</span>}
               <span className="ml-auto flex items-center gap-3 opacity-0 transition-opacity group-hover:opacity-100">
                 {crmText && <CopyButton text={crmText} label="Copy" />}
                 <button

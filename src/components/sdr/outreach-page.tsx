@@ -30,7 +30,7 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
     const recent = getRecentAccounts(10);
     const leads = kind === 'call' ? getLeadCandidates('new') : [];
     return (
-      <div className={`mx-auto flex flex-col gap-6 ${kind === 'email' ? 'max-w-[1240px]' : 'max-w-[980px]'}`}>
+      <div className={`rise mx-auto flex flex-col gap-6 ${kind === 'email' ? 'max-w-[1240px]' : 'max-w-[980px]'}`}>
         <div className={kind === 'email' ? 'mx-auto w-full max-w-[980px]' : ''}>
           <OutreachComposer kind={kind} />
         </div>
@@ -48,7 +48,7 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
                 <Link
                   key={a.id}
                   href={`${path}?a=${a.id}`}
-                  className="rounded-full border border-hairline-strong bg-surface-card px-3 py-1 text-[12.5px] text-ink hover:border-body"
+                  className="rounded-full bg-surface-strong px-3.5 py-1.5 text-[13.5px] text-ink hover:bg-primary hover:text-on-primary"
                 >
                   {a.name}
                 </Link>
@@ -82,7 +82,7 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
   const otherPath = kind === 'call' ? '/emails' : '/calls';
 
   return (
-    <div className="mx-auto flex max-w-[1240px] flex-col gap-5">
+    <div className="rise mx-auto flex max-w-[1240px] flex-col gap-5">
       <OutreachComposer kind={kind} compact />
 
       <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -91,7 +91,7 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
           {zip && (
             <span
               className={`rounded-full px-2.5 py-0.5 text-[12px] font-medium ${
-                inTerritory === 'yes' ? 'bg-[#DCFCE7] text-[#166534]' : inTerritory === 'no' ? 'bg-[#FDECEC] text-[#9B1C1C]' : 'bg-surface-strong text-ink'
+                inTerritory === 'yes' ? 'bg-good-soft text-good' : inTerritory === 'no' ? 'bg-bad-soft text-bad' : 'bg-surface-strong text-ink'
               }`}
             >
               {zip}
@@ -114,9 +114,9 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
         </Link>
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="flex flex-col gap-5">
-          <div className="rounded-[14px] border border-hairline-strong bg-surface-card px-6 py-5 shadow-[0_8px_28px_rgba(17,24,39,0.05)]">
+          <div className="glass px-6 py-5 ">
             {kind === 'call' ? (
               <CallCardPanel
                 key={account.id}
@@ -139,7 +139,7 @@ export function OutreachPage({ kind, accountId, go, instruction }: { kind: Kind;
             )}
           </div>
 
-          <div className="rounded-[14px] border border-hairline-strong bg-surface-card px-6 py-5">
+          <div className="glass px-6 py-5">
             <div className="mb-3">
               <h2 className="text-[15px] font-semibold text-ink">{kind === 'call' ? 'After the call' : 'Got a reply?'}</h2>
               <p className="text-[12.5px] text-muted">

@@ -128,6 +128,18 @@ export function updateAccountFromResearch(id: string, patch: { address?: string;
     .run(...values, new Date().toISOString(), id);
 }
 
+export function updateAccountDetails(id: string, patch: Partial<Pick<Account, 'domain' | 'industry' | 'address' | 'zip' | 'phone'>>): void {
+  const keys = Object.keys(patch) as (keyof typeof patch)[];
+  if (keys.length === 0) return;
+  const values = keys.map((k) => {
+    const value = patch[k]?.trim() || null;
+    return k === 'domain' && value ? (normalizeDomain(value) ?? value) : value;
+  });
+  getDb()
+    .prepare(`UPDATE accounts SET ${keys.map((k) => `${k} = ?`).join(', ')}, updated_at = ? WHERE id = ?`)
+    .run(...values, new Date().toISOString(), id);
+}
+
 export function touchAccount(id: string): void {
   getDb().prepare('UPDATE accounts SET updated_at = ? WHERE id = ?').run(new Date().toISOString(), id);
 }

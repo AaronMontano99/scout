@@ -91,7 +91,7 @@ export function CallCardPanel({ accountId, initialCard, cardCreatedAt, hasFreshI
               Update
             </Button>
           </div>
-          <div className="flex items-center justify-between text-[11.5px] text-muted">
+          <div className="flex items-center justify-between text-[12px] text-muted">
             <span>{createdAt ? `Built ${formatAge(createdAt)}` : ''}</span>
             <span className="flex gap-4">
               <button type="button" onClick={() => build(false)} className="text-text-link hover:underline">
@@ -232,9 +232,9 @@ function CardView({ card, identity }: { card: CallCard; identity: RepIdentity })
 /** Checks the card against the hard-coded call rules (src/domain/call-style.ts). */
 function RulesCheck({ card, identity }: { card: CallCard; identity: RepIdentity }) {
   const issues = lintCallCard(card, identity);
-  if (issues.length === 0) return <p className="text-[12px] text-[#166534]">✓ Passes your call rules</p>;
+  if (issues.length === 0) return <p className="text-[12px] text-good">✓ Passes your call rules</p>;
   return (
-    <div className="rounded-md bg-[#FFF8EB] px-3 py-2 text-[12px] text-ink">
+    <div className="rounded-md bg-warn-soft px-3 py-2 text-[12px] text-ink">
       <span className="font-medium text-accent-warning">Rules check: </span>
       {issues.map((i) => i.detail).join(' · ')}
     </div>

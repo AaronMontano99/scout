@@ -122,3 +122,27 @@ CREATE TABLE IF NOT EXISTS settings (
   data TEXT NOT NULL DEFAULT '{}',
   updated_at TEXT NOT NULL
 );
+
+-- Things Aaron wants to do on a date: calls, meetings, follow-ups. Separate
+-- from a Hot List row's next touch, though the Schedule shows both.
+CREATE TABLE IF NOT EXISTS sdr_tasks (
+  id TEXT PRIMARY KEY,
+  account_id TEXT REFERENCES accounts (id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  kind TEXT NOT NULL DEFAULT 'task' CHECK (kind IN ('call', 'email', 'walk_in', 'linkedin', 'meeting', 'research', 'task')),
+  due_date TEXT NOT NULL,
+  due_time TEXT,
+  notes TEXT NOT NULL DEFAULT '',
+  done_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sdr_tasks_due ON sdr_tasks (due_date);
+CREATE INDEX IF NOT EXISTS idx_sdr_tasks_account ON sdr_tasks (account_id);
+
+-- Starred accounts in the directory.
+CREATE TABLE IF NOT EXISTS sdr_favorites (
+  account_id TEXT PRIMARY KEY REFERENCES accounts (id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL
+);

@@ -66,7 +66,7 @@ export function OutreachComposer({ kind, compact = false }: { kind: Kind; compac
   };
 
   return (
-    <div className="rounded-[14px] border border-hairline-strong bg-surface-card p-5 shadow-[0_8px_28px_rgba(17,24,39,0.05)]">
+    <div className="glass p-5 ">
       <div className="flex items-center gap-3">
         <span className="shrink-0 text-[17px] font-semibold tracking-[-0.01em] text-ink">{copy.verb}</span>
         <Input
@@ -102,7 +102,7 @@ export function OutreachComposer({ kind, compact = false }: { kind: Kind; compac
           )}
         </div>
       )}
-      {error && <p className="mt-2 text-[12.5px] text-[#9B1C1C]">{error}</p>}
+      {error && <p className="mt-2 text-[12.5px] text-bad">{error}</p>}
     </div>
   );
 }

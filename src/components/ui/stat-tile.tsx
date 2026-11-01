@@ -12,10 +12,10 @@ export function StatTile({
   denominatorLabel?: string;
 }) {
   return (
-    <div className="rounded-lg border border-hairline-strong bg-surface-card p-4">
-      <div className="font-mono text-[9.5px] tracking-[0.1em] text-muted uppercase">{label}</div>
-      <div className="mt-1.5 text-[26px] font-semibold text-ink">{value}</div>
-      {denominatorLabel && <div className="mt-0.5 text-[11.5px] text-muted">{denominatorLabel}</div>}
+    <div className="glass p-4">
+      <div className="text-[13px] text-body">{label}</div>
+      <div className="mt-1.5 font-head text-[30px] font-medium text-ink">{value}</div>
+      {denominatorLabel && <div className="mt-0.5 text-[13px] text-muted">{denominatorLabel}</div>}
     </div>
   );
 }

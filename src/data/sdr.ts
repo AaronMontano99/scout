@@ -216,6 +216,11 @@ export function getActivitiesBetween(startIso: string, endIso: string): Activity
   return rows('SELECT * FROM sdr_activities WHERE occurred_at >= ? AND occurred_at < ? ORDER BY occurred_at ASC', [startIso, endIso]).map(mapActivity);
 }
 
+/** Everything logged, newest first. For dashboards, which slice it by date themselves. */
+export function getAllActivities(): ActivityRecord[] {
+  return rows('SELECT * FROM sdr_activities ORDER BY occurred_at DESC').map(mapActivity);
+}
+
 export function deleteActivity(id: string): void {
   getDb().prepare('DELETE FROM sdr_activities WHERE id = ?').run(id);
 }
@@ -530,4 +535,67 @@ export function qualifyOut(accountId: string, reason: string): void {
   const text = reason.trim() || 'Qualified out';
   upsertHotList(accountId, { stage: 'closed', closeReason: text, priority: 'LOW' });
   recordHotListCheck(accountId, 'close', text);
+}
+
+// === Account directory ====================================================
+
+export type SignalLevel = 'HARD' | 'SOFT' | 'NONE';
+
+export interface DirectoryRow {
+  id: string;
+  name: string;
+  domain: string | null;
+  industry: string | null;
+  zip: string | null;
+  phone: string | null;
+  contact: string;
+  stage: HotStage | null;
+  priority: HotPriority | null;
+  nextTouchDate: string | null;
+  lastTouchAt: string | null;
+  touches: number;
+  meetings: number;
+  signal: SignalLevel;
+  starred: boolean;
+}
+
+/** One row per company: what you'd want to see before deciding whether to call it. Contact comes from the Hot List, then the latest touch. */
+export function getAccountDirectory(): DirectoryRow[] {
+  const accounts = rows(
+    `SELECT a.*, h.stage, h.priority, h.contact AS hot_contact, h.next_touch_date, i.data AS intel, f.account_id AS starred,
+       (SELECT COUNT(*) FROM sdr_activities s WHERE s.account_id = a.id) AS touches,
+       (SELECT COUNT(*) FROM sdr_activities s WHERE s.account_id = a.id AND s.meeting_booked = 1) AS meetings,
+       (SELECT MAX(occurred_at) FROM sdr_activities s WHERE s.account_id = a.id) AS last_touch_at,
+       (SELECT contact_name FROM sdr_activities s WHERE s.account_id = a.id AND s.contact_name IS NOT NULL ORDER BY occurred_at DESC LIMIT 1) AS touch_contact
+     FROM accounts a
+     LEFT JOIN sdr_hotlist h ON h.account_id = a.id
+     LEFT JOIN sdr_intel i ON i.account_id = a.id
+     LEFT JOIN sdr_favorites f ON f.account_id = a.id
+     ORDER BY COALESCE(last_touch_at, a.updated_at) DESC`
+  );
+  return accounts.map((r) => {
+    const signals = parse<AccountIntel | null>(r.intel, null)?.signals ?? [];
+    return {
+      id: r.id as string,
+      name: r.name as string,
+      domain: (r.domain as string) ?? null,
+      industry: (r.industry as string) ?? null,
+      zip: (r.zip as string) ?? null,
+      phone: (r.phone as string) ?? null,
+      contact: (r.hot_contact as string) || (r.touch_contact as string) || '',
+      stage: (r.stage as HotStage) ?? null,
+      priority: (r.priority as HotPriority) ?? null,
+      nextTouchDate: (r.next_touch_date as string) ?? null,
+      lastTouchAt: (r.last_touch_at as string) ?? null,
+      touches: r.touches as number,
+      meetings: r.meetings as number,
+      signal: signals.some((s) => s.strength === 'HARD') ? 'HARD' : signals.length > 0 ? 'SOFT' : 'NONE',
+      starred: Boolean(r.starred),
+    };
+  });
+}
+
+export function setFavorite(accountId: string, starred: boolean): void {
+  if (starred) getDb().prepare('INSERT OR IGNORE INTO sdr_favorites (account_id, created_at) VALUES (?, ?)').run(accountId, nowIso());
+  else getDb().prepare('DELETE FROM sdr_favorites WHERE account_id = ?').run(accountId);
 }

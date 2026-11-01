@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 640 640" width="640" height="640">
+  <defs>
+    <g id="penguin">
+      <path d="M-46 44 Q0 62 52 40 Q60 36 54 44 Q10 74 -44 54 Q-54 48 -46 44Z" fill="#ff8f4d"/>
+      <path d="M-42 47 Q2 62 48 43" fill="none" stroke="#fff" stroke-width="3"/>
+      <ellipse cx="0" cy="4" rx="24" ry="34" fill="#3f5373"/>
+      <ellipse cx="0" cy="10" rx="15" ry="24" fill="#f5f7fa"/>
+      <path d="M-22 -2 Q-44 2 -46 20 Q-30 12 -20 12Z" fill="#3f5373"/>
+      <path d="M22 -6 Q42 -18 50 -8 Q36 -2 22 8Z" fill="#3f5373"/>
+      <circle cx="0" cy="-26" r="18" fill="#3f5373"/>
+      <circle cx="7" cy="-29" r="4.5" fill="#fff"/><circle cx="8.5" cy="-29" r="2" fill="#111"/>
+      <circle cx="-5" cy="-29" r="4.5" fill="#fff"/><circle cx="-3.5" cy="-29" r="2" fill="#111"/>
+      <path d="M1 -23 L14 -20 L1 -17Z" fill="#ffb02e"/>
+      <path d="M-12 36 h9 v6 h-12Z M4 36 h9 l4 6 h-13Z" fill="#ffb02e"/>
+    </g>
+    <g id="shades"><rect x="-14" y="-34" width="12" height="8" rx="3" fill="#0d1320"/><rect x="2" y="-34" width="12" height="8" rx="3" fill="#0d1320"/><path d="M-2 -31 H2" stroke="#0d1320" stroke-width="2"/></g>
+    <path id="wave" d="M-54 10 Q-34 -22 -10 -6 Q0 -22 -16 -30 Q26 -34 34 4 Q42 12 54 10 V24 H-54Z" fill="#4b9bff"/>
+    <g id="sun"><circle r="20" fill="#ffc53d"/><g stroke="#ffc53d" stroke-width="5" stroke-linecap="round"><path d="M0 -30V-38M0 30V38M-30 0H-38M30 0H38M-21 -21L-27 -27M21 21L27 27M-21 21L-27 27M21 -21L27 -27"/></g><rect x="-13" y="-6" width="11" height="7" rx="3" fill="#1d2738"/><rect x="2" y="-6" width="11" height="7" rx="3" fill="#1d2738"/><path d="M-7 9Q0 14 7 9" fill="none" stroke="#1d2738" stroke-width="2.5" stroke-linecap="round"/></g>
+    <g id="pizza"><path d="M-22 -22 Q0 -32 22 -22 L0 30Z" fill="#ffc53d"/><path d="M-22 -22 Q0 -32 22 -22" fill="none" stroke="#e08a3c" stroke-width="6" stroke-linecap="round"/><circle cx="-5" cy="-10" r="4.5" fill="#e5484d"/><circle cx="7" cy="-6" r="4.5" fill="#e5484d"/><circle cx="0" cy="8" r="4" fill="#e5484d"/></g>
+    <g id="donut"><circle r="22" fill="#ff7eb6"/><circle r="8" fill="#0d1320" fill-opacity=".85"/><g stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M-14 -6l4 -3M10 -14l3 4M12 8l4 2M-8 13l-3 3"/></g></g>
+    <g id="duck"><ellipse cx="-2" cy="10" rx="24" ry="15" fill="#ffd43b"/><circle cx="14" cy="-10" r="12" fill="#ffd43b"/><path d="M24 -11 L36 -7 L24 -3Z" fill="#ff8f4d"/><circle cx="17" cy="-13" r="2" fill="#111"/></g>
+    <g id="ufo"><path d="M-12 -4 Q0 -28 12 -4Z" fill="#8fe3d0"/><ellipse cy="0" rx="30" ry="10" fill="#9aa7bd"/><circle cx="-14" cy="1" r="2.5" fill="#ffc53d"/><circle cx="0" cy="3" r="2.5" fill="#ffc53d"/><circle cx="14" cy="1" r="2.5" fill="#ffc53d"/></g>
+    <g id="pine"><ellipse cy="10" rx="17" ry="23" fill="#ffc53d"/><path d="M-12 -2L12 22M12 -2L-12 22M-15 12L4 32M15 12L-4 32" stroke="#e08a3c" stroke-width="2" fill="none"/><path d="M0 -12Q-16 -26 -18 -34Q-6 -30 -4 -24Q-4 -38 0 -42Q4 -38 4 -24Q6 -30 18 -34Q16 -26 0 -12Z" fill="#35cdb0"/></g>
+  </defs>
+  <use xlink:href="#penguin" transform="translate(120 110) rotate(-8)"/><use xlink:href="#shades" transform="translate(120 110) rotate(-8)"/>
+  <use xlink:href="#wave" transform="translate(120 190)"/>
+  <use xlink:href="#sun" transform="translate(320 80)"/>
+  <use xlink:href="#pizza" transform="translate(520 120) rotate(18)"/>
+  <use xlink:href="#ufo" transform="translate(70 330) rotate(-10)"/>
+  <use xlink:href="#penguin" transform="translate(320 320) rotate(7) scale(1.15)"/>
+  <use xlink:href="#wave" transform="translate(320 408) scale(1.15)"/>
+  <use xlink:href="#donut" transform="translate(540 310)"/>
+  <use xlink:href="#duck" transform="translate(130 510)"/>
+  <use xlink:href="#pine" transform="translate(330 560) rotate(-12)"/>
+  <use xlink:href="#penguin" transform="translate(530 510) rotate(-5) scale(-1 1)"/><use xlink:href="#shades" transform="translate(530 510) rotate(-5) scale(-1 1)"/>
+  <use xlink:href="#wave" transform="translate(530 590) scale(-1 1)"/>
+</svg>

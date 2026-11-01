@@ -138,7 +138,7 @@ export function DebriefPanel({
       </div>
 
       {saved && !debrief && (
-        <div className="flex flex-col gap-1.5 rounded-md bg-[#ECFDF3] px-4 py-3 text-[13px] text-[#166534]">
+        <div className="flex flex-col gap-1.5 rounded-md bg-good-soft px-4 py-3 text-[13px] text-good">
           <span>{saved}</span>
           {noPickup && (
             <>
@@ -233,7 +233,7 @@ export function DebriefPanel({
               <Button type="button" disabled={saving || Boolean(saved)} onClick={save} className="disabled:opacity-60">
                 {saved ? 'Saved' : saving ? 'Saving…' : 'Save to Scout'}
               </Button>
-              {saved && <span className="text-[13px] text-[#166534]">{saved}</span>}
+              {saved && <span className="text-[13px] text-good">{saved}</span>}
             </div>
           </div>
         </div>

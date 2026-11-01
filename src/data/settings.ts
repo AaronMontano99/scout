@@ -19,9 +19,12 @@ export interface Settings {
   phoneNumber: string;
   /** Claude model alias passed to the CLI: 'sonnet' (faster) or 'opus' (strongest writing). */
   claudeModel: 'sonnet' | 'opus';
+  /** Your own weekly targets. Zero hides the progress bar instead of inventing a goal. */
+  weeklyDialGoal: number;
+  weeklyMeetingGoal: number;
 }
 
-const DEFAULTS: Settings = { ownerName: '', companyName: '', location: '', territoryZips: [], phoneNumber: '', claudeModel: 'sonnet' };
+const DEFAULTS: Settings = { ownerName: '', companyName: '', location: '', territoryZips: [], phoneNumber: '', claudeModel: 'sonnet', weeklyDialGoal: 0, weeklyMeetingGoal: 0 };
 
 export function getSettings(): Settings {
   const r = getDb().prepare('SELECT data FROM settings WHERE id = ?').get('local');

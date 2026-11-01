@@ -1,63 +1,118 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Bell, Flag } from 'lucide-react';
+import type { Alert } from '@/domain/alerts';
 
 const TABS = [
+  { href: '/', label: 'Overview' },
   { href: '/calls', label: 'Calls' },
   { href: '/emails', label: 'Emails' },
   { href: '/hot-list', label: 'Hot List' },
+  { href: '/accounts', label: 'Accounts' },
+  { href: '/schedule', label: 'Schedule' },
+  { href: '/reports', label: 'Reports' },
 ];
 
-export function Nav() {
-  const pathname = usePathname();
+function Logo() {
   return (
-    <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-[1240px] items-center gap-8 px-4 sm:px-6">
-        <Link href="/calls" className="flex items-center gap-2">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="9.25" stroke="#171717" strokeWidth="1.5" />
-            <path d="M12 4.8 L15.1 12 L12 12 Z" fill="#2F80FF" />
-            <path d="M12 4.8 L8.9 12 L12 12 Z" fill="#7FB0FF" />
-            <path d="M12 19.2 L15.1 12 L12 12 Z" fill="#3E4146" />
-            <path d="M12 19.2 L8.9 12 L12 12 Z" fill="#171717" />
-          </svg>
-          <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">Scout</span>
+    <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-primary text-on-primary">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.2" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M14.8 9.2 13.2 13.2 9.2 14.8 10.8 10.8Z" fill="currentColor" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+
+const TONE_DOT: Record<Alert['tone'], string> = { urgent: 'bg-bad', attention: 'bg-warn', info: 'bg-muted' };
+
+function Alerts({ alerts }: { alerts: Alert[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={alerts.length ? `${alerts.length} things need attention` : 'Nothing needs attention'}
+        className="relative grid h-10 w-10 place-items-center rounded-full border border-hairline-strong hover:bg-surface-strong"
+      >
+        <Bell size={17} />
+        {alerts.length > 0 && <span className="absolute -top-1 -right-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-bad px-1 text-[12px] leading-none font-semibold text-canvas">{alerts.length}</span>}
+      </button>
+      {open && (
+        <div className="glass-solid rise absolute right-0 z-30 mt-2 w-[340px] max-w-[calc(100vw-32px)] p-2">
+          <p className="px-3 pt-2 pb-1.5 text-[14px] font-medium">What needs you</p>
+          {alerts.length === 0 && <p className="px-3 pb-3 text-[13.5px] text-body">All clear. Nothing overdue and no threads waiting on you.</p>}
+          {alerts.map((a) => (
+            <Link key={a.id} href={a.href} onClick={() => setOpen(false)} className="flex items-start gap-3 rounded-[14px] px-3 py-2.5 hover:bg-surface-strong">
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${TONE_DOT[a.tone]}`} />
+              <span className="min-w-0">
+                <span className="block truncate text-[13.5px] font-medium">{a.title}</span>
+                <span className="block text-[13px] text-body">{a.detail}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function Nav({ alerts, ownerName }: { alerts: Alert[]; ownerName: string }) {
+  const pathname = usePathname();
+  const initial = (ownerName.trim()[0] ?? 'S').toUpperCase();
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
+  return (
+    <header className="sticky top-0 z-20 border-b border-hairline" style={{ background: 'color-mix(in srgb, var(--canvas) 72%, transparent)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)' }}>
+      <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5 sm:px-6">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="Scout overview">
+          <Logo />
+          <span className="font-head text-[19px] font-medium">Scout</span>
         </Link>
-        <nav className="flex h-full items-stretch gap-1">
-          {TABS.map((t) => {
-            const active = pathname.startsWith(t.href);
-            return (
-              <Link
-                key={t.href}
-                href={t.href}
-                aria-current={active ? 'page' : undefined}
-                className={`flex items-center border-b-2 px-3 text-[14px] font-medium transition-colors ${
-                  active ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-body'
-                }`}
-              >
-                {t.label}
-              </Link>
-            );
-          })}
+
+        <nav aria-label="Main" className="scroll-x order-3 -mx-4 flex w-[calc(100%+32px)] items-center gap-1 overflow-x-auto px-4 lg:order-none lg:mx-0 lg:w-auto lg:px-0">
+          {TABS.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              aria-current={isActive(t.href) ? 'page' : undefined}
+              className={`shrink-0 rounded-full px-4 py-2 text-[14px] font-medium transition-colors ${isActive(t.href) ? 'bg-surface-strong text-ink' : 'text-body hover:text-ink'}`}
+            >
+              {t.label}
+            </Link>
+          ))}
         </nav>
-        <div className="ml-auto flex items-center gap-3">
+
+        <div className="ml-auto flex items-center gap-2">
           <Link
             href="/day"
-            className={`rounded-md px-3.5 py-1.5 text-[13px] font-medium ${pathname.startsWith('/day') ? 'bg-ink text-canvas' : 'border border-hairline-strong text-ink hover:bg-canvas-soft'}`}
+            className={`hidden items-center gap-2 rounded-full px-4 py-2 text-[13.5px] font-medium sm:flex ${pathname.startsWith('/day') ? 'bg-primary text-on-primary' : 'border border-hairline-strong hover:bg-surface-strong'}`}
           >
+            <Flag size={15} />
             Day finished
           </Link>
-          <Link href="/settings" aria-label="Settings" className={`rounded-md p-1.5 ${pathname.startsWith('/settings') ? 'text-ink' : 'text-muted hover:text-ink'}`}>
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.5" />
-              <path
-                d="M10 2.9 v1.6 M10 15.5 v1.6 M17.1 10 h-1.6 M4.5 10 H2.9 M15.02 4.98 l-1.13 1.13 M6.11 13.89 l-1.13 1.13 M15.02 15.02 l-1.13 -1.13 M6.11 6.11 L4.98 4.98"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+          <Alerts alerts={alerts} />
+          <Link href="/settings" aria-label="Settings" className="grid h-10 w-10 place-items-center rounded-full bg-surface-strong font-head text-[15px] font-medium hover:bg-primary hover:text-on-primary">
+            {initial}
           </Link>
         </div>
       </div>

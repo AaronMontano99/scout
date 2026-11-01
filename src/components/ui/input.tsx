@@ -1,10 +1,6 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react';
 
-// See DESIGN.md "text-input" — rounded-md, hairline-strong border,
-// height 44px, focus thickens to 2px ink border.
-
-const FIELD_CLASSES =
-  'w-full rounded-md border border-hairline-strong bg-surface-card px-4 py-3 text-sm text-ink placeholder:text-muted focus:border-2 focus:border-ink focus:outline-none';
+const FIELD_CLASSES = 'w-full rounded-[14px] border border-hairline-strong bg-canvas-soft px-4 py-3 text-sm text-ink placeholder:text-muted focus:border-accent focus:outline-none';
 
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={`${FIELD_CLASSES} ${className}`.trim()} {...props} />;

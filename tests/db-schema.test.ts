@@ -29,7 +29,7 @@ describe('db/schema.sql', () => {
     stmt.free();
 
     expect(tables).toEqual(
-      ['accounts', 'crm_notes', 'sdr_activities', 'sdr_drafts', 'sdr_hotlist', 'sdr_hotlist_checks', 'sdr_intel', 'sdr_lead_candidates', 'settings'].sort()
+      ['accounts', 'crm_notes', 'sdr_activities', 'sdr_drafts', 'sdr_favorites', 'sdr_hotlist', 'sdr_hotlist_checks', 'sdr_intel', 'sdr_lead_candidates', 'sdr_tasks', 'settings'].sort()
     );
   });
 
