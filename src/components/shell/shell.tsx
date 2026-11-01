@@ -5,6 +5,7 @@ import type { Alert } from '@/domain/alerts';
 import type { TaskKind } from '@/domain/schedule';
 import type { ActivityChannel } from '@/domain/day-summary';
 import type { QuickOutcome } from '@/domain/quick-log';
+import { DEMO } from '@/demo/mode';
 import { Nav } from './nav';
 import { Dock } from './dock';
 import { CommandPalette } from './command-palette';
@@ -63,8 +64,8 @@ export function Shell({ alerts, accounts, ownerName, children }: { alerts: Alert
 
   const showToast = useCallback((message: string, undo?: () => void) => {
     clearTimeout(timer.current);
-    setToast({ id: Date.now(), message, undo });
-    timer.current = setTimeout(() => setToast(null), undo ? 7000 : 3500);
+    setToast(DEMO ? { id: Date.now(), message: `${message} (demo, not saved)` } : { id: Date.now(), message, undo });
+    timer.current = setTimeout(() => setToast(null), undo && !DEMO ? 7000 : 3500);
   }, []);
 
   const close = useCallback(() => setPanel(null), []);
@@ -83,6 +84,17 @@ export function Shell({ alerts, accounts, ownerName, children }: { alerts: Alert
 
   return (
     <ShellContext.Provider value={api}>
+      {DEMO && (
+        <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-primary px-4 py-2 text-center text-[13.5px] text-on-primary">
+          <span>Demo with made-up companies. Nothing you do here is saved.</span>
+          <a href="https://github.com/AaronMontano99/ferret" className="font-semibold underline">
+            See the code
+          </a>
+          <a href="https://aaronmontano.vercel.app/" className="font-semibold underline">
+            Back to Aaron&apos;s site
+          </a>
+        </p>
+      )}
       <Nav alerts={alerts} ownerName={ownerName} />
       <main className="mx-auto w-full max-w-[1320px] px-4 pt-6 pb-32 sm:px-6">{children}</main>
       <Dock />

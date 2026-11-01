@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { assessHotList, coachNotes, findLeads, generateCallCard, generateEmail, reviseDraft } from '@/ai/sdr/engine';
 import { getJob, jobKey, runJob } from '@/ai/sdr/jobs';
+import { DEMO, DEMO_AI_MESSAGE } from '@/demo/mode';
 
 /**
  * Long-running Lead SDR AI work (live research, call cards, emails,
@@ -30,6 +31,7 @@ const requestSchema = z.discriminatedUnion('action', [
 ]);
 
 export async function POST(request: Request) {
+  if (DEMO) return NextResponse.json({ error: DEMO_AI_MESSAGE }, { status: 403 });
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: 'Bad request' }, { status: 400 });
   const input = parsed.data;

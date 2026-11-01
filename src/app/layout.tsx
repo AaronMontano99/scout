@@ -17,8 +17,8 @@ const body = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-body', displ
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Scout',
-  description: 'Lead SDR for calls and emails: a real reason to reach out, every time.',
+  title: 'Ferret',
+  description: 'Sniffs out a real reason to reach out, every time.',
 };
 
 // The shell reads the local database (the bell, search), so nothing here can be prerendered.

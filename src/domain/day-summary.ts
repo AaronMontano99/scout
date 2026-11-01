@@ -1,6 +1,6 @@
 /**
  * "Day finished" — a tracker-ready breakdown of only the activity the
- * rep actually confirmed in Scout that day. Pure and dependency-free
+ * rep actually confirmed in Ferret that day. Pure and dependency-free
  * (like the rest of src/domain) so it's easy to test. Never guesses:
  * every number is a count of logged rows, and the funnel read only
  * fires once there's enough activity to mean something.

@@ -1,7 +1,7 @@
-# Scout
+# Ferret
 
-**A Lead SDR for calls and emails.** Before you pick up the phone or hit
-send, Scout does the intelligence work, so there's a real reason you're
+**A Lead SDR for calls and emails, named for the animal with the nose for it.** Before you pick up the phone or hit
+send, Ferret does the intelligence work, so there's a real reason you're
 reaching out, not just calling to call.
 
 It runs your own prospecting playbooks word for word on your Claude
@@ -26,7 +26,7 @@ the bottom. **Log a touch** takes about ten seconds and needs no AI run.
 Type **"I'm calling ___"**, paste your CRM notes if you have any, and add
 anything else ("calling the local office, not the old contact").
 
-Scout researches the company first (the local office and ZIP, who
+Ferret researches the company first (the local office and ZIP, who
 decides, dated signals like hiring, new leaders, moves, acquisitions),
 labels the reason to call **HARD SIGNAL / SOFT SIGNAL / NO RECENT
 SIGNAL** with an honest "why now", reads your notes, and hands back the
@@ -48,7 +48,7 @@ with a dated reason to call. It never repeats one and never pads a weak
 batch.
 
 ### Emails
-Type **"I'm emailing ___"** and paste your notes. Scout finds the real
+Type **"I'm emailing ___"** and paste your notes. Ferret finds the real
 signal for **why now**, reopens the exact unfinished thread (or leads
 with a signal for net-new), and writes the email: 60-100 words, one
 angle, one 15-minute ask. When more information is needed first, it
@@ -70,7 +70,7 @@ with filter dropdowns. Dragging to Meeting booked asks you to log the meeting,
 because a meeting has to be logged to count.
 
 ### Accounts
-Every company Scout knows, as a grid or table: contact, stage, signal, last
+Every company Ferret knows, as a grid or table: contact, stage, signal, last
 contact, touches. Star the ones you care about, filter, search, export CSV.
 Each account has its own page with interaction history, tasks, research, and
 notes.
@@ -90,7 +90,7 @@ A tracker-ready breakdown of only what you logged (dials, connects, DM
 conversations, meeting asks, meetings, emails, replies), prospecting vs
 admin, with a funnel read.
 
-Scout remembers each company's notes, research, and history so the next
+Ferret remembers each company's notes, research, and history so the next
 touch builds on the last one.
 
 ---
@@ -100,7 +100,7 @@ touch builds on the last one.
 Everything specific to you stays on your machine:
 
 - **`private/`** (git-ignored) holds your playbooks and reference
-  material, which Scout loads word for word:
+  material, which Ferret loads word for word:
   - `private/playbooks/calls.md`, `emails.md`, `hotlist.md`, `examples.md`
   - `private/reference/workflow.md`, `verticals.md`, `objections.md`, `sessions.md`, `training.md`
 
@@ -144,7 +144,7 @@ npm run dev
 
 Open **http://localhost:3000**, then fill in Settings (the gear).
 
-Scout calls the [Claude Code](https://claude.com/claude-code) CLI in
+Ferret calls the [Claude Code](https://claude.com/claude-code) CLI in
 headless mode (`claude -p`) with web search, so it runs on whatever
 Claude account the CLI is logged into. No API key; `ANTHROPIC_API_KEY`
 is stripped so it never switches to API billing, and each call is
@@ -158,6 +158,10 @@ To see the dashboards full, run `npm run demo` and open
 companies and never touches your real database. Make the look your own with
 the sliders icon in the dock: three looks, three backgrounds (surf penguins
 included), four accents, three heading fonts.
+
+The public demo runs from this same code with `NEXT_PUBLIC_SCOUT_DEMO=1`
+([`src/demo/`](./src/demo)): made-up companies in an in-memory database, all
+saving and AI turned off. It never reads `data/` or `private/`.
 
 ## Commands
 

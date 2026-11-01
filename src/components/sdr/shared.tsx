@@ -64,7 +64,7 @@ export function useSdrRequest<T>(jobKey: string | null) {
         router.refresh();
         return json;
       } catch {
-        setError('Lost connection to Scout. Is the dev server still running?');
+        setError('Lost connection to Ferret. Is the dev server still running?');
         return null;
       } finally {
         setPending(false);

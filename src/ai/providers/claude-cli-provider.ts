@@ -7,7 +7,7 @@ import path from 'node:path';
  * Runs Claude through the locally installed Claude Code CLI in
  * headless mode (`claude -p`). It authenticates with whatever the CLI
  * is logged into (a claude.ai Pro/Max membership on this machine), so
- * Scout needs no API key and no per-call billing. It also gets Claude
+ * Ferret needs no API key and no per-call billing. It also gets Claude
  * Code's built-in WebSearch/WebFetch tools, which is what makes live
  * signal research possible (see src/ai/sdr/engine.ts).
  *

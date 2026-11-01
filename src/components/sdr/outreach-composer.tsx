@@ -27,7 +27,7 @@ const COPY: Record<Kind, { verb: string; companyPlaceholder: string; extraPlaceh
 
 /**
  * The whole front door: who you're reaching out to, your notes if you
- * have any, anything else. Scout remembers the company and your notes
+ * have any, anything else. Ferret remembers the company and your notes
  * behind the scenes; you never manage records.
  */
 export function OutreachComposer({ kind, compact = false }: { kind: Kind; compact?: boolean }) {

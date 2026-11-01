@@ -1,4 +1,4 @@
--- Scout schema (SQLite via sql.js). Every statement is idempotent and
+-- Ferret schema (SQLite via sql.js). Every statement is idempotent and
 -- applied on startup by src/db/client.ts. Additive changes only: add new
 -- tables/columns with IF NOT EXISTS or a guarded ALTER in client.ts.
 

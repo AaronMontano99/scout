@@ -1,6 +1,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import initSqlJs from 'sql.js';
+import { DEMO } from '@/demo/mode';
 
 type SqlStatic = Awaited<ReturnType<typeof initSqlJs>>;
 type SqlJsDatabase = InstanceType<SqlStatic['Database']>;
@@ -31,10 +32,18 @@ const SCHEMA_PATH = path.join(process.cwd(), 'db', 'schema.sql');
 const SQL = await initSqlJs();
 
 function persist(db: SqlJsDatabase): void {
+  if (DEMO) return;
   fs.writeFileSync(DB_PATH, Buffer.from(db.export()));
 }
 
 function openOrCreate(): SqlJsDatabase {
+  // The demo lives in memory only and never opens a file on disk.
+  if (DEMO) {
+    const memory = new SQL.Database();
+    memory.run('PRAGMA foreign_keys = ON;');
+    memory.run(fs.readFileSync(SCHEMA_PATH, 'utf-8'));
+    return memory;
+  }
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   const isNew = !fs.existsSync(/* turbopackIgnore: true */ DB_PATH);
   const db = isNew ? new SQL.Database() : new SQL.Database(fs.readFileSync(/* turbopackIgnore: true */ DB_PATH));
@@ -80,6 +89,7 @@ class PreparedStatement {
   }
 
   run(...params: SqlValue[]): void {
+    if (globalForDb.__scoutSealed) return;
     this.db.run(this.sql, params);
     persist(this.db);
   }
@@ -95,7 +105,7 @@ export interface ScoutDb {
 // would each hold their own in-memory copy of the database and each
 // rewrite the whole file on every write, silently discarding the
 // other's changes. One shared connection per process prevents that.
-const globalForDb = globalThis as typeof globalThis & { __scoutDb?: { path: string; db: ScoutDb } };
+const globalForDb = globalThis as typeof globalThis & { __scoutDb?: { path: string; db: ScoutDb }; __scoutSealed?: boolean };
 
 /** Singleton local SQLite connection, created (and schema-applied) on first use. */
 export function getDb(): ScoutDb {
@@ -106,4 +116,9 @@ export function getDb(): ScoutDb {
   const instance: ScoutDb = { prepare: (sql: string) => new PreparedStatement(db, sql) };
   globalForDb.__scoutDb = { path: DB_PATH, db: instance };
   return instance;
+}
+
+/** Makes every later write a no-op. The public demo calls this after seeding. */
+export function sealDb(): void {
+  globalForDb.__scoutSealed = true;
 }

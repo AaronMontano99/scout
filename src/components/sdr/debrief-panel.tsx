@@ -231,7 +231,7 @@ export function DebriefPanel({
             </div>
             <div className="mt-1 flex items-center gap-3">
               <Button type="button" disabled={saving || Boolean(saved)} onClick={save} className="disabled:opacity-60">
-                {saved ? 'Saved' : saving ? 'Saving…' : 'Save to Scout'}
+                {saved ? 'Saved' : saving ? 'Saving…' : 'Save to Ferret'}
               </Button>
               {saved && <span className="text-[13px] text-good">{saved}</span>}
             </div>

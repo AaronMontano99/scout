@@ -82,7 +82,7 @@ export async function GET(): Promise<Response> {
   const off = all.filter((e) => !isActive(e.stage)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Scout';
+  wb.creator = 'Ferret';
   addSheet(wb, 'HOT LIST', active, today);
   addSheet(wb, 'OFF LIST (booked + closed)', off, today, { header: 'Closed Because', key: 'closeReason', width: 40 });
 
@@ -104,7 +104,7 @@ export async function GET(): Promise<Response> {
     ['LOW', 'Generic fit, stale notes, repeated no-pickups, unclear ownership, or no current reason to engage.'],
     ['Stages', 'New QI → Developing → Warm → Meeting ask ready → Meeting booked (off list). Closed / recycle = no authority, no timing, or confirmed no opportunity.'],
     ['Every row', 'What did I learn last time, and what do I need to learn next to earn the meeting?'],
-    ['Exported', `${new Date().toLocaleString()}. Edits here do not sync back to Scout.`],
+    ['Exported', `${new Date().toLocaleString()}. Edits here do not sync back to Ferret.`],
   ].forEach(([term, meaning]) => legend.addRow({ term, meaning }));
   legend.getColumn('meaning').alignment = { wrapText: true, vertical: 'top' };
 

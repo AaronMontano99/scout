@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { DEMO } from '@/demo/mode';
 import { getAllActivities, getHotList } from '@/data/sdr';
 import { getSettings } from '@/data/settings';
 import { getTasks } from '@/data/tasks';
@@ -57,8 +58,14 @@ export function OverviewPage() {
         <div>
           <p className="text-[14px] text-body">{now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           <h1 className="mt-1 text-[32px] leading-[1.1] font-medium tracking-[-0.015em] sm:text-[40px]">
-            {greeting(now.getHours())}
-            {settings.ownerName ? `, ${settings.ownerName}` : ''}.
+            {DEMO ? (
+              "Here's what Ferret tracks."
+            ) : (
+              <>
+                {greeting(now.getHours())}
+                {settings.ownerName ? `, ${settings.ownerName}` : ''}.
+              </>
+            )}
           </h1>
           <p className="mt-2 text-[15px] text-body">{headline}</p>
         </div>

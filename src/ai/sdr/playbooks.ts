@@ -1,5 +1,5 @@
 /**
- * Loads the prospecting content Scout runs on: the playbooks
+ * Loads the prospecting content Ferret runs on: the playbooks
  * (non-negotiable, used word for word) and the reference material
  * (workflow rules, vertical playbook, objections, real session
  * examples, training-packet question topics).
@@ -37,7 +37,7 @@ export type ReferenceName = keyof typeof REFERENCE_FILES;
 
 export class PrivateContentMissingError extends Error {
   constructor(file: string, dir: string) {
-    super(`Scout's private playbooks are missing (${file}). Put them in ${dir}. They are never committed to git.`);
+    super(`Ferret's private playbooks are missing (${file}). Put them in ${dir}. They are never committed to git.`);
     this.name = 'PrivateContentMissingError';
   }
 }

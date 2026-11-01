@@ -27,7 +27,7 @@ export function AccountSheet({ onClose }: { onClose: () => void }) {
         setError(result.error);
         return;
       }
-      toast(result.existed ? 'Already in Scout. Opened it for you.' : 'Account added');
+      toast(result.existed ? 'Already in Ferret. Opened it for you.' : 'Account added');
       onClose();
       router.push(`/accounts/${result.accountId}`);
     });

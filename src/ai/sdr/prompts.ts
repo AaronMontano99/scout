@@ -2,7 +2,7 @@
  * System prompts for the Lead SDR workflow. Aaron's playbooks
  * (private/, loaded by ./playbooks.ts, non-negotiable) are used verbatim as
  * the core instructions, plus his approved real examples, plus a short
- * output contract telling the model how its answer maps into Scout's
+ * output contract telling the model how its answer maps into Ferret's
  * fields. The mechanically checkable rules are enforced again after
  * generation (email-style.ts, call-style.ts, territory.ts).
  */
@@ -25,7 +25,7 @@ export interface RepContext {
 
 function header(rep: RepContext): string {
   return [
-    `You are running inside Scout, ${rep.name || 'the rep'}'s prospecting workspace${rep.company ? ` (${rep.company}${rep.location ? `, ${rep.location}` : ''})` : ''}. Today is ${rep.today}.`,
+    `You are running inside Ferret, ${rep.name || 'the rep'}'s prospecting workspace${rep.company ? ` (${rep.company}${rep.location ? `, ${rep.location}` : ''})` : ''}. Today is ${rep.today}.`,
     rep.zips.length ? `Territory ZIPs: ${rep.zips.join(', ')}.` : '',
     rep.phone ? `Callback number for voicemails: ${rep.phone}.` : 'No callback number is on file; in voicemails write "[phone]" where the number goes.',
     'Your answer is rendered into fixed fields on a card, so write each field exactly the way the reference examples do: short, spoken, glanceable. No headings or labels inside field values. No em dashes anywhere. No markdown.',
@@ -33,7 +33,7 @@ function header(rep: RepContext): string {
 }
 
 const RESEARCH_RULES = `
-# LIVE RESEARCH (Scout)
+# LIVE RESEARCH (Ferret)
 Use web search before writing. Look for, in this order:
 1. The LOCAL office/facility: address, ZIP, phone. Confirm it's in territory.
 2. Ownership and decision-making: parent company, HQ, number of locations, whether IT/facilities/vendors are likely decided locally or centrally.
@@ -55,7 +55,7 @@ export function callCardSystemPrompt(rep: RepContext, withResearch: boolean): st
     getReference('training'),
     callStyleRulesText(rep),
     withResearch ? RESEARCH_RULES : '',
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Work in Aaron's order: current research, then CRM history, then hypothesis, then person, then the card. background is that research. Return the call card for ONE account. Respect any instruction Aaron gives for this call (who he's calling, what not to mention); it overrides everything else.
 If CRM notes show an angle was already qualified out, don't lead with it again. If research shows the local office has no decision authority, say so in "take", set priority accordingly, and make the win condition getting the right corporate name.
 If the account is outside territory or clearly not ICP, still fill the card but set priority to SKIP and explain in "take".`,
@@ -74,7 +74,7 @@ export function emailSystemPrompt(rep: RepContext, withResearch: boolean): strin
     getReference('training'),
     emailStyleRulesText(rep.name),
     withResearch ? RESEARCH_RULES : '',
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Return ONE email for ONE account. Respect any instruction Aaron gives for this email; it overrides everything else.
 The body is the complete email from "Hi [First name]," to "Thanks," and the sign-off name, written as short flowing paragraphs (usually 3) separated by blank lines, never bulleted or broken into one-line fragments. 60-100 words.
 CRM accounts: reopen the exact unfinished thread from the notes. Net-new accounts: never imply prior familiarity.
@@ -97,7 +97,7 @@ export function debriefSystemPrompt(rep: RepContext): string {
     getReference('sessions'),
     readPlaybook('hotlist'),
     emailStyleRulesText(rep.name),
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Aaron is pasting raw notes from a call, walk-in, email reply (including bounces and auto-replies), or LinkedIn touch. If it's a no-pickup, give the next move per HOW AARON WORKS. Coach it like a sales manager, not a cheerleader, using the CALL COACHING format.
 Only use what's in his notes plus the account context given. Never invent what the prospect said.
 crmNotes: short factual bullets like the reference example. No coaching in the CRM notes.
@@ -114,7 +114,7 @@ export function reviseSystemPrompt(rep: RepContext, kind: 'call_card' | 'email')
     getReference('workflow'),
     readPlaybook('examples'),
     kind === 'email' ? emailStyleRulesText(rep.name) : callStyleRulesText(rep),
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Aaron wants a change to an existing ${kind === 'email' ? 'email' : 'call card'}. Apply his instruction and return the full updated version in the same shape. Change only what the instruction asks for, keep every fact, and never add facts that weren't there. Keep all the playbook rules (no em dashes, one angle, one CTA).`,
   ]
     .filter(Boolean)
@@ -128,7 +128,7 @@ export function leadFinderSystemPrompt(rep: RepContext): string {
     getReference('workflow'),
     getReference('verticals'),
     RESEARCH_RULES,
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Aaron said "Get me today's leads." Find NET-NEW accounts using live web search, following the DAILY OUTPUT, TERRITORY + ICP, and COVERAGE + NO REPEAT rules.
 Every account must have a verified local office in one of the requested ZIPs. Never include a company on the exclusion list.
 Favor HIGH and MEDIUM. Return fewer accounts rather than padding with weak ones, and say why in notes.
@@ -142,7 +142,7 @@ export function hotListSystemPrompt(rep: RepContext): string {
     readPlaybook('calls'),
     getReference('workflow'),
     readPlaybook('hotlist'),
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 Assess whether this account belongs on Aaron's Hot List right now, using only his CRM notes, logged activity, and stored research in the context. Fill the row the way the HOT LIST rules describe. If the evidence is only a generic fit or no-pickups, say not_qualified and explain why in reason (still fill the other fields with your best honest read).`,
   ].join('\n\n');
 }
@@ -152,7 +152,7 @@ export function styleFixSystemPrompt(rep: RepContext): string {
     header(rep),
     readPlaybook('emails'),
     emailStyleRulesText(rep.name),
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 An automatic style check flagged this email. Rewrite it so every flagged issue is fixed and nothing else changes: same facts, same angle, same thread, same person. Do not add facts. Return the full email in the same shape.`,
   ].join('\n\n');
 }
@@ -163,7 +163,7 @@ export function callStyleFixSystemPrompt(rep: RepContext): string {
     readPlaybook('calls'),
     readPlaybook('examples'),
     callStyleRulesText(rep),
-    `# OUTPUT (Scout)
+    `# OUTPUT (Ferret)
 An automatic check flagged this call card. Fix every flagged issue and change nothing else: same facts, same target, same angle, same hypothesis. Do not add facts. Return the full card in the same shape.`,
   ].join('\n\n');
 }

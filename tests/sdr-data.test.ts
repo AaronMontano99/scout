@@ -152,7 +152,7 @@ describe('src/data/sdr', () => {
     expect(list[1]!.touchedToday).toBe(true);
   });
 
-  it('never saves a lead for a company already in Scout or already suggested', () => {
+  it('never saves a lead for a company already in Ferret or already suggested', () => {
     data.createAccount({ name: 'Existing Builders Inc' });
     const lead = (company: string): Lead => ({
       company,

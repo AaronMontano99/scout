@@ -98,7 +98,7 @@ export function createAccount(input: { name: string; domain?: string | null; ind
   return getAccount(id)!;
 }
 
-/** The "I'm calling X" entry point: reuse the account if Scout already knows it, otherwise start one. */
+/** The "I'm calling X" entry point: reuse the account if Ferret already knows it, otherwise start one. */
 export function findOrCreateAccount(name: string, domain?: string | null): { account: Account; isNew: boolean } {
   const existing = findAccountByName(name);
   if (existing) {

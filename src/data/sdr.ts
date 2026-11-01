@@ -273,7 +273,7 @@ export function setLeadCandidateStatus(id: string, status: LeadCandidate['status
   getDb().prepare('UPDATE sdr_lead_candidates SET status = ?, account_id = COALESCE(?, account_id) WHERE id = ?').run(status, accountId ?? null, id);
 }
 
-/** Every company Scout already knows about — accounts plus every lead ever suggested — so the finder never repeats one. */
+/** Every company Ferret already knows about — accounts plus every lead ever suggested — so the finder never repeats one. */
 export function knownCompanyNames(): string[] {
   const accountNames = rows('SELECT normalized_name FROM accounts').map((r) => r.normalized_name as string);
   const leadNames = rows('SELECT normalized_name FROM sdr_lead_candidates').map((r) => r.normalized_name as string);

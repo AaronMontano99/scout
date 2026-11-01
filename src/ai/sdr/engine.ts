@@ -76,7 +76,7 @@ function day(iso: string): string {
   return ymd(new Date(iso));
 }
 
-/** The full, honest picture of an account as Scout knows it — the "user prompt" for every SDR task. */
+/** The full, honest picture of an account as Ferret knows it — the "user prompt" for every SDR task. */
 export function buildAccountContext(accountId: string, intel: StoredIntel | null): string {
   const account = getAccount(accountId);
   if (!account) throw new Error('Account not found');
@@ -409,7 +409,7 @@ export async function findLeads(input: FindLeadsInput): Promise<{ runId: string;
     `How many: up to ${input.count} (fewer is fine; never pad).`,
     input.focus ? `Extra focus from Aaron: ${input.focus}` : '',
     '',
-    `EXCLUSION LIST (already in Scout or already suggested, never return these):`,
+    `EXCLUSION LIST (already in Ferret or already suggested, never return these):`,
     exclusions.length ? exclusions.join('; ') : 'none',
   ]
     .filter((l) => l !== '')

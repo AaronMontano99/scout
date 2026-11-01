@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
- * Scout's look. Three looks share one set of tokens, so nothing downstream
+ * Ferret's look. Three looks share one set of tokens, so nothing downstream
  * knows which is active. Tailwind reads the tokens through @theme inline,
  * which keeps `bg-canvas`, `text-ink` and friends live when the look changes.
  */

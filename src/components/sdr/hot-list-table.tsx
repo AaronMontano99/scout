@@ -213,7 +213,7 @@ function Row({ entry: e, today, open, onToggle }: { entry: HotListEntry; today: 
           <Detail label="Meeting to earn (15 min)">{e.meetingHypothesis}</Detail>
           {e.closeReason && <Detail label="Closed because">{e.closeReason}</Detail>}
           <div className="flex items-center gap-4 sm:col-span-2">
-            <span className="text-muted">Last touch: {e.lastTouchAt ? new Date(e.lastTouchAt).toLocaleDateString() : 'none logged in Scout'}</span>
+            <span className="text-muted">Last touch: {e.lastTouchAt ? new Date(e.lastTouchAt).toLocaleDateString() : 'none logged in Ferret'}</span>
             <Link href={`/calls?a=${e.accountId}`} className="text-text-link hover:underline">
               Call →
             </Link>

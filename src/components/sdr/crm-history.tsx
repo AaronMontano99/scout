@@ -54,7 +54,7 @@ export function CrmHistory({ accountId, notes }: { accountId: string; notes: { c
         </div>
       )}
 
-      {notes.length === 0 && !open && <p className="text-[12.5px] text-muted">None pasted. Scout treats this as net-new.</p>}
+      {notes.length === 0 && !open && <p className="text-[12.5px] text-muted">None pasted. Ferret treats this as net-new.</p>}
       {notes.map((n, i) => (
         <pre key={i} className="max-h-[260px] overflow-auto border-t border-hairline pt-2.5 font-sans text-[12.5px] leading-[1.55] whitespace-pre-wrap text-ink">
           {n.content}

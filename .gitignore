@@ -48,3 +48,6 @@ npm-debug.log*
 # Private prospecting content: playbooks, reference material, real examples.
 # Never commit. See README "Private content".
 /private/
+
+# Vercel CLI link
+.vercel

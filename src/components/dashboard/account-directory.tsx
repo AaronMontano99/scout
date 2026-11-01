@@ -92,7 +92,7 @@ export function AccountDirectory({ rows, now }: { rows: DirectoryRow[]; now: str
     <div className="rise flex flex-col gap-4">
       <PageHeader
         title="Accounts"
-        subtitle={`${rows.length} companies Scout knows. ${recent} touched in the last 7 days.`}
+        subtitle={`${rows.length} companies Ferret knows. ${recent} touched in the last 7 days.`}
         actions={
           <>
             {/* A file download, not a page. */}
@@ -130,7 +130,7 @@ export function AccountDirectory({ rows, now }: { rows: DirectoryRow[]; now: str
         </div>
       </div>
 
-      {visible.length === 0 && <p className="glass p-5 text-[14px] text-body">{rows.length === 0 ? 'No accounts yet. Add one, or say “I’m calling” someone and Scout starts it for you.' : 'Nothing matches this filter.'}</p>}
+      {visible.length === 0 && <p className="glass p-5 text-[14px] text-body">{rows.length === 0 ? 'No accounts yet. Add one, or say “I’m calling” someone and Ferret starts it for you.' : 'Nothing matches this filter.'}</p>}
 
       {view === 'grid' ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">

@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { GripVertical, Mail, Phone } from 'lucide-react';
 import { updateHotListAction, qualifyOutAction } from '@/app/actions';
+import { DEMO } from '@/demo/mode';
 import { STAGE_LABEL, actionFlag, isActive, sortHotList, type HotListEntry, type HotStage } from '@/domain/hot-list';
 import { useShell } from '@/components/shell/shell';
 import { Sheet, FieldLabel } from '@/components/shell/sheet';
@@ -15,8 +16,11 @@ import { FlagBadge, HotListTable } from './hot-list-table';
 const COLUMNS: HotStage[] = ['new_qi', 'developing', 'warm', 'meeting_ask_ready', 'meeting_booked'];
 const LADDER: HotStage[] = ['new_qi', 'developing', 'warm', 'meeting_ask_ready', 'meeting_booked'];
 
-export function HotListBoard({ entries, today }: { entries: HotListEntry[]; today: string }) {
+export function HotListBoard({ entries: saved, today }: { entries: HotListEntry[]; today: string }) {
   const { toast, open: openShell } = useShell();
+  // The demo saves nothing, so dragging moves cards in this browser tab only.
+  const [demoStages, setDemoStages] = useState<Record<string, HotStage>>({});
+  const entries = useMemo(() => saved.map((e) => ({ ...e, stage: demoStages[e.accountId] ?? e.stage })), [saved, demoStages]);
   const [view, setView] = useState<'board' | 'list'>('board');
   const [query, setQuery] = useState('');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -35,6 +39,11 @@ export function HotListBoard({ entries, today }: { entries: HotListEntry[]; toda
 
   const move = (entry: HotListEntry, stage: HotStage) => {
     if (entry.stage === stage) return;
+    if (DEMO) {
+      setDemoStages((s) => ({ ...s, [entry.accountId]: stage }));
+      toast(`${entry.accountName} moved to ${STAGE_LABEL[stage]}`);
+      return;
+    }
     // A meeting has to be logged to count, so the board never books one silently.
     if (stage === 'meeting_booked') {
       setOpenId(null);

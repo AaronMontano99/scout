@@ -1,0 +1,5 @@
+# Belt and braces: the demo deploys from git, but a CLI deploy must never upload these.
+data/
+private/
+*.db
+.env*

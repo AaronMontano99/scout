@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 describe('db/schema.sql', () => {
-  it('applies cleanly and creates exactly the tables Scout uses', () => {
+  it('applies cleanly and creates exactly the tables Ferret uses', () => {
     db.run(schema);
     const stmt = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name");
     const tables: string[] = [];

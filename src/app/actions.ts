@@ -25,6 +25,7 @@ import { updateSettings, type Settings } from '@/data/settings';
 import { noPickupNextMove, type ActivityChannel } from '@/domain/day-summary';
 import type { AccountIntel, Debrief, EmailDraft, HotListUpdate } from '@/ai/sdr/schemas';
 import { assessHotList } from '@/ai/sdr/engine';
+import { DEMO, DEMO_SAVE_MESSAGE } from '@/demo/mode';
 import { createTask, deleteTask, getTask, updateTask, type TaskInput, type TaskPatch } from '@/data/tasks';
 import { addBusinessDays, ymd } from '@/domain/hot-list';
 import { outcomeFlags, touchLine, type QuickOutcome } from '@/domain/quick-log';
@@ -40,11 +41,12 @@ function refresh() {
 }
 
 /**
- * "I'm calling / emailing X": finds the company Scout already knows (or
+ * "I'm calling / emailing X": finds the company Ferret already knows (or
  * starts one) and keeps any notes Aaron pasted. Returns the account id
  * so the page can build the call card or email for it.
  */
 export async function startOutreachAction(input: { company: string; website?: string; notes?: string }): Promise<{ accountId: string } | { error: string }> {
+  if (DEMO) return { error: DEMO_SAVE_MESSAGE };
   const company = input.company.trim();
   if (!company) return { error: 'Who are you reaching out to?' };
   const { account } = findOrCreateAccount(company, input.website?.trim() || null);
@@ -55,6 +57,7 @@ export async function startOutreachAction(input: { company: string; website?: st
 }
 
 export async function saveCrmHistoryAction(accountId: string, text: string): Promise<void> {
+  if (DEMO) return;
   if (saveCrmHistory(accountId, text)) autoAssessHotList(accountId);
   refresh();
 }
@@ -81,6 +84,7 @@ export async function quickLogCallAction(
   outcome: 'no_answer' | 'voicemail',
   contactName?: string
 ): Promise<{ nextMove: string; trackerLine: string } | null> {
+  if (DEMO) return null;
   const account = getAccount(accountId);
   if (!account) return null;
   logActivity({
@@ -205,8 +209,9 @@ export async function updateHotListAction(accountId: string, patch: HotListPatch
   refresh();
 }
 
-/** Turns a lead-finder suggestion into a company Scout knows, with its research attached so the call card is fast. */
+/** Turns a lead-finder suggestion into a company Ferret knows, with its research attached so the call card is fast. */
 export async function addLeadAction(candidateId: string): Promise<string | null> {
+  if (DEMO) return null;
   const candidate = getLeadCandidate(candidateId);
   if (!candidate) return null;
   if (candidate.status === 'added' && candidate.accountId) return candidate.accountId;
@@ -260,11 +265,12 @@ export async function qualifyOutAction(accountId: string, reason: string): Promi
 }
 
 /**
- * Manual "qualified in" from the email log: Scout fills the Hot List row
+ * Manual "qualified in" from the email log: Ferret fills the Hot List row
  * from the notes and history (same assessment as everywhere else), but
  * Aaron's call wins, so it always lands on the list.
  */
 export async function qualifyInAction(accountId: string, reason: string): Promise<{ error: string } | null> {
+  if (DEMO) return { error: DEMO_SAVE_MESSAGE };
   try {
     const update = await runJob(jobKey('hotlist', accountId), () => assessHotList(accountId));
     const stage = update.stage === 'meeting_booked' || update.stage === 'closed' ? 'new_qi' : update.stage;
@@ -278,7 +284,7 @@ export async function qualifyInAction(accountId: string, reason: string): Promis
     refresh();
     return null;
   } catch (err) {
-    // Scout couldn't fill the row; still honor Aaron's call with what he said.
+    // Ferret couldn't fill the row; still honor Aaron's call with what he said.
     upsertHotList(accountId, { stage: 'new_qi', whyQualified: reason.trim() || 'Qualified in manually' });
     refresh();
     return { error: err instanceof Error ? err.message : 'Added without the full row; Claude was unavailable.' };
@@ -331,6 +337,7 @@ export async function addAccountAction(input: {
   industry?: string;
   addToHotList?: boolean;
 }): Promise<{ accountId: string; existed: boolean } | { error: string }> {
+  if (DEMO) return { error: DEMO_SAVE_MESSAGE };
   const name = input.name.trim();
   if (!name) return { error: 'What company is it?' };
   const existing = findAccountByName(name);
@@ -348,7 +355,7 @@ export async function updateAccountAction(id: string, patch: Partial<Pick<Accoun
 // === Quick log ============================================================
 
 export interface QuickLogInput {
-  /** A company name. Scout finds it or starts it. */
+  /** A company name. Ferret finds it or starts it. */
   company: string;
   channel: ActivityChannel;
   outcome: QuickOutcome;
@@ -367,6 +374,7 @@ export interface QuickLogInput {
  * and the no-pickup rule current the same way.
  */
 export async function quickLogAction(input: QuickLogInput): Promise<{ accountId: string; note: string | null } | { error: string }> {
+  if (DEMO) return { error: DEMO_SAVE_MESSAGE };
   const company = input.company.trim();
   if (!company) return { error: 'Which company?' };
   const { account } = findOrCreateAccount(company);

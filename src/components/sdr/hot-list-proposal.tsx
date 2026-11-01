@@ -15,7 +15,7 @@ const DECISION_LABEL: Record<HotListUpdate['decision'], string> = {
 
 const SELECT = 'rounded-md border border-hairline-strong bg-surface-card px-2 py-1 text-[12.5px] text-ink';
 
-/** The Hot List change Scout proposes after a debrief — the rep confirms or tweaks it before it's saved. */
+/** The Hot List change Ferret proposes after a debrief — the rep confirms or tweaks it before it's saved. */
 export function HotListProposal({
   update,
   onChange,
