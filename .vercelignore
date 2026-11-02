@@ -1,5 +1,6 @@
-# Belt and braces: the demo deploys from git, but a CLI deploy must never upload these.
-data/
-private/
+# Safety net: the demo deploys from committed files, but a CLI deploy must never upload these.
+# Anchored to the repo root, because a bare data/ also matches src/data/.
+/data/
+/private/
 *.db
 .env*
