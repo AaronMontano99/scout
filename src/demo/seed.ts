@@ -1,6 +1,9 @@
 /**
  * Made-up companies and people for the demo. Every name here is invented.
  * Used by the public demo (src/instrumentation.ts) and by `npm run demo`.
+ *
+ * Hosting runs several servers, each seeding its own copy, so account ids are
+ * fixed: a link built on one server has to work on another.
  */
 import { createAccount } from '@/data/accounts';
 import * as sdr from '@/data/sdr';
@@ -41,7 +44,7 @@ export function seedDemo(): void {
   const today = new Date();
   const todayYmd = ymd(today);
 
-  const accounts = COMPANIES.map(([name, industry], i) => ({ ...createAccount({ name: name!, industry, zip: `9000${i % 9}`, phone: `555-01${String(i + 10)}`, domain: `${name!.toLowerCase().replace(/[^a-z]+/g, '')}.example` }), contact: COMPANIES[i]![2]! }));
+  const accounts = COMPANIES.map(([name, industry], i) => ({ ...createAccount({ name: name!, industry, zip: `9000${i % 9}`, phone: `555-01${String(i + 10)}`, domain: `${name!.toLowerCase().replace(/[^a-z]+/g, '')}.example` }, `demo-${i + 1}`), contact: COMPANIES[i]![2]! }));
 
   accounts.forEach((a, i) => {
     const stage = STAGES[i];

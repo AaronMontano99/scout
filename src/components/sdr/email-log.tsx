@@ -121,7 +121,7 @@ function Row({ row: r }: { row: EmailLogRow }) {
           <span className="block truncate text-ink" title={r.subject}>
             {r.subject || '—'}
           </span>
-          <span className="text-muted">
+          <span className="text-muted" suppressHydrationWarning>
             {r.lastSentAt ? `Sent ${shortDate(r.lastSentAt)}` : 'Not sent'}
             {r.lastReplyAt ? ` · Reply ${shortDate(r.lastReplyAt)}` : ''}
           </span>

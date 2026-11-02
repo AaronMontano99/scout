@@ -24,7 +24,7 @@ export function ActivityList({ activities, showAccount = false, title = 'Activit
                 {showAccount ? `${a.accountName} · ` : ''}
                 {CHANNEL_LABEL[a.channel]}
               </span>
-              <span className="text-muted">
+              <span className="text-muted" suppressHydrationWarning>
                 {when.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: '2-digit' })}{' '}
                 {when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
               </span>

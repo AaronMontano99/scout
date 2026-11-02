@@ -75,8 +75,7 @@ export function findAccountByName(name: string): Account | null {
   return r ? mapAccount(r) : null;
 }
 
-export function createAccount(input: { name: string; domain?: string | null; industry?: string | null; address?: string | null; zip?: string | null; phone?: string | null }): Account {
-  const id = crypto.randomUUID();
+export function createAccount(input: { name: string; domain?: string | null; industry?: string | null; address?: string | null; zip?: string | null; phone?: string | null }, id: string = crypto.randomUUID()): Account {
   const now = new Date().toISOString();
   getDb()
     .prepare(
