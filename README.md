@@ -106,7 +106,7 @@ touch builds on the last one.
 
 ## Build your own Ferret
 
-Ferret is meant to be customized. Copy it, then change it until it fits how you sell.
+Ferret is meant to be customized, and the [MIT license](./LICENSE) means you're free to. Copy it, then change it until it fits how you sell.
 
 **1. Get it running.** You need [Node 22+](https://nodejs.org).
 
@@ -246,3 +246,7 @@ db/schema.sql                          schema, applied at startup
 scripts/                               demo data
 tests/                                 rules, Hot List, email log, day summary, data layer, schema
 ```
+
+## License
+
+[MIT](./LICENSE). Use it, change it, make it yours. Just keep the license file in your copy.

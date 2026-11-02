@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Sales intelligence layer for SMB/midmarket B2B sales teams. See docs/PRODUCT_CONSTITUTION.md.",
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "demo": "vitest run --config scripts/demo.vitest.config.mts && SCOUT_DB_PATH=data/demo.db next dev -p 3001",
