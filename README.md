@@ -1,11 +1,20 @@
 # Ferret
 
-**A Lead SDR for calls and emails, named for the animal with the nose for it.** Before you pick up the phone or hit
-send, Ferret does the intelligence work, so there's a real reason you're
-reaching out, not just calling to call.
+**Try the live demo: [ferret-crm.vercel.app](https://ferret-crm.vercel.app)**
 
-It runs your own prospecting playbooks word for word on your Claude
-membership, with live web research.
+Every company in the demo is made up, and nothing you do there is saved, so click around and break things. Want your own? Jump to [Build your own Ferret](#build-your-own-ferret).
+
+## Why it's called Ferret
+
+Ferrets have an incredible sense of smell. They can sniff out just about anything, and finding leads is basically that: digging around until you find the one thing worth following. So a CRM that sniffs out leads got named after a ferret. It's a funny name, and it fits.
+
+## Why I built it
+
+I work in technology sales and prospecting is most of my week. I wanted a real reason to reach out to someone, not just calling to call, and I wanted one place to see what I'm working on and what to do next.
+
+So I built my own. Ferret started as call prep, then grew into a full CRM with dashboards, a board for hot accounts, a calendar, and reports on what's actually working. Every number in it is a count of what you logged. Nothing is scored or estimated.
+
+If you don't have anything in place for your own business, or what you have doesn't fit how you work, you can use this as a starting point.
 
 > Prospect = worth contacting. Lead = meeting booked. The first sale is the meeting.
 
@@ -95,12 +104,49 @@ touch builds on the last one.
 
 ---
 
+## Build your own Ferret
+
+Ferret is meant to be customized. Copy it, then change it until it fits how you sell.
+
+**1. Get it running.** You need [Node 22+](https://nodejs.org).
+
+```bash
+git clone https://github.com/AaronMontano99/ferret.git my-crm
+cd my-crm
+npm install
+npm run demo
+```
+
+Open **http://localhost:3001** to see it full of made-up companies. It's a local copy, so go ahead and experiment.
+
+**2. Make it yours.** Everything you'd want to change first lives in one place:
+
+| You want to change | Edit this |
+|---|---|
+| Colors, backgrounds, fonts | [`src/app/globals.css`](./src/app/globals.css), or the sliders icon in the app to try them live |
+| Your name, territory, goals | Settings, inside the app |
+| The tabs at the top | [`src/components/shell/nav.tsx`](./src/components/shell/nav.tsx) |
+| Pipeline stages | [`src/domain/hot-list.ts`](./src/domain/hot-list.ts) |
+| What counts as a call outcome | [`src/domain/quick-log.ts`](./src/domain/quick-log.ts) |
+| Dashboard numbers | [`src/domain/metrics.ts`](./src/domain/metrics.ts) |
+| The demo's fake companies | [`src/demo/seed.ts`](./src/demo/seed.ts) |
+| How the AI thinks and writes | Your own playbooks in `private/`, see [Private content](#private-content-never-in-git) |
+
+**3. Use it for real.** Run `npm run dev` and open **http://localhost:3000**. Your data stays in a file on your computer, in `data/`, which never goes to git.
+
+The dashboards, Hot List, Accounts, Schedule, and logging all work without AI. Call cards and emails need the [Claude Code](https://claude.com/claude-code) CLI plus your own playbooks, because mine are private and aren't in this repo.
+
+**4. Keep iterating.** The fastest way is to open the project in Claude Code and describe what you want: "my pipeline has these five stages", "I sell to dentists", "add a tab for renewals". Try something, look at it, change it again.
+
+**5. Put up your own demo (optional).** Deploy to Vercel with `NEXT_PUBLIC_SCOUT_DEMO=1` set. That runs on made-up data in memory, with saving and AI turned off, so your real data never goes online.
+
 ## Private content (never in git)
 
 Everything specific to you stays on your machine:
 
 - **`private/`** (git-ignored) holds your playbooks and reference
-  material, which Ferret loads word for word:
+  material, which Ferret loads word for word. You write your own, and
+  these are the files it looks for:
   - `private/playbooks/calls.md`, `emails.md`, `hotlist.md`, `examples.md`
   - `private/reference/workflow.md`, `verticals.md`, `objections.md`, `sessions.md`, `training.md`
 

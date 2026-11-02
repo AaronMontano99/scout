@@ -87,8 +87,8 @@ export function Shell({ alerts, accounts, ownerName, children }: { alerts: Alert
       {DEMO && (
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-primary px-4 py-2 text-center text-[13.5px] text-on-primary">
           <span>Demo with made-up companies. Nothing you do here is saved.</span>
-          <a href="https://github.com/AaronMontano99/ferret" className="font-semibold underline">
-            See the code
+          <a href="https://github.com/AaronMontano99/ferret#build-your-own-ferret" className="font-semibold underline">
+            Build your own
           </a>
           <a href="https://aaronmontano.vercel.app/" className="font-semibold underline">
             Back to Aaron&apos;s site
