@@ -1,6 +1,6 @@
 # Ferret
 
-**Try the live demo: [ferret-crm.vercel.app](https://ferret-crm.vercel.app)**
+**Try the live demo: [ferret-demo.vercel.app](https://ferret-demo.vercel.app)**
 
 Every company in the demo is made up, and nothing you do there is saved, so click around and break things. Want your own? Jump to [Build your own Ferret](#build-your-own-ferret).
 
